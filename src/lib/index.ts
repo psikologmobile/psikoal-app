@@ -6,6 +6,7 @@ export {
   ERROR_MESSAGES,
   getErrorMessage,
   toApiError,
+  isApiErrorCode,
   registerUnauthenticatedHandler,
   get,
   post,
@@ -16,5 +17,5 @@ export {
 } from './api'
 export { queryClient } from './queryClient'
 
-export type { ValidationError } from './api'
+export type { ValidationError, ApiErrorMeta } from './api'
 export type { Env } from './env'
