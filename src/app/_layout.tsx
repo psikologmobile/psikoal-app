@@ -5,21 +5,27 @@ import { useEffect } from 'react'
 import { View } from 'react-native'
 
 import {
-  PlusJakartaSans_400Regular,
-  PlusJakartaSans_500Medium,
-  PlusJakartaSans_600SemiBold,
-  PlusJakartaSans_700Bold,
-  PlusJakartaSans_800ExtraBold,
-} from '@expo-google-fonts/plus-jakarta-sans'
-import { useColorScheme } from 'nativewind'
+  BricolageGrotesque_700Bold,
+  BricolageGrotesque_800ExtraBold,
+} from '@expo-google-fonts/bricolage-grotesque'
+import {
+  Figtree_400Regular,
+  Figtree_500Medium,
+  Figtree_600SemiBold,
+  Figtree_700Bold,
+  Figtree_800ExtraBold,
+} from '@expo-google-fonts/figtree'
 
 import { useFonts } from 'expo-font'
 import { Stack, useRouter } from 'expo-router'
 import type { ErrorBoundaryProps } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
+import { StatusBar } from 'expo-status-bar'
 
 import { EmptyState } from '@/core/components/molecules/EmptyState'
 import { AppProviders } from '@/core/components/templates/AppProviders'
+import { useResolvedColorScheme, useThemeColors } from '@/core/theme'
+import { useApplyThemePreference } from '@/core/theme/useApplyThemePreference'
 import '@/domains/notification/pushNotificationHandler'
 import { useAuthStore, useMeQuery } from '@/domains/auth'
 import { useNotificationResponseRouting, useSilentPushRegistration } from '@/domains/notification'
@@ -34,7 +40,7 @@ SplashScreen.preventAutoHideAsync()
 // yalnız sağlayıcı gerektirmeyen bileşenler kullanılır.
 export function ErrorBoundary({ retry }: ErrorBoundaryProps) {
   return (
-    <View className="flex-1 bg-surface-base dark:bg-dark-bg">
+    <View className="flex-1 bg-bg">
       <EmptyState
         icon="AlertTriangle"
         title="Bir şeyler ters gitti"
@@ -60,19 +66,19 @@ function SessionSync() {
 
 export default function RootLayout() {
   const router = useRouter()
-  const { setColorScheme } = useColorScheme()
   const preference = useThemeStore((s) => s.preference)
-
-  useEffect(() => {
-    setColorScheme(preference)
-  }, [preference, setColorScheme])
+  useApplyThemePreference(preference)
+  const colors = useThemeColors()
+  const scheme = useResolvedColorScheme()
 
   const [fontsLoaded, fontError] = useFonts({
-    PlusJakartaSans_400Regular,
-    PlusJakartaSans_500Medium,
-    PlusJakartaSans_600SemiBold,
-    PlusJakartaSans_700Bold,
-    PlusJakartaSans_800ExtraBold,
+    BricolageGrotesque_700Bold,
+    BricolageGrotesque_800ExtraBold,
+    Figtree_400Regular,
+    Figtree_500Medium,
+    Figtree_600SemiBold,
+    Figtree_700Bold,
+    Figtree_800ExtraBold,
   })
 
   useEffect(() => {
@@ -97,7 +103,8 @@ export default function RootLayout() {
   return (
     <AppProviders>
       <SessionSync />
-      <Stack screenOptions={{ headerShown: false }} />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
     </AppProviders>
   )
 }
