@@ -56,6 +56,6 @@ describe('Badge', () => {
   it('has neutral variant by default', () => {
     const { UNSAFE_getByProps } = render(<Badge label="Default" />)
     const el = UNSAFE_getByProps({ accessibilityRole: 'text' })
-    expect(el.props.className).toContain('bg-neutral-100')
+    expect(el.props.className).toContain('border-border-strong')
   })
 })

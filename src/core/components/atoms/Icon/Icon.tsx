@@ -6,6 +6,8 @@ import * as LucideIcons from 'lucide-react-native'
 
 import type { SvgProps } from 'react-native-svg'
 
+import { useThemeColors } from '@/core/theme'
+
 type LucideIconProps = Pick<SvgProps, 'stroke'> & { size?: number; strokeWidth?: number }
 
 export type IconName = keyof typeof LucideIcons
@@ -18,12 +20,14 @@ export type IconProps = {
   className?: string
 }
 
-export function Icon({ name, size = 20, color = '#171717', strokeWidth = 1.75 }: IconProps) {
+/** Lucide ikon sarmalayıcı. Renk verilmezse temanın ana yazı rengi (text) kullanılır. */
+export function Icon({ name, size = 20, color, strokeWidth = 2 }: IconProps) {
+  const colors = useThemeColors()
   const LucideIcon = (LucideIcons as unknown as Record<string, ComponentType<LucideIconProps>>)[
     name as string
   ]
 
   if (!LucideIcon) return null
 
-  return <LucideIcon size={size} stroke={color} strokeWidth={strokeWidth} />
+  return <LucideIcon size={size} stroke={color ?? colors.text} strokeWidth={strokeWidth} />
 }

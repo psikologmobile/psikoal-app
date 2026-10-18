@@ -1,17 +1,14 @@
-import type { ComponentType } from 'react'
-
 import { Pressable, View } from 'react-native'
 
-import { X } from 'lucide-react-native'
-
-import type { SvgProps } from 'react-native-svg'
-
+import { Icon } from '@/core/components/atoms/Icon'
 import { Text } from '@/core/components/atoms/Text'
+import { useThemeColors } from '@/core/theme'
 import { cn } from '@/core/utils/cn'
 
-type IconProps = Pick<SvgProps, 'stroke'> & { size?: number }
-const XIcon = X as ComponentType<IconProps>
-
+/**
+ * @deprecated v1 çipi. Yeni kodda `FilterChip` (tek seçim), `ChoiceChip`
+ * (çoklu seçim) veya `TagChip` (etkileşimsiz meta) kullan. Görünüm v2'ye eşlendi.
+ */
 export type ChipVariant = 'filter' | 'input' | 'tag' | 'session' | 'price' | 'onBrand'
 export type ChipSize = 'sm' | 'md'
 
@@ -26,57 +23,22 @@ export type ChipProps = {
   className?: string
 }
 
-const variantStyles: Record<ChipVariant, { base: string; selectedSm: string; selectedMd: string }> =
-  {
-    filter: {
-      base: 'bg-neutral-200 dark:bg-neutral-800',
-      selectedSm: 'bg-brand-muted/60 dark:bg-brand/20',
-      selectedMd: 'bg-brand-muted/60 dark:bg-brand/20',
-    },
-    input: {
-      base: 'bg-brand-muted/60 dark:bg-brand/20',
-      selectedSm: 'bg-brand-muted/60 dark:bg-brand/20',
-      selectedMd: 'bg-brand-muted/60 dark:bg-brand/20',
-    },
-    tag: {
-      base: 'bg-neutral-200 dark:bg-neutral-800',
-      selectedSm: 'bg-tag-muted/60 dark:bg-tag/20',
-      selectedMd: 'bg-tag-muted/60 dark:bg-tag/20',
-    },
-    session: {
-      base: 'bg-neutral-200 dark:bg-neutral-800',
-      selectedSm: 'bg-session-muted/60 dark:bg-session/20',
-      selectedMd: 'bg-session-muted/60 dark:bg-session/20',
-    },
-    price: {
-      base: 'bg-neutral-200 dark:bg-neutral-800',
-      selectedSm:
-        'bg-price-muted/60 border border-price-muted dark:bg-price/20 dark:border-price/30',
-      selectedMd:
-        'bg-price-muted/60 border border-price-muted dark:bg-price/20 dark:border-price/30',
-    },
-    onBrand: {
-      base: 'bg-sky-600 dark:bg-sky-900',
-      selectedSm: 'bg-white dark:bg-white',
-      selectedMd: 'bg-white dark:bg-white',
-    },
-  }
-
-const selectedTextMap: Record<ChipVariant, string> = {
-  filter: 'text-brand-text dark:text-brand-border',
-  input: 'text-brand-text dark:text-brand-border',
-  tag: 'text-tag-text dark:text-tag-border',
-  session: 'text-session-text dark:text-session-border',
-  price: 'text-price-text dark:text-price-border',
-  onBrand: 'text-sky-700 dark:text-sky-700',
+const selectedStyles: Record<ChipVariant, string> = {
+  filter: 'bg-accent',
+  input: 'bg-accent',
+  tag: 'bg-accent-soft',
+  session: 'bg-surface',
+  price: 'bg-accent-soft',
+  onBrand: 'bg-bg',
 }
 
-const sizeStyles: Record<
-  ChipSize,
-  { container: string; textVariant: 'caption' | 'label'; xSize: number }
-> = {
-  sm: { container: 'px-3 py-1.5 gap-1.5', textVariant: 'caption', xSize: 12 },
-  md: { container: 'px-4 py-2 gap-2', textVariant: 'label', xSize: 14 },
+const selectedText: Record<ChipVariant, string> = {
+  filter: 'text-accent-fg',
+  input: 'text-accent-fg',
+  tag: 'text-accent-soft-fg',
+  session: 'text-fg',
+  price: 'text-accent-soft-fg',
+  onBrand: 'text-fg',
 }
 
 export function Chip({
@@ -89,44 +51,38 @@ export function Chip({
   size = 'sm',
   className,
 }: ChipProps) {
-  const isFilter = variant === 'filter'
-  const isInput = variant === 'input'
-
-  const { base, selectedSm, selectedMd } = variantStyles[variant]
-  const { container, textVariant, xSize } = sizeStyles[size]
-  const bgClass = !isSelected ? base : size === 'md' ? selectedMd : selectedSm
-
+  const colors = useThemeColors()
   const containerStyle = cn(
     'flex-row items-center self-start rounded-full',
-    container,
-    bgClass,
+    size === 'md' ? 'gap-2 px-3.5 py-2' : 'gap-1.5 px-3 py-1.5',
+    isSelected ? selectedStyles[variant] : 'border border-border-strong',
     isDisabled && 'opacity-40',
     className
   )
-
-  const textClass = isSelected
-    ? `${selectedTextMap[variant]} font-medium`
-    : variant === 'onBrand'
-      ? 'text-white font-medium'
-      : 'text-neutral-700 dark:text-neutral-400 font-medium'
-  const xStroke = '#0369A1' // sky-700 (filter X butonu için)
+  const textClass = cn(
+    size === 'md' ? 'text-body-sm' : 'text-xs',
+    isSelected ? cn('font-body-bold', selectedText[variant]) : 'font-body-semibold text-fg'
+  )
 
   const content = (
     <>
-      <Text variant={textVariant} className={textClass}>
-        {label}
-      </Text>
-      {((isFilter && isSelected && size === 'md') || isInput) && onRemove && (
+      <Text className={textClass}>{label}</Text>
+      {onRemove && (isSelected || variant === 'input') ? (
         <Pressable
           onPress={isDisabled ? undefined : onRemove}
-          accessibilityLabel={`Remove ${label}`}
+          accessibilityLabel={`${label} kaldır`}
           accessibilityRole="button"
           disabled={isDisabled}
           hitSlop={8}
         >
-          <XIcon size={xSize} stroke={xStroke} />
+          <Icon
+            name="X"
+            size={size === 'md' ? 14 : 12}
+            color={colors.textMuted}
+            strokeWidth={2.4}
+          />
         </Pressable>
-      )}
+      ) : null}
     </>
   )
 

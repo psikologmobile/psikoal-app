@@ -18,8 +18,9 @@ export function AppRefreshControl({ refreshing, onRefresh, ...rest }: AppRefresh
       {...rest}
       refreshing={refreshing}
       onRefresh={onRefresh}
-      tintColor={colors.brand}
-      colors={[colors.brand]}
+      tintColor={colors.primary}
+      colors={[colors.primary]}
+      progressBackgroundColor={colors.surface}
     />
   )
 }

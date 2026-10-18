@@ -1,185 +1,136 @@
 import { useState } from 'react'
-import type { ComponentType, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 
 import { Image, View } from 'react-native'
 
-import { Check, User } from 'lucide-react-native'
-
-import type { SvgProps } from 'react-native-svg'
-
 import { Text } from '@/core/components/atoms/Text'
+import { VerifiedBadge } from '@/core/components/atoms/VerifiedBadge'
 import { cn } from '@/core/utils/cn'
 
-type IconProps = Pick<SvgProps, 'stroke'> & { size?: number; strokeWidth?: number }
-const UserIcon = User as ComponentType<IconProps>
-const CheckIcon = Check as ComponentType<IconProps>
-
-export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+/** xs 30 · sm 34 · md 44 · lg 48 · xl 56 · 2xl 64 · hero 112 */
+export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'hero'
+/** accent: kendi profilin / danışan · primary: karşı taraf (eşleşme) */
+export type AvatarTone = 'accent' | 'primary' | 'surface'
 
 export type AvatarProps = {
   size?: AvatarSize
   src?: string
   initials?: string
-  fallbackColor?: string
+  tone?: AvatarTone
   isVerified?: boolean
   badge?: ReactNode
-  borderWidth?: number
-  borderColor?: string
+  /** 2 px bg halka (üst üste dizilimde). */
+  ring?: boolean
+  accessibilityLabel?: string
   className?: string
+  /** @deprecated v1 — kullanılmaz, tone verin */
+  fallbackColor?: string
+  /** @deprecated v1 — kullanılmaz, ring verin */
+  borderWidth?: number
+  /** @deprecated v1 — kullanılmaz */
+  borderColor?: string
+}
+
+export const AVATAR_SIZES: Record<AvatarSize, number> = {
+  xs: 30,
+  sm: 34,
+  md: 44,
+  lg: 48,
+  xl: 56,
+  '2xl': 64,
+  hero: 112,
+}
+
+const fontRatio = 0.36
+
+const toneStyles: Record<AvatarTone, { bg: string; fg: string }> = {
+  accent: { bg: 'bg-accent', fg: 'text-accent-fg' },
+  primary: { bg: 'bg-primary', fg: 'text-primary-fg' },
+  surface: { bg: 'bg-surface', fg: 'text-fg' },
+}
+
+/** Avatar — baş harf (Bricolage 800) accent zeminde; fotoğraf varsa görsel. */
+export function Avatar({
+  size = 'md',
+  src,
+  initials,
+  tone = 'accent',
+  isVerified = false,
+  badge,
+  ring = false,
+  accessibilityLabel,
+  className,
+}: AvatarProps) {
+  const [hasError, setHasError] = useState(false)
+  const px = AVATAR_SIZES[size]
+  const showImg = Boolean(src) && !hasError
+  const fontSize = Math.round(px * fontRatio)
+  const t = toneStyles[tone]
+
+  // REASON: çap ölçü tablosundan hesaplanır (7 boyut); className ile tek tek yazmak yerine.
+  const box = { width: px, height: px }
+  return (
+    <View className={cn('relative self-start', className)} style={box}>
+      <View
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel={accessibilityLabel ?? initials}
+        style={box}
+        className={cn(
+          'items-center justify-center overflow-hidden rounded-full',
+          !showImg && t.bg,
+          ring && 'border-2 border-bg'
+        )}
+      >
+        {showImg ? (
+          <Image
+            source={{ uri: src }}
+            style={box}
+            onError={() => setHasError(true)}
+            accessibilityIgnoresInvertColors
+          />
+        ) : (
+          <Text
+            style={{ fontSize, lineHeight: Math.round(fontSize * 1.15) }}
+            className={cn('font-display', t.fg)}
+          >
+            {(initials ?? '').slice(0, 2).toLocaleUpperCase('tr-TR')}
+          </Text>
+        )}
+      </View>
+      {isVerified ? (
+        <View className="absolute -bottom-0.5 -right-0.5 rounded-full border-2 border-bg">
+          <VerifiedBadge size={Math.max(16, Math.round(px * 0.3))} delay={300} />
+        </View>
+      ) : null}
+      {badge && !isVerified ? <View className="absolute bottom-0 right-0">{badge}</View> : null}
+    </View>
+  )
 }
 
 export type AvatarGroupProps = {
-  avatars: Array<Pick<AvatarProps, 'src' | 'initials' | 'fallbackColor'>>
+  avatars: Array<Pick<AvatarProps, 'src' | 'initials' | 'tone'>>
   max?: number
   size?: AvatarSize
   className?: string
 }
 
-const sizeMap: Record<AvatarSize, number> = {
-  xs: 24,
-  sm: 32,
-  md: 40,
-  lg: 56,
-  xl: 80,
-  '2xl': 120,
-}
-
-const fontSizeMap: Record<AvatarSize, number> = {
-  xs: 8,
-  sm: 11,
-  md: 14,
-  lg: 20,
-  xl: 28,
-  '2xl': 42,
-}
-
-const iconSizeMap: Record<AvatarSize, number> = {
-  xs: 12,
-  sm: 16,
-  md: 20,
-  lg: 28,
-  xl: 40,
-  '2xl': 60,
-}
-
-const verifiedSizeMap: Record<AvatarSize, number> = {
-  xs: 12,
-  sm: 14,
-  md: 16,
-  lg: 20,
-  xl: 26,
-  '2xl': 36,
-}
-
-export function Avatar({
-  size = 'md',
-  src,
-  initials,
-  fallbackColor,
-  isVerified = false,
-  badge,
-  borderWidth,
-  borderColor,
-  className,
-}: AvatarProps) {
-  const [hasError, setHasError] = useState(false)
-
-  const px = sizeMap[size]
-  const showImg = Boolean(src) && !hasError
-  const verifiedPx = verifiedSizeMap[size]
-
-  return (
-    <View className={cn('relative self-start', className)} style={{ width: px, height: px }}>
-      <View
-        style={{
-          width: px,
-          height: px,
-          borderRadius: px / 2,
-          borderWidth,
-          borderColor,
-          overflow: 'hidden',
-        }}
-        accessibilityRole="image"
-      >
-        {showImg ? (
-          <Image
-            source={{ uri: src }}
-            style={{ width: px, height: px }}
-            onError={() => setHasError(true)}
-            accessibilityIgnoresInvertColors
-          />
-        ) : (
-          <View
-            style={fallbackColor ? { backgroundColor: fallbackColor } : undefined}
-            className={cn(
-              'flex-1 items-center justify-center',
-              !fallbackColor && 'bg-neutral-200 dark:bg-neutral-800'
-            )}
-          >
-            {initials ? (
-              <Text
-                style={{ fontSize: fontSizeMap[size], lineHeight: fontSizeMap[size] * 1.2 }}
-                className="font-semibold text-neutral-700 dark:text-neutral-200"
-              >
-                {initials.slice(0, 2).toUpperCase()}
-              </Text>
-            ) : (
-              <UserIcon size={iconSizeMap[size]} stroke="#737373" />
-            )}
-          </View>
-        )}
-      </View>
-
-      {isVerified && (
-        <View
-          className="absolute items-center justify-center rounded-full border-2 border-white bg-sky-500"
-          style={{
-            width: verifiedPx,
-            height: verifiedPx,
-            bottom: -(verifiedPx * 0.15),
-            right: -(verifiedPx * 0.15),
-          }}
-        >
-          <CheckIcon size={verifiedPx * 0.6} stroke="#FFFFFF" strokeWidth={3} />
-        </View>
-      )}
-
-      {badge && !isVerified && <View className="absolute bottom-0 right-0">{badge}</View>}
-    </View>
-  )
-}
-
-export function AvatarGroup({ avatars, max = 5, size = 'md', className }: AvatarGroupProps) {
-  const px = sizeMap[size]
-  const visibleCount = Math.min(avatars.length, avatars.length > max ? max - 1 : max)
-  const overflowCount = avatars.length - visibleCount
-  const overlap = Math.floor(px * 0.3)
-
+/** @deprecated → molecules/AvatarStack */
+export function AvatarGroup({ avatars, max = 5, size = 'xs', className }: AvatarGroupProps) {
+  const visibleCount = avatars.length > max ? max - 1 : avatars.length
+  const overflow = avatars.length - visibleCount
   return (
     <View className={cn('flex-row items-center', className)}>
-      {avatars.slice(0, visibleCount).map((avatar, i) => (
-        <View key={i} style={{ marginLeft: i === 0 ? 0 : -overlap, zIndex: visibleCount - i }}>
-          <Avatar {...avatar} size={size} borderWidth={2} borderColor="#FFFFFF" />
+      {avatars.slice(0, visibleCount).map((a, i) => (
+        <View key={i} className={i === 0 ? '' : '-ml-2'}>
+          <Avatar {...a} size={size} ring />
         </View>
       ))}
-
-      {overflowCount > 0 && (
-        <View
-          className="items-center justify-center bg-neutral-200"
-          style={{
-            width: px,
-            height: px,
-            borderRadius: px / 2,
-            marginLeft: -overlap,
-            borderWidth: 2,
-            borderColor: '#FFFFFF',
-          }}
-        >
-          <Text style={{ fontSize: fontSizeMap[size] }} className="font-semibold text-neutral-700">
-            +{overflowCount}
-          </Text>
+      {overflow > 0 ? (
+        <View className="-ml-2 h-[30px] min-w-[30px] items-center justify-center rounded-full border-2 border-bg bg-surface px-1.5">
+          <Text className="font-body-heavy text-badge text-fg">+{overflow}</Text>
         </View>
-      )}
+      ) : null}
     </View>
   )
 }

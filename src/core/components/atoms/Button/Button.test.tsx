@@ -4,106 +4,118 @@ import { fireEvent, render } from '@testing-library/react-native'
 
 import { Button } from './Button'
 
-// expo-haptics is mocked by jest-expo; no manual mock needed
+// expo-haptics jest-expo tarafından mock'lanır.
 
 describe('Button', () => {
   it('renders label', () => {
-    const { getByText } = render(<Button label="Press me" onPress={jest.fn()} />)
-    expect(getByText('Press me')).toBeTruthy()
+    const { getByText } = render(<Button label="Devam" onPress={jest.fn()} />)
+    expect(getByText('Devam')).toBeTruthy()
   })
 
-  it('renders all variants without crashing', () => {
-    const variants = ['primary', 'secondary', 'ghost', 'danger', 'accent', 'link'] as const
+  it('renders every v2 and legacy variant', () => {
+    const variants = [
+      'primary',
+      'secondary',
+      'outline',
+      'link',
+      'danger',
+      'danger-outline',
+      'ghost',
+      'accent',
+      'success',
+      'inverse',
+    ] as const
     variants.forEach((variant) => {
-      const { unmount } = render(<Button label={variant} onPress={jest.fn()} variant={variant} />)
+      const { getByRole, unmount } = render(
+        <Button label={variant} onPress={jest.fn()} variant={variant} icon="Plus" />
+      )
+      expect(getByRole('button')).toBeTruthy()
       unmount()
     })
   })
 
-  it('renders all sizes without crashing', () => {
-    const sizes = ['xs', 'sm', 'md', 'lg'] as const
+  it('maps legacy variants onto v2 styles', () => {
+    const { getByRole } = render(<Button label="Eski" onPress={jest.fn()} variant="ghost" />)
+    expect(getByRole('button').props.className).toContain('border-border-strong')
+  })
+
+  it('renders every size (xs falls back to sm)', () => {
+    const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const
     sizes.forEach((size) => {
-      const { unmount } = render(<Button label={size} onPress={jest.fn()} size={size} />)
+      const { getByRole, unmount } = render(<Button label={size} onPress={jest.fn()} size={size} />)
+      expect(getByRole('button').props.className).toMatch(/h-btn-(sm|md|lg|xl)/)
       unmount()
     })
   })
 
   it('calls onPress once when tapped', () => {
     const onPress = jest.fn()
-    const { getByRole } = render(<Button label="Tap" onPress={onPress} />)
+    const { getByRole } = render(<Button label="Bas" onPress={onPress} />)
     fireEvent.press(getByRole('button'))
     expect(onPress).toHaveBeenCalledTimes(1)
   })
 
-  it('does NOT call onPress when disabled', () => {
+  it('is disabled with a dashed border and does not fire', () => {
     const onPress = jest.fn()
-    const { getByRole } = render(<Button label="Disabled" onPress={onPress} isDisabled />)
-    fireEvent.press(getByRole('button'))
+    const { getByRole } = render(<Button label="Kapalı" onPress={onPress} isDisabled icon="Plus" />)
+    const btn = getByRole('button')
+    fireEvent.press(btn)
     expect(onPress).not.toHaveBeenCalled()
+    expect(btn.props.className).toContain('border-dashed')
+    expect(btn.props.accessibilityState).toEqual({ disabled: true, busy: false })
   })
 
-  it('does NOT call onPress when loading', () => {
+  it('shows a spinner and the loading label while loading', () => {
     const onPress = jest.fn()
-    const { getByRole } = render(<Button label="Loading" onPress={onPress} isLoading />)
-    fireEvent.press(getByRole('button'))
-    expect(onPress).not.toHaveBeenCalled()
-  })
-
-  it('shows ActivityIndicator when loading', () => {
-    const { getByLabelText, queryByText } = render(
-      <Button label="Save" onPress={jest.fn()} isLoading />
+    const { getByRole, getByText, getByLabelText } = render(
+      <Button label="Gönder" loadingLabel="Gönderiliyor…" onPress={onPress} isLoading />
     )
-    expect(getByLabelText('Loading')).toBeTruthy()
-    expect(queryByText('Save')).toBeNull()
+    expect(getByText('Gönderiliyor…')).toBeTruthy()
+    expect(getByLabelText('Yükleniyor')).toBeTruthy()
+    fireEvent.press(getByRole('button'))
+    expect(onPress).not.toHaveBeenCalled()
+    expect(getByRole('button').props.accessibilityState).toEqual({ disabled: true, busy: true })
   })
 
-  it('is accessible as a button role', () => {
-    const { getByRole } = render(<Button label="OK" onPress={jest.fn()} />)
-    expect(getByRole('button')).toBeTruthy()
+  it('falls back to label when loading without loadingLabel', () => {
+    const { getByText } = render(<Button label="Kaydet" onPress={jest.fn()} isLoading />)
+    expect(getByText('Kaydet')).toBeTruthy()
   })
 
-  it('has accessibilityLabel equal to label', () => {
-    const { getByLabelText } = render(<Button label="Submit" onPress={jest.fn()} />)
-    expect(getByLabelText('Submit')).toBeTruthy()
-  })
-
-  it('renders leftIcon and rightIcon alongside label', () => {
+  it('renders icon on the right and custom nodes', () => {
     const Left = () => <React.Fragment />
-    const Right = () => <React.Fragment />
     const { getByText } = render(
-      <Button label="Centered" onPress={jest.fn()} leftIcon={<Left />} rightIcon={<Right />} />
+      <Button
+        label="Sağ"
+        onPress={jest.fn()}
+        icon="ChevronRight"
+        iconPosition="right"
+        leftIcon={<Left />}
+      />
     )
-    expect(getByText('Centered')).toBeTruthy()
+    expect(getByText('Sağ')).toBeTruthy()
   })
 
-  it('applies w-full class when fullWidth is true', () => {
-    const { getByRole } = render(<Button label="Full" onPress={jest.fn()} fullWidth />)
-    const btn = getByRole('button')
-    expect(btn.props.className).toContain('w-full')
+  it('applies w-full when fullWidth', () => {
+    const { getByRole } = render(<Button label="Tam" onPress={jest.fn()} fullWidth />)
+    expect(getByRole('button').props.className).toContain('w-full')
   })
 
-  it('does not apply w-full class when fullWidth is false', () => {
-    const { getByRole } = render(<Button label="Auto" onPress={jest.fn()} fullWidth={false} />)
-    const btn = getByRole('button')
-    expect(btn.props.className ?? '').not.toContain('w-full')
+  it('accepts a fixed width', () => {
+    const { getByRole } = render(<Button label="Sabit" onPress={jest.fn()} width={160} />)
+    expect(getByRole('button').props.style).toEqual({ width: 160 })
   })
 
-  it('applies opacity-40 when disabled', () => {
-    const { getByRole } = render(<Button label="Off" onPress={jest.fn()} isDisabled />)
-    const btn = getByRole('button')
-    expect(btn.props.className).toContain('opacity-40')
+  it('exposes accessibility label and hint', () => {
+    const { getByLabelText } = render(
+      <Button label="Onayla" onPress={jest.fn()} accessibilityHint="İlan yayına alınır" />
+    )
+    expect(getByLabelText('Onayla').props.accessibilityHint).toBe('İlan yayına alınır')
   })
 
-  it('applies opacity-40 when loading', () => {
-    const { getByRole } = render(<Button label="Busy" onPress={jest.fn()} isLoading />)
-    const btn = getByRole('button')
-    expect(btn.props.className).toContain('opacity-40')
-  })
-
-  it('fires pressIn and pressOut without error (scale animation)', () => {
+  it('fires pressIn / pressOut (press scale) without error', () => {
     const { getByRole } = render(<Button label="Anim" onPress={jest.fn()} />)
-    const btn = getByRole('button')
-    fireEvent(btn, 'pressIn')
-    fireEvent(btn, 'pressOut')
+    fireEvent(getByRole('button'), 'pressIn')
+    fireEvent(getByRole('button'), 'pressOut')
   })
 })

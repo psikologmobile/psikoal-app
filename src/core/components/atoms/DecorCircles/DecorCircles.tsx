@@ -1,3 +1,4 @@
+// @deprecated v1 hero dekoru (beyaz daireler, marka zemini). v2 hero için HeroCard (dönen köşe dekoru) kullan.
 import { useEffect } from 'react'
 
 import Animated, {

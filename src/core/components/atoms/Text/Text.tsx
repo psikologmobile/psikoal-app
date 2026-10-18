@@ -3,26 +3,60 @@ import type { TextProps as RNTextProps } from 'react-native'
 
 import { cn } from '@/core/utils/cn'
 
+/**
+ * v2 tip ölçeği (src/core/theme/tokens.ts `typography`).
+ * Başlıklar Bricolage Grotesque, gövde Figtree. RN özel fontta ağırlık
+ * sentezlemediği için `weight` font AİLESİ değiştirir, fontWeight yazmaz.
+ */
 export type TextVariant =
-  | 'display'
-  | 'heading'
-  | 'subheading'
+  | 'hero'
+  | 'h1'
+  | 'h2'
+  | 'h3'
+  | 'sheet'
+  | 'title'
+  | 'number'
+  | 'bodyLg'
   | 'body'
+  | 'bodySm'
   | 'label'
-  | 'caption'
+  | 'button'
+  | 'badge'
   | 'overline'
+  | 'caption'
+  /** @deprecated → h1 */
+  | 'display'
+  /** @deprecated → h2 */
+  | 'heading'
+  /** @deprecated → title */
+  | 'subheading'
+
 export type TextWeight = 'light' | 'regular' | 'medium' | 'semibold' | 'bold' | 'extrabold'
+
 export type TextColor =
+  | 'default'
+  | 'muted'
+  | 'brand'
+  | 'link'
+  | 'onPrimary'
+  | 'onAccent'
+  | 'onAccentMuted'
+  | 'onAccentSoft'
+  | 'danger'
+  | 'onDangerSoft'
+  | 'onDanger'
+  | 'inverse'
+  | 'inherit'
+  /** @deprecated v1 adları: primary = ana yazı (default) */
   | 'primary'
   | 'secondary'
   | 'tertiary'
   | 'disabled'
-  | 'inverse'
-  | 'brand'
   | 'accent'
   | 'success'
   | 'warning'
   | 'error'
+
 export type TextAlign = 'left' | 'center' | 'right'
 
 export type TextProps = RNTextProps & {
@@ -33,27 +67,80 @@ export type TextProps = RNTextProps & {
   className?: string
 }
 
-const variantStyles: Record<TextVariant, string> = {
-  display: 'font-display text-5xl font-extrabold tracking-tight',
-  heading: 'font-display text-4xl font-extrabold tracking-tight',
-  subheading: 'font-body text-xl font-bold',
-  body: 'font-body text-[15px] font-regular leading-relaxed',
-  label: 'font-body text-sm font-medium',
-  caption: 'font-body text-xs font-medium',
-  overline: 'font-body text-xs font-medium uppercase tracking-widest',
+const DISPLAY_VARIANTS = new Set<TextVariant>([
+  'hero',
+  'h1',
+  'h2',
+  'h3',
+  'sheet',
+  'title',
+  'number',
+  'display',
+  'heading',
+  'subheading',
+])
+
+export const textVariantStyles: Record<TextVariant, string> = {
+  hero: 'font-display text-hero',
+  h1: 'font-display text-h1',
+  h2: 'font-display text-h2',
+  h3: 'font-display text-h3',
+  sheet: 'font-display text-sheet',
+  title: 'font-display-bold text-title',
+  number: 'font-display text-number',
+  bodyLg: 'font-body text-body-lg',
+  body: 'font-body text-body',
+  bodySm: 'font-body text-body-sm',
+  label: 'font-body-bold text-label',
+  button: 'font-body-heavy text-button',
+  badge: 'font-body-heavy text-badge',
+  overline: 'font-body-heavy text-overline uppercase',
+  caption: 'font-body text-xs',
+  display: 'font-display text-h1',
+  heading: 'font-display text-h2',
+  subheading: 'font-display-bold text-title',
 }
 
-const colorStyles: Record<TextColor, string> = {
-  primary: 'text-content-primary   dark:text-[#F5F5F7]',
-  secondary: 'text-content-secondary dark:text-[#8E8E93]',
-  tertiary: 'text-content-tertiary  dark:text-[#636366]',
-  disabled: 'text-content-disabled  dark:text-[#48484A]',
-  inverse: 'text-content-inverse   dark:text-neutral-900',
-  brand: 'text-brand-text        dark:text-sky-400',
-  accent: 'text-accent-text       dark:text-sky-300',
-  success: 'text-semantic-success  dark:text-emerald-400',
-  warning: 'text-semantic-warning  dark:text-amber-400',
-  error: 'text-semantic-error    dark:text-red-400',
+export const textColorStyles: Record<TextColor, string> = {
+  default: 'text-fg',
+  muted: 'text-fg-muted',
+  brand: 'text-primary-text',
+  link: 'text-link',
+  onPrimary: 'text-primary-fg',
+  onAccent: 'text-accent-fg',
+  onAccentMuted: 'text-accent-muted',
+  onAccentSoft: 'text-accent-soft-fg',
+  danger: 'text-danger',
+  onDangerSoft: 'text-danger-soft-fg',
+  onDanger: 'text-danger-fg',
+  inverse: 'text-bg',
+  inherit: '',
+  primary: 'text-fg',
+  secondary: 'text-fg-muted',
+  tertiary: 'text-fg-muted',
+  disabled: 'text-fg-muted',
+  accent: 'text-accent-soft-fg',
+  success: 'text-primary-text',
+  warning: 'text-primary-text',
+  error: 'text-danger',
+}
+
+const bodyWeightStyles: Record<TextWeight, string> = {
+  light: 'font-body-regular',
+  regular: 'font-body-regular',
+  medium: 'font-body',
+  semibold: 'font-body-semibold',
+  bold: 'font-body-bold',
+  extrabold: 'font-body-heavy',
+}
+
+const displayWeightStyles: Record<TextWeight, string> = {
+  light: 'font-display-bold',
+  regular: 'font-display-bold',
+  medium: 'font-display-bold',
+  semibold: 'font-display-bold',
+  bold: 'font-display-bold',
+  extrabold: 'font-display',
 }
 
 const alignStyles: Record<TextAlign, string> = {
@@ -62,31 +149,28 @@ const alignStyles: Record<TextAlign, string> = {
   right: 'text-right',
 }
 
-const weightStyles: Record<TextWeight, string> = {
-  light: 'font-light',
-  regular: 'font-regular',
-  medium: 'font-medium',
-  semibold: 'font-semibold',
-  bold: 'font-bold',
-  extrabold: 'font-extrabold',
-}
-
 export function Text({
   variant = 'body',
   weight,
-  color = 'primary',
+  color = 'default',
   align,
   className,
   ...props
 }: TextProps) {
+  const weightClass = weight
+    ? DISPLAY_VARIANTS.has(variant)
+      ? displayWeightStyles[weight]
+      : bodyWeightStyles[weight]
+    : undefined
+
   return (
     <RNText
       {...props}
       className={cn(
-        variantStyles[variant],
-        colorStyles[color],
+        textVariantStyles[variant],
+        textColorStyles[color],
+        weightClass,
         align && alignStyles[align],
-        weight && weightStyles[weight],
         className
       )}
     />

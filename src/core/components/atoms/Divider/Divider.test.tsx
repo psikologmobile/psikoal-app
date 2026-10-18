@@ -10,13 +10,13 @@ describe('Divider', () => {
     const el = UNSAFE_getByProps({ accessibilityRole: 'none' })
     expect(el).toBeTruthy()
     expect(el.props.className).toContain('w-full')
-    expect(el.props.className).toContain('h-px')
+    expect(el.props.className).toContain('h-[1.5px]')
   })
 
   it('renders vertical divider', () => {
     const { UNSAFE_getByProps } = render(<Divider orientation="vertical" />)
     const el = UNSAFE_getByProps({ accessibilityRole: 'none' })
-    expect(el.props.className).toContain('w-px')
+    expect(el.props.className).toContain('w-[1.5px]')
     expect(el.props.className).toContain('self-stretch')
   })
 

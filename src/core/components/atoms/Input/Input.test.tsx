@@ -25,7 +25,7 @@ describe('Input', () => {
     const { UNSAFE_getByType } = render(<Input value="" onChangeText={jest.fn()} state="error" />)
     const { View } = require('react-native')
     const container = UNSAFE_getByType(View)
-    expect(container.props.className).toContain('border-semantic-error')
+    expect(container.props.className).toContain('border-danger')
   })
 
   it('applies disabled styles and prevents interaction when state is disabled', () => {
@@ -44,14 +44,14 @@ describe('Input', () => {
     const input = getByDisplayValue('secret')
     expect(input.props.secureTextEntry).toBe(true)
 
-    fireEvent.press(getByLabelText('Show password'))
+    fireEvent.press(getByLabelText('Şifreyi göster'))
     expect(getByDisplayValue('secret').props.secureTextEntry).toBe(false)
   })
 
   it('shows "Hide password" label after toggling secure to visible', () => {
     const { getByLabelText } = render(<Input value="secret" onChangeText={jest.fn()} isSecure />)
-    fireEvent.press(getByLabelText('Show password'))
-    expect(getByLabelText('Hide password')).toBeTruthy()
+    fireEvent.press(getByLabelText('Şifreyi göster'))
+    expect(getByLabelText('Şifreyi gizle')).toBeTruthy()
   })
 
   it('renders correctly with multiline', () => {
@@ -87,20 +87,20 @@ describe('Input', () => {
   })
 
   it('shows clear button when value is non-empty and no rightElement', () => {
-    const { getByLabelText } = render(<Input value="hello" onChangeText={jest.fn()} />)
-    expect(getByLabelText('Clear input')).toBeTruthy()
+    const { getByLabelText } = render(<Input value="hello" onChangeText={jest.fn()} clearable />)
+    expect(getByLabelText('Temizle')).toBeTruthy()
   })
 
   it('clears value when clear button is pressed', () => {
     const onChangeText = jest.fn()
-    const { getByLabelText } = render(<Input value="hello" onChangeText={onChangeText} />)
-    fireEvent.press(getByLabelText('Clear input'))
+    const { getByLabelText } = render(<Input value="hello" onChangeText={onChangeText} clearable />)
+    fireEvent.press(getByLabelText('Temizle'))
     expect(onChangeText).toHaveBeenCalledWith('')
   })
 
   it('does not show clear button when value is empty', () => {
-    const { queryByLabelText } = render(<Input value="" onChangeText={jest.fn()} />)
-    expect(queryByLabelText('Clear input')).toBeNull()
+    const { queryByLabelText } = render(<Input value="" onChangeText={jest.fn()} clearable />)
+    expect(queryByLabelText('Temizle')).toBeNull()
   })
 
   it('renders all sizes without crashing', () => {
@@ -125,5 +125,36 @@ describe('Input', () => {
       />
     )
     expect(getByLabelText).toBeDefined()
+  })
+
+  it('switches border to primary on focus and back on blur', () => {
+    const { getByDisplayValue, UNSAFE_getByType } = render(
+      <Input value="odak" onChangeText={jest.fn()} />
+    )
+    const { View } = require('react-native')
+    fireEvent(getByDisplayValue('odak'), 'focus')
+    expect(UNSAFE_getByType(View).props.className).toContain('border-primary')
+    fireEvent(getByDisplayValue('odak'), 'blur')
+    expect(UNSAFE_getByType(View).props.className).toContain('border-border-strong')
+  })
+
+  it('does not show clear button without clearable, and renders a custom right element', () => {
+    const { queryByLabelText, getByText } = render(
+      <Input
+        value="x"
+        onChangeText={jest.fn()}
+        rightElement={<React.Fragment>{null}</React.Fragment>}
+        placeholder="r"
+      />
+    )
+    expect(queryByLabelText('Temizle')).toBeNull()
+    expect(getByText).toBeDefined()
+  })
+
+  it('sets a minimum height for multiline input', () => {
+    const { getByDisplayValue } = render(
+      <Input value="çok" onChangeText={jest.fn()} multiline minHeight={120} />
+    )
+    expect(getByDisplayValue('çok').props.style).toEqual({ maxHeight: 180, minHeight: 120 })
   })
 })

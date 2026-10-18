@@ -45,7 +45,7 @@ describe('Avatar', () => {
   })
 
   it('renders all sizes without crashing', () => {
-    const sizes = ['xs', 'sm', 'md', 'lg', 'xl', '2xl'] as const
+    const sizes = ['xs', 'sm', 'md', 'lg', 'xl', '2xl', 'hero'] as const
     sizes.forEach((size) => {
       const { unmount } = render(<Avatar initials="AB" size={size} />)
       unmount()
@@ -55,6 +55,23 @@ describe('Avatar', () => {
   it('has accessibilityRole image', () => {
     const { UNSAFE_getByProps } = render(<Avatar initials="AB" />)
     expect(UNSAFE_getByProps({ accessibilityRole: 'image' })).toBeTruthy()
+  })
+})
+
+describe('Avatar v2', () => {
+  it('applies tone classes and ring', () => {
+    const tones = ['accent', 'primary', 'surface'] as const
+    tones.forEach((tone) => {
+      const { UNSAFE_getByProps, unmount } = render(<Avatar initials="ZY" tone={tone} ring />)
+      const el = UNSAFE_getByProps({ accessibilityRole: 'image' })
+      expect(el.props.className).toContain('border-bg')
+      unmount()
+    })
+  })
+
+  it('shows a verified badge instead of the custom badge', () => {
+    const { getByLabelText } = render(<Avatar initials="EK" isVerified />)
+    expect(getByLabelText('Doğrulanmış')).toBeTruthy()
   })
 })
 
