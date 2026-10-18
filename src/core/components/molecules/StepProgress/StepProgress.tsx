@@ -20,6 +20,7 @@ export type StepProgressProps = {
 
 const FILL_TIMING = { duration: 420, easing: Easing.out(Easing.cubic) }
 
+/** @deprecated → atoms/ProgressSegments (parçalı adım çubuğu). */
 export function StepProgress({ current, total, label }: StepProgressProps) {
   const reducedMotion = useReducedMotion()
   const [trackWidth, setTrackWidth] = useState(0)
@@ -37,23 +38,25 @@ export function StepProgress({ current, total, label }: StepProgressProps) {
     <View className="gap-2">
       <View className="flex-row items-center justify-between">
         {label ? (
-          <Text variant="caption" className="font-medium text-sky-100">
+          <Text variant="caption" className="font-body-bold text-fg-muted">
             {label}
           </Text>
         ) : (
           <View />
         )}
-        <Text variant="caption" className="text-sky-100">
+        <Text variant="caption" className="font-body-bold text-fg-muted">
           {current}/{total}
         </Text>
       </View>
       <View
-        className="h-1.5 overflow-hidden rounded-full bg-sky-600 dark:bg-sky-900"
+        className="h-1.5 overflow-hidden rounded-full bg-border"
         onLayout={(e) => setTrackWidth(e.nativeEvent.layout.width)}
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 0, max: total, now: current }}
       >
-        <Animated.View className="h-full rounded-full bg-white" style={fillStyle} />
+        <Animated.View style={[{ height: '100%' }, fillStyle]}>
+          <View className="flex-1 rounded-full bg-primary" />
+        </Animated.View>
       </View>
     </View>
   )

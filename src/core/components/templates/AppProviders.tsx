@@ -8,6 +8,7 @@ import { useColorScheme } from 'nativewind'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
+import { ToastProvider } from '@/core/components/organisms/Toast'
 import { queryClient } from '@/lib/queryClient'
 
 type AppProvidersProps = {
@@ -22,8 +23,8 @@ export function AppProviders({ children }: AppProvidersProps) {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           {/* REASON: color-scheme, css-interop'un desteklediği ama RN tiplerinin tanımadığı bir stil özelliğidir */}
-          <View className="flex-1" style={{ colorScheme } as unknown as ViewStyle}>
-            {children}
+          <View className="flex-1 bg-bg" style={{ colorScheme } as unknown as ViewStyle}>
+            <ToastProvider>{children}</ToastProvider>
           </View>
         </QueryClientProvider>
       </SafeAreaProvider>

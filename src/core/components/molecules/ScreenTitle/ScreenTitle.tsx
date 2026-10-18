@@ -29,7 +29,7 @@ export function ScreenTitle({
       style={topInset ? { paddingTop: insets.top + 8 } : undefined}
       className={cn('items-center pb-3 pt-2', className)}
     >
-      <Text variant="label" className={cn('font-semibold', titleClassName)}>
+      <Text variant="title" className={titleClassName}>
         {title}
       </Text>
       {children}

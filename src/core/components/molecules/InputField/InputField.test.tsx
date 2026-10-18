@@ -73,8 +73,7 @@ describe('InputField', () => {
     const { View } = require('react-native')
     const views = UNSAFE_getAllByType(View)
     const hasErrorBorder = views.some(
-      (v) =>
-        typeof v.props.className === 'string' && v.props.className.includes('border-semantic-error')
+      (v) => typeof v.props.className === 'string' && v.props.className.includes('border-danger')
     )
     expect(hasErrorBorder).toBe(true)
   })
