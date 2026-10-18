@@ -1,0 +1,131 @@
+/* =========================================================================
+   PsikoAl · Tasarım tokenları (web)
+   Palet: %80 Tailwind zinc · %20 Tailwind sky · hata için red
+   Kural: gölge yok, gradyan yok. Derinlik = yüzey tonu + 1.5px çizgi.
+   Kullanım: <html data-theme="light|dark"> ya da prefers-color-scheme.
+   ========================================================================= */
+
+:root,
+[data-theme="light"] {
+  /* --- Nötr (zinc) --- */
+  --color-bg:              #FAFAFA; /* zinc-50  · sayfa zemini */
+  --color-surface:         #F4F4F5; /* zinc-100 · kart, input zemini */
+  --color-border:          #E4E4E7; /* zinc-200 · ayraç, kart çizgisi */
+  --color-border-strong:   #D4D4D8; /* zinc-300 · outline düğme, input */
+  --color-text:            #18181B; /* zinc-900 · ana yazı */
+  --color-text-muted:      #52525B; /* zinc-600 · ikincil yazı */
+
+  /* --- Vurgu (sky) --- */
+  --color-primary:         #0EA5E9; /* sky-500 · ana düğme, seçili, rozet (iki temada aynı) */
+  --color-on-primary:      #082F49; /* sky-950 · primary üstündeki yazı */
+  --color-primary-text:    #0369A1; /* sky-700 · primary renkli metin/ikon */
+  --color-accent:          #BAE6FD; /* sky-200 · vurgu yüzeyi (hero, seçili sekme) */
+  --color-on-accent:       #082F49; /* sky-950 */
+  --color-on-accent-muted: #075985; /* sky-800 */
+  --color-accent-line:     #7DD3FC; /* sky-300 · vurgu yüzeyindeki çizgi/dekor */
+  --color-accent-soft:     #E0F2FE; /* sky-100 · çip, bilgi kutusu */
+  --color-on-accent-soft:  #075985; /* sky-800 */
+  --color-link:            #0369A1; /* sky-700 · bağlantı, metin düğme */
+
+  /* --- Hata (red) --- */
+  --color-danger:          #DC2626; /* red-600 · hata çizgisi, ikon */
+  --color-danger-soft:     #FEF2F2; /* red-50  · hata kutusu zemini */
+  --color-on-danger-soft:  #B91C1C; /* red-700 · hata kutusu yazısı */
+  --color-danger-fill:     #DC2626; /* yıkıcı düğme dolgusu (iki temada aynı) */
+  --color-on-danger:       #FFFFFF;
+
+  --color-scrim:           rgba(9, 9, 11, .45);
+  --color-focus:           #0EA5E9;
+}
+
+[data-theme="dark"] {
+  --color-bg:              #09090B; /* zinc-950 */
+  --color-surface:         #18181B; /* zinc-900 */
+  --color-border:          #27272A; /* zinc-800 */
+  --color-border-strong:   #3F3F46; /* zinc-700 */
+  --color-text:            #FAFAFA; /* zinc-50  */
+  --color-text-muted:      #A1A1AA; /* zinc-400 */
+
+  --color-primary:         #0EA5E9; /* sky-500 · sabit */
+  --color-on-primary:      #082F49;
+  --color-primary-text:    #38BDF8; /* sky-400 */
+  --color-accent:          #082F49; /* sky-950 */
+  --color-on-accent:       #E0F2FE; /* sky-100 */
+  --color-on-accent-muted: #7DD3FC; /* sky-300 */
+  --color-accent-line:     #0C4A6E; /* sky-900 */
+  --color-accent-soft:     #0C4A6E; /* sky-900 */
+  --color-on-accent-soft:  #E0F2FE; /* sky-100 */
+  --color-link:            #7DD3FC; /* sky-300 */
+
+  --color-danger:          #F87171; /* red-400 */
+  --color-danger-soft:     #450A0A; /* red-950 */
+  --color-on-danger-soft:  #FCA5A5; /* red-300 */
+  --color-danger-fill:     #DC2626;
+  --color-on-danger:       #FFFFFF;
+
+  --color-scrim:           rgba(0, 0, 0, .6);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #09090B; --color-surface: #18181B; --color-border: #27272A; --color-border-strong: #3F3F46;
+    --color-text: #FAFAFA; --color-text-muted: #A1A1AA;
+    --color-primary-text: #38BDF8; --color-accent: #082F49; --color-on-accent: #E0F2FE; --color-on-accent-muted: #7DD3FC;
+    --color-accent-line: #0C4A6E; --color-accent-soft: #0C4A6E; --color-on-accent-soft: #E0F2FE; --color-link: #7DD3FC;
+    --color-danger: #F87171; --color-danger-soft: #450A0A; --color-on-danger-soft: #FCA5A5; --color-scrim: rgba(0,0,0,.6);
+  }
+}
+
+:root {
+  /* --- Tipografi --- */
+  --font-display: "Bricolage Grotesque", system-ui, sans-serif; /* başlıklar, büyük rakamlar · 700/800 */
+  --font-body: "Figtree", system-ui, sans-serif;                /* gövde ve arayüz · 400–800 */
+
+  --text-hero: 56px;     /* web hero 56–68, mobil 40–44 */
+  --text-h1: 40px;       /* ekran başlığı (karşılama, onboarding) */
+  --text-h2: 34px;       /* sekme sayfası başlığı */
+  --text-h3: 28px;       /* alt sayfa başlığı, sheet başlığı 24 */
+  --text-title: 20px;    /* bölüm başlığı */
+  --text-lg: 17px;       /* düğme, öne çıkan gövde */
+  --text-md: 15px;       /* gövde, liste */
+  --text-sm: 14px;       /* yardımcı metin */
+  --text-xs: 13px;       /* etiket, meta */
+  --text-2xs: 12px;      /* rozet, overline */
+
+  --leading-tight: 1.05; --leading-snug: 1.3; --leading-body: 1.5; --leading-read: 1.65;
+  --tracking-display: -0.02em; --tracking-hero: -0.03em; --tracking-overline: .08em;
+
+  /* --- Köşe --- */
+  --radius-xs: 8px; --radius-sm: 12px; --radius-md: 14px; --radius-lg: 16px; --radius-xl: 18px;
+  --radius-2xl: 22px; --radius-3xl: 24px; --radius-4xl: 28px; --radius-sheet: 30px; --radius-pill: 999px;
+
+  /* --- Boşluk (4'lük ızgara + yarım adımlar) --- */
+  --space-1: 4px; --space-1h: 6px; --space-2: 8px; --space-2h: 10px; --space-3: 12px; --space-3h: 14px;
+  --space-4: 16px; --space-4h: 18px; --space-5: 20px; --space-6: 24px; --space-7: 28px; --space-8: 32px;
+  --space-10: 40px; --space-14: 56px; --space-18: 72px;
+
+  /* --- Çizgi ve boyut --- */
+  --border-width: 1.5px;
+  --touch-min: 44px;
+  --btn-sm: 44px; --btn-md: 50px; --btn-lg: 56px; --btn-xl: 58px;
+  --input-h: 52px;
+  --tabbar-h: 72px; --tabbar-inset: 12px;
+  --screen-x: 20px;         /* mobil yatay kenar boşluğu */
+  --screen-top: 56px;       /* mobil üst boşluk (status bar hariç) */
+  --web-sidebar: 248px; --web-rail: 84px; --web-max: 1200px;
+
+  /* --- Hareket --- */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);   /* standart giriş/çıkış */
+  --ease-spring: cubic-bezier(.3, 1.3, .5, 1); /* hafif taşma (eşleşme, karşılama halkası) */
+  --ease-linear: linear;
+  --dur-press: 150ms;   /* basma geri bildirimi */
+  --dur-fast: 250ms;    /* renk, fade, chevron, scrim */
+  --dur-base: 400ms;    /* pop, checkbox, sekme kaydırma 300 */
+  --dur-enter: 550ms;   /* liste/kart girişi */
+  --dur-slow: 900ms;    /* ilerleme çubuğu, eşleşme */
+  --stagger: 60ms;      /* mobil sıralı giriş (web: 80ms) */
+}
+
+/* Erişilebilirlik */
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
