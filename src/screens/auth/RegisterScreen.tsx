@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 
 import type { RegisterRequest, UserRole } from '@/domains/auth'
 import type { z } from 'zod'
@@ -49,7 +49,9 @@ export function RegisterScreen() {
   const pendingCode = useReferralStore((s) => s.pendingCode)
   const setOnboardIntent = useOnboardingStore((s) => s.setOnboardIntent)
   const [step, setStep] = useState<0 | 1>(0)
-  const [role, setRole] = useState<UserRole>('client')
+  // Siteden "Uzman olarak başvur" ile gelindiyse (/register?role=expert) uzman seçili başlar.
+  const { role: roleParam } = useLocalSearchParams<{ role?: string }>()
+  const [role, setRole] = useState<UserRole>(roleParam === 'expert' ? 'expert' : 'client')
   const { mutate: register, isPending, error, reset } = useRegisterMutation()
 
   const {

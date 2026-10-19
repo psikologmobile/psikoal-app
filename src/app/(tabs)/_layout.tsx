@@ -5,7 +5,7 @@ import { Platform } from 'react-native'
 import { Tabs } from 'expo-router/js-tabs'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { useRouter, useSegments } from 'expo-router'
+import { Redirect, useRouter, useSegments } from 'expo-router'
 
 import type { NavIconName } from '@/core/components/atoms/NavIcon'
 import type { BottomTabBarProps } from 'expo-router/js-tabs'
@@ -24,6 +24,7 @@ import { useAuthStore } from '@/domains/auth'
 import { useExpertApprovalGate } from '@/domains/expert'
 import { useUnreadNotificationCount } from '@/domains/notification'
 import { useWalletQuery } from '@/domains/wallet'
+import { SiteLandingScreen, useWebLandingGate } from '@/screens/site'
 
 /** Role göre 4 sekme (docs/design-v2/components.md §4). */
 const TABS: Record<'expert' | 'client', Record<string, { title: string; icon: NavIconName }>> = {
@@ -106,7 +107,7 @@ function WebSidebar(props: BottomTabBarProps & { isExpert: boolean }) {
   )
 }
 
-export default function TabsLayout() {
+function AppTabsLayout() {
   const router = useRouter()
   const colors = useThemeColors()
   const role = useAuthStore((s) => s.role)
@@ -166,4 +167,17 @@ export default function TabsLayout() {
       })}
     </Tabs>
   )
+}
+
+/**
+ * Web'de site ve uygulama tek derleme: oturumsuz ziyaretçi `/` adresinde tanıtımı
+ * (statik HTML) görür, diğer sekme adreslerinde girişe gider. Native'de doğrudan
+ * sekmeler (oturum yönlendirmesi AppTabsLayout içinde).
+ */
+export default function TabsLayout() {
+  const gate = useWebLandingGate()
+  if (gate === 'landing') return <SiteLandingScreen />
+  if (gate === 'login') return <Redirect href="/(auth)/login" />
+  if (gate === 'wait') return null
+  return <AppTabsLayout />
 }

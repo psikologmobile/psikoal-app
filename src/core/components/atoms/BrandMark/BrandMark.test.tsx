@@ -25,4 +25,11 @@ describe('BrandMark', () => {
     const { getByLabelText } = render(<BrandMark className="self-start" />)
     expect(getByLabelText(BRAND_NAME).props.className).toContain('self-start')
   })
+
+  it('is a header by default and can opt out', () => {
+    const { getByLabelText, rerender } = render(<BrandMark />)
+    expect(getByLabelText(BRAND_NAME).props.accessibilityRole).toBe('header')
+    rerender(<BrandMark asHeader={false} />)
+    expect(getByLabelText(BRAND_NAME).props.accessibilityRole).toBeUndefined()
+  })
 })
