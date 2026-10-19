@@ -1,24 +1,32 @@
 import type { ReactNode } from 'react'
 
-import { ActivityIndicator, Pressable } from 'react-native'
+import type { IconName } from '@/core/components/atoms/Icon'
+import type { ThemeColors } from '@/core/theme'
 
-import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated'
-
-import * as Haptics from 'expo-haptics'
-
+import { Icon } from '@/core/components/atoms/Icon'
+import { Spinner } from '@/core/components/atoms/Spinner'
 import { Text } from '@/core/components/atoms/Text'
+import { PressableScale } from '@/core/motion'
+import { useThemeColors } from '@/core/theme'
 import { cn } from '@/core/utils/cn'
 
 export type ButtonVariant =
   | 'primary'
   | 'secondary'
-  | 'ghost'
-  | 'danger'
-  | 'accent'
+  | 'outline'
   | 'link'
+  | 'danger'
+  | 'danger-outline'
+  /** @deprecated → outline */
+  | 'ghost'
+  /** @deprecated → secondary */
+  | 'accent'
+  /** @deprecated → primary */
   | 'success'
+  /** @deprecated → secondary */
   | 'inverse'
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg'
+
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'xl' | /** @deprecated → sm */ 'xs'
 
 export type ButtonProps = {
   label: string
@@ -26,12 +34,18 @@ export type ButtonProps = {
   variant?: ButtonVariant
   size?: ButtonSize
   isLoading?: boolean
+  /** Yüklenirken gösterilecek metin ("Gönderiliyor…"). Varsayılan: label. */
+  loadingLabel?: string
   isDisabled?: boolean
+  /** Lucide ikon adı — rengi varyanta göre otomatik verilir. */
+  icon?: IconName
+  iconPosition?: 'left' | 'right'
   leftIcon?: ReactNode
   rightIcon?: ReactNode
   fullWidth?: boolean
   width?: number
   className?: string
+  accessibilityHint?: string
   /**
    * E2E tutamağı. Android'de `resource-id`, iOS'ta `accessibilityIdentifier` olarak
    * dışa vurulur; Maestro akışları bu değere `id:` seçicisiyle bağlanır.
@@ -40,147 +54,167 @@ export type ButtonProps = {
   testID?: string
 }
 
-const variantStyles: Record<ButtonVariant, string> = {
-  primary:
-    'bg-brand border border-sky-400 active:bg-brand-hover dark:bg-sky-400 dark:border-sky-300 dark:active:bg-sky-300',
-  secondary:
-    'bg-brand-subtle border border-brand-border active:bg-brand-muted dark:bg-sky-950 dark:border-sky-800 dark:active:bg-sky-900',
-  ghost:
-    'border border-border active:bg-surface-sunken dark:border-dark-border dark:active:bg-dark-elevated',
-  danger:
-    'bg-semantic-error-light border border-semantic-error active:bg-red-100 dark:bg-red-950 dark:border-red-800 dark:active:bg-red-900',
-  accent: 'bg-accent border border-accent-border active:bg-accent-hover',
-  link: 'px-0',
-  success:
-    'bg-green-600 border border-green-200 active:bg-green-700 dark:bg-green-600 dark:border-green-200 dark:active:bg-green-700',
-  inverse: 'bg-white border border-white active:bg-sky-50',
+type CoreVariant = 'primary' | 'secondary' | 'outline' | 'link' | 'danger' | 'danger-outline'
+
+const LEGACY: Record<ButtonVariant, CoreVariant> = {
+  primary: 'primary',
+  secondary: 'secondary',
+  outline: 'outline',
+  link: 'link',
+  danger: 'danger',
+  'danger-outline': 'danger-outline',
+  ghost: 'outline',
+  accent: 'secondary',
+  success: 'primary',
+  inverse: 'secondary',
 }
 
-const sizeStyles: Record<ButtonSize, string> = {
-  xs: 'h-8  px-3   rounded-lg',
-  sm: 'h-9  px-3.5 rounded-xl',
-  md: 'h-11 px-5   rounded-xl',
-  lg: 'h-13 px-6   rounded-xl',
+export const buttonVariantStyles: Record<CoreVariant, string> = {
+  primary: 'bg-primary',
+  secondary: 'bg-accent',
+  outline: 'border border-border-strong bg-transparent',
+  link: 'bg-transparent',
+  danger: 'bg-danger-fill',
+  'danger-outline': 'border border-danger bg-danger-soft',
 }
 
-const labelVariantStyles: Record<ButtonVariant, string> = {
-  primary: 'text-white',
-  secondary: 'text-brand-text',
-  ghost: 'text-content-primary',
-  danger: 'text-semantic-error-dark',
-  accent: 'text-content-inverse',
-  link: 'text-content-link underline',
-  success: 'text-white',
-  inverse: 'text-sky-700 dark:text-sky-700',
+const labelStyles: Record<CoreVariant, string> = {
+  primary: 'text-primary-fg font-body-heavy',
+  secondary: 'text-accent-fg font-body-bold',
+  outline: 'text-fg font-body-bold',
+  link: 'text-link font-body-bold',
+  danger: 'text-danger-fg font-body-heavy',
+  'danger-outline': 'text-danger-soft-fg font-body-bold',
 }
 
-const labelSizeStyles: Record<ButtonSize, 'xs' | 'sm' | 'base' | 'base'> = {
-  xs: 'xs',
-  sm: 'sm',
-  md: 'base',
-  lg: 'base',
+const spinnerStyles: Record<CoreVariant, string> = {
+  primary: 'border-primary-fg',
+  secondary: 'border-accent-fg',
+  outline: 'border-fg',
+  link: 'border-link',
+  danger: 'border-danger-fg',
+  'danger-outline': 'border-danger-soft-fg',
 }
 
-const indicatorColor: Record<ButtonVariant, string> = {
-  primary: '#FFFFFF',
-  secondary: '#0EA5E9',
-  ghost: '#171717',
-  danger: '#7F1D1D',
-  accent: '#FFFFFF',
-  link: '#0EA5E9',
-  success: '#FFFFFF',
-  inverse: '#0369A1',
+function iconColor(v: CoreVariant, c: ThemeColors, disabled: boolean) {
+  if (disabled) return c.textMuted
+  switch (v) {
+    case 'primary':
+      return c.onPrimary
+    case 'secondary':
+      return c.onAccent
+    case 'outline':
+      return c.text
+    case 'link':
+      return c.link
+    case 'danger':
+      return c.onDanger
+    case 'danger-outline':
+      return c.onDangerSoft
+  }
 }
 
-const SPRING_CONFIG = { mass: 0.5, stiffness: 400, damping: 20 }
+export const buttonSizeStyles: Record<Exclude<ButtonSize, 'xs'>, string> = {
+  sm: 'h-btn-sm px-4 rounded-sm',
+  md: 'h-btn-md px-5 rounded-md',
+  lg: 'h-btn-lg px-6 rounded-lg',
+  xl: 'h-btn-xl px-6 rounded-xl',
+}
 
+const labelSize: Record<Exclude<ButtonSize, 'xs'>, string> = {
+  sm: 'text-body-sm',
+  md: 'text-body',
+  lg: 'text-base',
+  xl: 'text-button',
+}
+
+const ICON_SIZE = { sm: 16, md: 18, lg: 18, xl: 20 } as const
+
+/**
+ * Düğme — components.md §1. Basınca .96, haptic, en az 44 px.
+ * Disabled: 1,5 px KESİKLİ border-strong + text-muted (opaklık değil).
+ * Loading: spinner + `loadingLabel`.
+ */
 export function Button({
   label,
   onPress,
   variant = 'primary',
   size = 'md',
   isLoading = false,
+  loadingLabel,
   isDisabled = false,
+  icon,
+  iconPosition = 'left',
   leftIcon,
   rightIcon,
   fullWidth = false,
   width,
   className,
+  accessibilityHint,
   testID,
 }: ButtonProps) {
-  const scale = useSharedValue(1)
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }))
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.96, SPRING_CONFIG)
-  }
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, SPRING_CONFIG)
-  }
-
-  const handlePress = () => {
-    const hapticStyle =
-      variant === 'ghost' || variant === 'link'
-        ? Haptics.ImpactFeedbackStyle.Light
-        : Haptics.ImpactFeedbackStyle.Medium
-    Haptics.impactAsync(hapticStyle).catch(() => undefined)
-    onPress()
-  }
-
+  const colors = useThemeColors()
+  const v = LEGACY[variant]
+  const s = size === 'xs' ? 'sm' : size
   const disabled = isDisabled || isLoading
+  const showDisabledLook = isDisabled && !isLoading
+
+  const iconNode = icon ? (
+    <Icon
+      name={icon}
+      size={ICON_SIZE[s]}
+      color={iconColor(v, colors, showDisabledLook)}
+      strokeWidth={2.4}
+    />
+  ) : null
 
   return (
-    <Animated.View
-      style={[
-        animatedStyle,
-        fullWidth
-          ? { width: '100%' }
-          : width
-            ? { width, alignSelf: 'center' as const }
-            : { alignSelf: 'flex-start' as const },
-      ]}
+    <PressableScale
+      testID={testID}
+      onPress={onPress}
+      disabled={disabled}
+      haptics={v === 'link' || v === 'outline' ? 'light' : 'medium'}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled, busy: isLoading }}
+      wrapperClassName={fullWidth ? 'w-full' : width ? undefined : 'self-start'}
+      // REASON: sabit genişlik prop'tan gelir (ör. iki düğmeli satırda eşit genişlik)
+      style={width ? { width } : undefined}
+      className={cn(
+        'flex-row items-center justify-center gap-2',
+        buttonSizeStyles[s],
+        showDisabledLook
+          ? 'border border-dashed border-border-strong bg-transparent'
+          : buttonVariantStyles[v],
+        v === 'link' && 'px-2',
+        isLoading && 'opacity-90',
+        fullWidth && 'w-full',
+        className
+      )}
     >
-      <Pressable
-        testID={testID}
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        disabled={disabled}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityState={{ disabled, busy: isLoading }}
-        className={cn(
-          'flex-row items-center justify-center gap-2',
-          variantStyles[variant],
-          sizeStyles[size],
-          disabled && 'opacity-40',
-          fullWidth && 'w-full',
-          className
-        )}
-      >
-        {isLoading ? (
-          <ActivityIndicator
-            size="small"
-            color={indicatorColor[variant]}
-            accessibilityLabel="Loading"
-          />
-        ) : (
-          <>
-            {leftIcon}
-            <Text
-              variant="label"
-              className={cn(labelVariantStyles[variant], `text-${labelSizeStyles[size]}`)}
-            >
-              {label}
-            </Text>
-            {rightIcon}
-          </>
-        )}
-      </Pressable>
-    </Animated.View>
+      {isLoading ? (
+        <>
+          <Spinner size={18} colorClassName={spinnerStyles[v]} />
+          <Text className={cn(labelStyles[v], labelSize[s])}>{loadingLabel ?? label}</Text>
+        </>
+      ) : (
+        <>
+          {iconPosition === 'left' && iconNode}
+          {leftIcon}
+          <Text
+            className={cn(
+              labelStyles[v],
+              labelSize[s],
+              showDisabledLook && 'text-fg-muted font-body-bold'
+            )}
+          >
+            {label}
+          </Text>
+          {rightIcon}
+          {iconPosition === 'right' && iconNode}
+        </>
+      )}
+    </PressableScale>
   )
 }

@@ -16,7 +16,12 @@ module.exports = {
   Animated,
   useSharedValue: (init) => ({ value: init }),
   useAnimatedStyle: (fn) => fn(),
-  withTiming: (toValue) => toValue,
+  useAnimatedProps: (fn) => fn(),
+  // Geri çağırma hemen "bitti" olarak çalışır (usePresence ayrılmayı bekler).
+  withTiming: (toValue, _config, callback) => {
+    if (typeof callback === 'function') callback(true)
+    return toValue
+  },
   withSpring: (toValue) => toValue,
   withRepeat: (animation) => animation,
   withSequence: (...animations) => animations[animations.length - 1],
@@ -37,6 +42,7 @@ module.exports = {
   SlideInRight: { duration: jest.fn().mockReturnThis() },
   SlideOutLeft: { duration: jest.fn().mockReturnThis() },
   Layout: { duration: jest.fn().mockReturnThis() },
+  ReduceMotion: { System: 'system', Always: 'always', Never: 'never' },
   Easing: {
     linear: (t) => t,
     ease: (t) => t,

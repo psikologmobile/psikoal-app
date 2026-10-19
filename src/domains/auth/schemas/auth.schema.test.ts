@@ -34,3 +34,23 @@ describe('RegisterRequestSchema — KVKK onayları', () => {
     expect(RegisterRequestSchema.safeParse(withoutConsent).success).toBe(false)
   })
 })
+
+describe('RegisterRequestSchema — davet kodu (Revize 2 §7)', () => {
+  it('kodu kırpar ve büyük harfe çevirir', () => {
+    expect(RegisterRequestSchema.parse({ ...valid, referralCode: ' k7m2px9q ' }).referralCode).toBe(
+      'K7M2PX9Q'
+    )
+  })
+
+  it('boş kod gönderilmez', () => {
+    expect(
+      RegisterRequestSchema.parse({ ...valid, referralCode: '  ' }).referralCode
+    ).toBeUndefined()
+  })
+
+  it('32 karakterden uzun kodu reddeder', () => {
+    expect(
+      RegisterRequestSchema.safeParse({ ...valid, referralCode: 'A'.repeat(33) }).success
+    ).toBe(false)
+  })
+})

@@ -49,3 +49,47 @@ describe('MatchDetailSchema', () => {
     expect(result.success).toBe(true)
   })
 })
+
+describe('Revize 2: backend null alanları ve iki taraflı iletişim', () => {
+  it('ilan şehri/açıklaması, teklif başlığı null olabilir; uzman iletişimi gelir', () => {
+    const detail = {
+      ...buildMatchDetail('online'),
+      expert: {
+        id: UUID,
+        name: 'Mehmet Demir',
+        title: 'Uzman Psikolog',
+        initials: 'MD',
+        email: 'mehmet@example.com',
+        phone: '+905559998877',
+      },
+      listing: {
+        id: UUID,
+        title: 'Kaygı desteği',
+        description: null,
+        specialization: ['anksiyete'],
+        budgetMin: 800,
+        budgetMax: 1500,
+        budgetLabel: null,
+        preferredSessionType: 'online',
+        status: 'MATCHED',
+        city: null,
+      },
+      offer: { ...buildMatchDetail('online').offer, title: null },
+      clientReleasedAt: null,
+      expertReleasedAt: null,
+    }
+    const result = MatchDetailSchema.safeParse(detail)
+    expect(result.error?.issues ?? []).toEqual([])
+    expect(result.data?.expert?.phone).toBe('+905559998877')
+  })
+
+  it('gömülü ilan ve teklif null gelebilir', () => {
+    const result = MatchDetailSchema.safeParse({
+      ...buildMatchDetail('online'),
+      listing: null,
+      offer: null,
+      expert: null,
+    })
+    expect(result.error?.issues ?? []).toEqual([])
+  })
+})

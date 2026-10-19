@@ -2,22 +2,48 @@ import { useEffect } from 'react'
 
 import { Platform } from 'react-native'
 
-import { NativeTabs } from 'expo-router/unstable-native-tabs'
-import { useColorScheme } from 'nativewind'
+import { Tabs } from 'expo-router/js-tabs'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { Tabs, useRouter } from 'expo-router'
+import { Redirect, useRouter } from 'expo-router'
 
-import { Icon } from '@/core/components/atoms/Icon'
+import type { NavIconName } from '@/core/components/atoms/NavIcon'
+
+import { NavIcon } from '@/core/components/atoms/NavIcon'
+import { TabBar, useSidebarMode } from '@/core/components/organisms'
+import { size, useThemeColors } from '@/core/theme'
 import { useAuthStore } from '@/domains/auth'
 import { useExpertApprovalGate } from '@/domains/expert'
+import { AppSidebar } from '@/screens/shell'
+import { SiteLandingScreen, useWebLandingGate } from '@/screens/site'
 
-export default function TabsLayout() {
+/** Role göre 4 sekme (docs/design-v2/components.md §4). */
+const TABS: Record<'expert' | 'client', Record<string, { title: string; icon: NavIconName }>> = {
+  client: {
+    index: { title: 'Keşfet', icon: 'discover' },
+    offers: { title: 'İlanlarım', icon: 'listings' },
+    matches: { title: 'Eşleşmeler', icon: 'matches' },
+    profile: { title: 'Ayarlar', icon: 'settings' },
+  },
+  expert: {
+    index: { title: 'Fırsatlar', icon: 'opportunities' },
+    offers: { title: 'Tekliflerim', icon: 'offers' },
+    matches: { title: 'Eşleşmeler', icon: 'matches' },
+    profile: { title: 'Ayarlar', icon: 'settings' },
+  },
+}
+
+function AppTabsLayout() {
   const router = useRouter()
+  const colors = useThemeColors()
   const role = useAuthStore((s) => s.role)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const isExpert = role === 'expert'
-  const { colorScheme } = useColorScheme()
-  const isDark = colorScheme === 'dark'
+  const sidebarMode = useSidebarMode()
+  const isWeb = Platform.OS === 'web'
+  const insets = useSafeAreaInsets()
+  // Yüzen sekme çubuğu içeriğin üstüne biner; sahne çubuğun üstünde biter.
+  const tabBarReserve = size.tabBar.height + Math.max(size.tabBar.bottom, insets.bottom) + 8
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -35,107 +61,47 @@ export default function TabsLayout() {
     }
   }, [isAuthenticated, needsOnboarding, router])
 
-  if (Platform.OS === 'ios') {
-    return (
-      <NativeTabs>
-        <NativeTabs.Trigger name="index">
-          <NativeTabs.Trigger.Icon sf={isExpert ? 'doc.text.fill' : 'safari.fill'} />
-          <NativeTabs.Trigger.Label>{isExpert ? 'Fırsatlar' : 'Keşfet'}</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="offers">
-          <NativeTabs.Trigger.Icon sf={isExpert ? 'paperplane.fill' : 'list.bullet'} />
-          <NativeTabs.Trigger.Label>
-            {isExpert ? 'Tekliflerim' : 'İlanlarım'}
-          </NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="matches">
-          <NativeTabs.Trigger.Icon sf="person.2.fill" />
-          <NativeTabs.Trigger.Label>Eşleşmelerim</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-
-        <NativeTabs.Trigger name="profile">
-          <NativeTabs.Trigger.Icon sf="gearshape.fill" />
-          <NativeTabs.Trigger.Label>Ayarlar</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
-      </NativeTabs>
-    )
-  }
-
-  const tabBg = isDark ? '#1C1C1E' : '#FFFFFF'
-  const tabBorder = isDark ? '#38383A' : '#F0F0F0'
-  const tabActive = isDark ? '#38BDF8' : '#0EA5E9' // sky-400 dark / sky-500 light
-  const tabInactive = isDark ? '#525252' : '#A3A3A3' // neutral-600 dark / neutral-400 light
+  const tabs = TABS[isExpert ? 'expert' : 'client']
 
   return (
     <Tabs
+      tabBar={(props) => (isWeb ? <AppSidebar /> : <TabBar {...props} />)}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: tabActive,
-        tabBarInactiveTintColor: tabInactive,
-        tabBarStyle: {
-          backgroundColor: tabBg,
-          borderTopWidth: 1,
-          borderTopColor: tabBorder,
-          elevation: 0,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 6,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '600',
-          marginTop: 2,
+        tabBarPosition: isWeb ? (sidebarMode === 'top' ? 'top' : 'left') : 'bottom',
+        sceneStyle: {
+          backgroundColor: colors.bg,
+          paddingBottom: isWeb ? 0 : tabBarReserve,
         },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: isExpert ? 'Fırsatlar' : 'Keşfet',
-          tabBarIcon: ({ color, focused }) => (
-            <Icon
-              name={isExpert ? 'Briefcase' : 'Compass'}
-              size={22}
-              color={color}
-              strokeWidth={focused ? 2.25 : 1.75}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="offers"
-        options={{
-          title: isExpert ? 'Tekliflerim' : 'İlanlarım',
-          tabBarIcon: ({ color, focused }) => (
-            <Icon
-              name={isExpert ? 'Send' : 'ClipboardList'}
-              size={22}
-              color={color}
-              strokeWidth={focused ? 2.25 : 1.75}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="matches"
-        options={{
-          title: 'Eşleşmelerim',
-          tabBarIcon: ({ color, focused }) => (
-            <Icon name="Users" size={22} color={color} strokeWidth={focused ? 2.25 : 1.75} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Ayarlar',
-          tabBarIcon: ({ color, focused }) => (
-            <Icon name="Settings" size={22} color={color} strokeWidth={focused ? 2.25 : 1.75} />
-          ),
-        }}
-      />
+      {(['index', 'offers', 'matches', 'profile'] as const).map((name) => {
+        const tab = tabs[name]
+        if (!tab) return null
+        return (
+          <Tabs.Screen
+            key={name}
+            name={name}
+            options={{
+              title: tab.title,
+              tabBarIcon: ({ color }) => <NavIcon name={tab.icon} color={color} />,
+            }}
+          />
+        )
+      })}
     </Tabs>
   )
+}
+
+/**
+ * Web'de site ve uygulama tek derleme: oturumsuz ziyaretçi `/` adresinde tanıtımı
+ * (statik HTML) görür, diğer sekme adreslerinde girişe gider. Native'de doğrudan
+ * sekmeler (oturum yönlendirmesi AppTabsLayout içinde).
+ */
+export default function TabsLayout() {
+  const gate = useWebLandingGate()
+  if (gate === 'landing') return <SiteLandingScreen />
+  if (gate === 'login') return <Redirect href="/(auth)/login" />
+  if (gate === 'wait') return null
+  return <AppTabsLayout />
 }

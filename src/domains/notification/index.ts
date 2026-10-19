@@ -15,10 +15,14 @@ export {
   resolveNotificationRoute,
   NotificationTapDataSchema,
   NOTIFICATIONS_ROUTE,
+  WALLET_ROUTE,
+  WALLET_INVOICES_ROUTE,
 } from './utils/resolveNotificationRoute'
 export type { NotificationTapData } from './utils/resolveNotificationRoute'
 export { notificationKeys, NOTIFICATION_TYPE_CONFIG } from './notification.constants'
+export type { NotificationTone, NotificationTypeConfig } from './notification.constants'
 export {
+  NOTIFICATION_TYPES,
   NotificationSchema,
   NotificationTypeSchema,
   NotificationListResponseSchema,
@@ -28,3 +32,5 @@ export type {
   NotificationType,
   RegisterPushTokenBody,
 } from './types/notification.types'
+export { groupNotificationsByDay } from './utils/groupNotifications'
+export type { NotificationGroup } from './utils/groupNotifications'

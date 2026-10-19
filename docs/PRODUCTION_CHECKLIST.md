@@ -47,10 +47,10 @@
 ## Akışlar
 
 - [x] Eski danışan ödeme modeli (cüzdan, paketler, checkout, Iyzico) tamamen söküldü; danışandan para alınmaz.
-- [x] Uzman kredisi (Armut modeli, backend `docs/PAYMENTS.md`): ana sayfada bakiye kartı, Ayarlar → Kredilerim, `/credits` geçmişi (sayfalı, pull-to-refresh), teklif ekranında maliyet + bakiye; bakiye < maliyet ise gönderim kilitli. Teklif ve uygulama öne gelişi kredi sorgularını tazeler.
-- [x] **Mağaza kuralı (App Store 3.1.1 / Play ödeme politikası):** uygulamada satın alma butonu, bağlantı, adres veya fiyat YOK; yalnız düz metin "Kredi yüklemek için web sitemizi ziyaret edin." Yeni ekranlarda da bu korunmalı (`INSUFFICIENT_CREDITS_MESSAGE` testi bağlantı/fiyat içermediğini denetler).
-- [ ] **Backend:** CREDIT-1 dalı (`/credits/*`, `POST /offers` 422 `INSUFFICIENT_CREDITS`) yayına alınmalı; o zamana kadar uzman ana sayfasındaki bakiye kartı "—" gösterir. Canlı sözleşme testindeki kredi denetimleri uç yoksa (çıplak 404) kendini atlar.
-- [ ] Web sitesinde kredi satın alma sayfası (PayTR) — uygulama kapsamı dışında.
+- [x] Uzman TL bakiyesi (Revize 2, `docs/design-v2/API-REVIZE-2.md`, backend `docs/PAYMENTS.md`): ana sayfada bakiye kartı (ücretsiz hak sayısıyla), Ayarlar → Bakiyem, `/wallet` hareketleri (sayfalı, tür süzgeçli), `/wallet/invoices` faturalar (imzalı PDF adresi). Teklif ekranında ücret `/offers/quote`'tan gelir ve `expectedFeeKurus` ile geri gönderilir; 409 `OFFER_FEE_CHANGED` yeni ücreti gösterir, 422 `INSUFFICIENT_BALANCE` gönderimi kilitler. Teklif ve uygulama öne gelişi cüzdan sorgularını tazeler. (Ekranlar geçici iskelet; tasarım işi ayrı.)
+- [x] **Mağaza kuralı (App Store 3.1.1 / Play ödeme politikası):** MOBİL uygulamada yükleme düğmesi, bağlantı, adres veya fiyat listesi YOK; yalnız düz metin `INSUFFICIENT_BALANCE_MESSAGE` ("Bakiye yüklemek için web sitemizi ziyaret edin."). Web kenar çubuğundaki "Bakiye yükle" yalnız web'de çizilir ve `/bakiye` (PayTR) sayfasına gider.
+- [ ] **Backend:** Revize 2 dalı (`/wallet/*`, `/offers/quote`, `/listings/{id}/match`, claims, `/me/referrer`) yayına alınmalı. Canlı sözleşme testindeki cüzdan denetimleri uç yoksa (çıplak 404) kendini atlar.
+- [ ] Web `/bakiye` yükleme sayfası (PayTR iFrame; `useTopupOptionsQuery` + `usePayTrInitMutation` hazır) — ekran henüz yok.
 - [x] Öneriler (`/suggestions`) ve kullanılmayan `client/[id]` ekranı söküldü.
 - [x] "Yakında" uyarılarının tamamı gerçek akışa bağlandı (değerlendirme, bildirim ayarları, destek, yasal metinler, profil fotoğrafı).
 - [x] Profil fotoğrafı yükleme (`POST /auth/me/avatar`, JPEG/PNG/WebP ≤ 5 MB).

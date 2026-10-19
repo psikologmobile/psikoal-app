@@ -7,6 +7,7 @@ import {
   axiosInstance,
   get,
   getErrorMessage,
+  isApiErrorCode,
   post,
   toApiError,
 } from './api'
@@ -169,6 +170,27 @@ describe('toApiError / getErrorMessage', () => {
     [418, ERROR_MESSAGES.unknown],
   ])('status %i without a body falls back to Turkish', (status, message) => {
     expect(toApiError(status, null).message).toBe(message)
+  })
+
+  it('carries the domain meta object (OFFER_FEE_CHANGED → yeni ücret)', () => {
+    const error = toApiError(409, {
+      code: 'OFFER_FEE_CHANGED',
+      message: 'Teklif ücreti değişti.',
+      field: 'expectedFeeKurus',
+      meta: { feeKurus: 62500, feeLabel: '₺625' },
+    })
+    expect(error.meta).toEqual({ feeKurus: 62500, feeLabel: '₺625' })
+    expect(isApiErrorCode(error, 'OFFER_FEE_CHANGED')).toBe(true)
+    expect(isApiErrorCode(error, 'INSUFFICIENT_BALANCE')).toBe(false)
+  })
+
+  it.each([[null], ['metin'], [[1, 2]], [undefined]])('ignores a non-object meta (%p)', (meta) => {
+    expect(toApiError(409, { code: 'X', message: 'Y', meta }).meta).toBeUndefined()
+  })
+
+  it('isApiErrorCode is false for non-ApiError values', () => {
+    expect(isApiErrorCode(new Error('OFFER_FEE_CHANGED'), 'OFFER_FEE_CHANGED')).toBe(false)
+    expect(isApiErrorCode(undefined, 'OFFER_FEE_CHANGED')).toBe(false)
   })
 
   it('hides non-API error messages (e.g. Zod) behind a Turkish text', () => {

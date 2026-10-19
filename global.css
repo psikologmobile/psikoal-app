@@ -1,205 +1,72 @@
 @tailwind base;
 @tailwind utilities;
 
-/* ─── DEFAULT TOKEN VALUES (neutral gray — override per project) ─────────── */
+/* =========================================================================
+   PsikoAl · v2 "Flat" semantik renk değişkenleri
+   Kaynak: docs/design-v2/tokens.css · src/core/theme/tokens.ts ile BİREBİR aynı
+   (src/core/theme/tokens.test.ts bu eşitliği denetler).
+
+   Değerler "R G B" kanal üçlüsüdür; tailwind.config.js renkleri
+   `rgb(var(--color-x) / <alpha-value>)` olarak okur, böylece `bg-primary/40`
+   gibi opaklık değiştiricileri de çalışır.
+
+   Koyu tema: NativeWind `darkMode: 'class'` → `.dark:root` seçicisi hem native
+   (css-interop rootVariables/dark) hem web (<html class="dark">) için geçerli.
+   Kural: gölge yok, gradyan yok. Derinlik = yüzey tonu + 1.5px çizgi.
+   ========================================================================= */
+
 :root {
-  /* Brand — PsikoAl Sky palette */
-  --color-brand:        #0EA5E9;  /* sky-500 */
-  --color-brand-hover:  #0284C7;  /* sky-600 */
-  --color-brand-subtle: #F0F9FF;  /* sky-50  */
-  --color-brand-muted:  #BAE6FD;  /* sky-200 */
-  --color-brand-border: #7DD3FC;  /* sky-300 */
-  --color-brand-text:   #0369A1;  /* sky-700 */
+  --color-bg: 250 250 250;              /* zinc-50  · sayfa zemini */
+  --color-surface: 244 244 245;         /* zinc-100 · kart, input zemini */
+  --color-border: 228 228 231;          /* zinc-200 · ayraç, kart çizgisi */
+  --color-border-strong: 212 212 216;   /* zinc-300 · outline düğme, input */
+  --color-text: 24 24 27;               /* zinc-900 · ana yazı */
+  --color-text-muted: 82 82 91;         /* zinc-600 · ikincil yazı */
 
-  /* Accent — sky-800 tonu */
-  --color-accent:        #0284C7;  /* sky-600 */
-  --color-accent-hover:  #0369A1;  /* sky-700 */
-  --color-accent-subtle: #E0F2FE;  /* sky-100 */
-  --color-accent-muted:  #BAE6FD;  /* sky-200 */
-  --color-accent-border: #38BDF8;  /* sky-400 */
-  --color-accent-text:   #075985;  /* sky-800 */
+  --color-primary: 14 165 233;          /* sky-500 · ana düğme (iki temada aynı) */
+  --color-on-primary: 8 47 73;          /* sky-950 */
+  --color-primary-text: 3 105 161;      /* sky-700 */
+  --color-accent: 186 230 253;          /* sky-200 · vurgu yüzeyi */
+  --color-on-accent: 8 47 73;           /* sky-950 */
+  --color-on-accent-muted: 7 89 133;    /* sky-800 */
+  --color-accent-line: 125 211 252;     /* sky-300 */
+  --color-accent-soft: 224 242 254;     /* sky-100 · çip, bilgi kutusu */
+  --color-on-accent-soft: 7 89 133;     /* sky-800 */
+  --color-link: 3 105 161;              /* sky-700 */
 
-  /* Surface — iOS Health gray */
-  --color-surface-base:   #F2F2F7;
-  --color-surface-raised: #FFFFFF;
-  --color-surface-sunken: #E8E8ED;
+  --color-danger: 220 38 38;            /* red-600 */
+  --color-danger-soft: 254 242 242;     /* red-50 */
+  --color-on-danger-soft: 185 28 28;    /* red-700 */
+  --color-danger-fill: 220 38 38;       /* red-600 (iki temada aynı) */
+  --color-on-danger: 255 255 255;
 
-  /* Content */
-  --color-content-primary:   #171717;
-  --color-content-secondary: #404040;
-  --color-content-tertiary:  #737373;
-  --color-content-disabled:  #A3A3A3;
-  --color-content-inverse:   #FFFFFF;
-  --color-content-link:      #0EA5E9;  /* sky-500 */
-
-  /* Border */
-  --color-border:       #E5E5E5;
-  --color-border-muted: #F5F5F5;
-  --color-border-strong:#A3A3A3;
-
-  /* Semantic — success */
-  --color-success-light: #DCFCE7;
-  --color-success:       #16A34A;
-  --color-success-dark:  #14532D;
-
-  /* Semantic — warning */
-  --color-warning-light: #FEF9C3;
-  --color-warning:       #CA8A04;
-  --color-warning-dark:  #713F12;
-
-  /* Semantic — error */
-  --color-error-light: #FEE2E2;
-  --color-error:       #DC2626;
-  --color-error-dark:  #7F1D1D;
-
-  /* Semantic — info */
-  --color-info-light: #DBEAFE;
-  --color-info:       #2563EB;
-  --color-info-dark:  #1E3A8A;
-
-  /* Typography — PsikoAl Plus Jakarta Sans */
-  --font-display: 'PlusJakartaSans_700Bold', sans-serif;
-  --font-body:    'PlusJakartaSans_400Regular', sans-serif;
-  --font-mono:    'Courier New';
-
-  /* Tag / metadata chips — emerald palette */
-  --color-tag-subtle: #ECFDF5;  /* emerald-50  */
-  --color-tag-muted:  #A7F3D0;  /* emerald-200 */
-  --color-tag-border: #6EE7B7;  /* emerald-300 */
-  --color-tag-text:   #047857;  /* emerald-700 */
-
-  /* Session type chips — amber palette */
-  --color-session-subtle: #FFFBEB;  /* amber-50  */
-  --color-session-muted:  #FDE68A;  /* amber-200 */
-  --color-session-border: #FCD34D;  /* amber-300 */
-  --color-session-text:   #B45309;  /* amber-700 */
-
-  /* Shadow tint (projects can set rgba with brand color) */
-  --shadow-color: rgba(0, 0, 0, 0.08);
+  --color-focus: 14 165 233;            /* sky-500 */
 }
 
-/* ─── SYSTEM DARK MODE ───────────────────────────────────────────────────── */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-brand:        #38BDF8;  /* sky-400 — dark'ta daha parlak */
-    --color-brand-hover:  #7DD3FC;  /* sky-300 */
-    --color-brand-subtle: #075985;  /* sky-800 */
-    --color-brand-muted:  #0369A1;  /* sky-700 */
-    --color-brand-border: #0284C7;  /* sky-600 */
-    --color-brand-text:   #E0F2FE;  /* sky-100 */
+.dark:root {
+  --color-bg: 9 9 11;                   /* zinc-950 */
+  --color-surface: 24 24 27;            /* zinc-900 */
+  --color-border: 39 39 42;             /* zinc-800 */
+  --color-border-strong: 63 63 70;      /* zinc-700 */
+  --color-text: 250 250 250;            /* zinc-50 */
+  --color-text-muted: 161 161 170;      /* zinc-400 */
 
-    --color-accent:        #7DD3FC;  /* sky-300 */
-    --color-accent-hover:  #BAE6FD;  /* sky-200 */
-    --color-accent-subtle: #0C4A6E;  /* sky-950 approx */
-    --color-accent-muted:  #075985;  /* sky-800 */
-    --color-accent-border: #0EA5E9;  /* sky-500 */
-    --color-accent-text:   #F0F9FF;  /* sky-50  */
+  --color-primary: 14 165 233;          /* sky-500 · sabit */
+  --color-on-primary: 8 47 73;
+  --color-primary-text: 56 189 248;     /* sky-400 */
+  --color-accent: 8 47 73;              /* sky-950 */
+  --color-on-accent: 224 242 254;       /* sky-100 */
+  --color-on-accent-muted: 125 211 252; /* sky-300 */
+  --color-accent-line: 12 74 110;       /* sky-900 */
+  --color-accent-soft: 12 74 110;       /* sky-900 */
+  --color-on-accent-soft: 224 242 254;  /* sky-100 */
+  --color-link: 125 211 252;            /* sky-300 */
 
-    --color-surface-base:   #171717;
-    --color-surface-raised: #262626;
-    --color-surface-sunken: #0A0A0A;
+  --color-danger: 248 113 113;          /* red-400 */
+  --color-danger-soft: 69 10 10;        /* red-950 */
+  --color-on-danger-soft: 252 165 165;  /* red-300 */
+  --color-danger-fill: 220 38 38;
+  --color-on-danger: 255 255 255;
 
-    --color-content-primary:   #FAFAFA;
-    --color-content-secondary: #D4D4D4;
-    --color-content-tertiary:  #A3A3A3;
-    --color-content-disabled:  #525252;
-    --color-content-inverse:   #171717;
-    --color-content-link:      #38BDF8;  /* sky-400 */
-
-    --color-border:       #404040;
-    --color-border-muted: #262626;
-    --color-border-strong:#737373;
-
-    --color-success-light: #14532D;
-    --color-success:       #22C55E;
-    --color-success-dark:  #DCFCE7;
-
-    --color-warning-light: #713F12;
-    --color-warning:       #EAB308;
-    --color-warning-dark:  #FEF9C3;
-
-    --color-error-light: #7F1D1D;
-    --color-error:       #EF4444;
-    --color-error-dark:  #FEE2E2;
-
-    --color-info-light: #1E3A8A;
-    --color-info:       #3B82F6;
-    --color-info-dark:  #DBEAFE;
-
-    /* Tag / metadata chips — emerald dark */
-    --color-tag-subtle: #022C22;  /* emerald-950 */
-    --color-tag-muted:  #065F46;  /* emerald-800 */
-    --color-tag-border: #059669;  /* emerald-600 */
-    --color-tag-text:   #A7F3D0;  /* emerald-200 */
-
-    /* Session type chips — amber dark */
-    --color-session-subtle: #451A03;  /* amber-950 */
-    --color-session-muted:  #78350F;  /* amber-900 */
-    --color-session-border: #D97706;  /* amber-600 */
-    --color-session-text:   #FDE68A;  /* amber-200 */
-
-    --shadow-color: rgba(0, 0, 0, 0.30);
-  }
-}
-
-/* ─── EXPLICIT DARK MODE (data-theme attribute) ──────────────────────────── */
-[data-theme="dark"] {
-  --color-brand:        #38BDF8;
-  --color-brand-hover:  #7DD3FC;
-  --color-brand-subtle: #075985;
-  --color-brand-muted:  #0369A1;
-  --color-brand-border: #0284C7;
-  --color-brand-text:   #E0F2FE;
-
-  --color-accent:        #7DD3FC;
-  --color-accent-hover:  #BAE6FD;
-  --color-accent-subtle: #0C4A6E;
-  --color-accent-muted:  #075985;
-  --color-accent-border: #0EA5E9;
-  --color-accent-text:   #F0F9FF;
-
-  --color-surface-base:   #171717;
-  --color-surface-raised: #262626;
-  --color-surface-sunken: #0A0A0A;
-
-  --color-content-primary:   #FAFAFA;
-  --color-content-secondary: #D4D4D4;
-  --color-content-tertiary:  #A3A3A3;
-  --color-content-disabled:  #525252;
-  --color-content-inverse:   #171717;
-  --color-content-link:      #38BDF8;
-
-  --color-border:       #404040;
-  --color-border-muted: #262626;
-  --color-border-strong:#737373;
-
-  --color-success-light: #14532D;
-  --color-success:       #22C55E;
-  --color-success-dark:  #DCFCE7;
-
-  --color-warning-light: #713F12;
-  --color-warning:       #EAB308;
-  --color-warning-dark:  #FEF9C3;
-
-  --color-error-light: #7F1D1D;
-  --color-error:       #EF4444;
-  --color-error-dark:  #FEE2E2;
-
-  --color-info-light: #1E3A8A;
-  --color-info:       #3B82F6;
-  --color-info-dark:  #DBEAFE;
-
-  /* Tag / metadata chips — emerald dark */
-  --color-tag-subtle: #022C22;
-  --color-tag-muted:  #065F46;
-  --color-tag-border: #059669;
-  --color-tag-text:   #A7F3D0;
-
-  /* Session type chips — violet dark */
-  --color-session-subtle: #2E1065;
-  --color-session-muted:  #4C1D95;
-  --color-session-border: #7C3AED;
-  --color-session-text:   #DDD6FE;
-
-  --shadow-color: rgba(0, 0, 0, 0.30);
+  --color-focus: 14 165 233;
 }

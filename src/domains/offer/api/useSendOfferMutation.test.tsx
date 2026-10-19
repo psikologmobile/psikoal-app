@@ -1,15 +1,18 @@
-import type { ReactNode } from 'react'
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, renderHook, waitFor } from '@testing-library/react-native'
 import MockAdapter from 'axios-mock-adapter'
 
+import { offerKeys } from '../offer.constants'
 import listingOffersResponse from '../schemas/__fixtures__/listing-offers.response.json'
 
+import { useOfferQuoteQuery } from './useOfferQuoteQuery'
 import { useSendOfferMutation } from './useSendOfferMutation'
 
-import { creditKeys } from '@/domains/credit'
+import type { QueryClient } from '@tanstack/react-query'
+
+import { listingKeys } from '@/domains/listing'
+import { walletKeys } from '@/domains/wallet'
 import { axiosInstance } from '@/lib/api'
+import { createTestQueryClient, createWrapper } from '@/test-utils/query'
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(async () => null),
@@ -25,26 +28,34 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(async () => undefined),
 }))
 
-function createWrapper(queryClient: QueryClient) {
-  return function Wrapper({ children }: { children: ReactNode }) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  }
-}
-
 const offer = listingOffersResponse.data[0]
-const request = {
-  listingId: offer?.listingId ?? '',
+const LISTING_ID = offer?.listingId ?? ''
+const payload = {
+  listingId: LISTING_ID,
   price: 1100,
   sessionType: 'online' as const,
+  expectedFeeKurus: 62500,
 }
 
-describe('useSendOfferMutation — kredi', () => {
+const QUOTE = {
+  feeKurus: 62500,
+  feeLabel: '₺625',
+  balanceKurus: 125000,
+  balanceLabel: '₺1.250',
+  freeOfferRights: 0,
+  willUseFreeRight: false,
+  balanceAfterKurus: 62500,
+  balanceAfterLabel: '₺625',
+  sufficient: true,
+}
+
+describe('teklif gönderimi (Revize 2)', () => {
   let mock: MockAdapter
   let queryClient: QueryClient
 
   beforeEach(() => {
     mock = new MockAdapter(axiosInstance)
-    queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    queryClient = createTestQueryClient()
   })
 
   afterEach(() => {
@@ -52,37 +63,76 @@ describe('useSendOfferMutation — kredi', () => {
     queryClient.clear()
   })
 
-  it('başarılı tekliften sonra kredi sorgularını bayat işaretler', async () => {
+  it('useOfferQuoteQuery listingId ile anlık ücreti çeker', async () => {
+    mock.onGet('/offers/quote').reply(200, { data: QUOTE })
+    const { result } = renderHook(() => useOfferQuoteQuery(LISTING_ID), {
+      wrapper: createWrapper(queryClient),
+    })
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+    expect(mock.history.get[0]?.params).toEqual({ listingId: LISTING_ID })
+    expect(result.current.data?.feeLabel).toBe('₺625')
+  })
+
+  it('useOfferQuoteQuery listingId yoksa istek atmaz', () => {
+    const { result } = renderHook(() => useOfferQuoteQuery(undefined), {
+      wrapper: createWrapper(queryClient),
+    })
+    expect(result.current.fetchStatus).toBe('idle')
+  })
+
+  it('expectedFeeKurus gönderir ve teklif, ilan, ücret ve cüzdan sorgularını tazeler', async () => {
     mock.onPost('/offers').reply(200, offer)
     const invalidate = jest.spyOn(queryClient, 'invalidateQueries')
-
     const { result } = renderHook(() => useSendOfferMutation(), {
       wrapper: createWrapper(queryClient),
     })
 
     await act(async () => {
-      await result.current.mutateAsync(request)
+      await result.current.mutateAsync(payload)
     })
 
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: creditKeys.all })
+    expect(JSON.parse(mock.history.post[0]?.data as string)).toMatchObject({
+      expectedFeeKurus: 62500,
+    })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: offerKeys.my() })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: offerKeys.quote(LISTING_ID) })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: listingKeys.all })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: walletKeys.all })
   })
 
-  it('422 INSUFFICIENT_CREDITS hatasını taşır ve bakiyeyi tazeler', async () => {
-    mock.onPost('/offers').reply(422, {
-      code: 'INSUFFICIENT_CREDITS',
-      message: 'Teklif göndermek için yeterli krediniz yok.',
+  it.each([
+    [409, 'OFFER_FEE_CHANGED'],
+    [422, 'INSUFFICIENT_BALANCE'],
+  ])('%i %s: meta ile hatayı taşır, ücreti ve bakiyeyi tazeler', async (status, code) => {
+    mock.onPost('/offers').reply(status, {
+      code,
+      message: 'Sunucu mesajı',
+      meta: { feeKurus: 56000, feeLabel: '₺560' },
     })
     const invalidate = jest.spyOn(queryClient, 'invalidateQueries')
-
     const { result } = renderHook(() => useSendOfferMutation(), {
       wrapper: createWrapper(queryClient),
     })
 
-    act(() => result.current.mutate(request))
+    act(() => result.current.mutate(payload))
 
     await waitFor(() => expect(result.current.isError).toBe(true))
-    expect(result.current.error).toMatchObject({ code: 'INSUFFICIENT_CREDITS', status: 422 })
-    expect(invalidate).toHaveBeenCalledWith({ queryKey: creditKeys.balance() })
-    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: creditKeys.all })
+    expect(result.current.error).toMatchObject({ code, status, meta: { feeKurus: 56000 } })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: offerKeys.quote(LISTING_ID) })
+    expect(invalidate).toHaveBeenCalledWith({ queryKey: walletKeys.me() })
+    expect(invalidate).not.toHaveBeenCalledWith({ queryKey: walletKeys.all })
+  })
+
+  it('diğer hatalarda ücreti tazelemez', async () => {
+    mock
+      .onPost('/offers')
+      .reply(409, { code: 'OFFER_ALREADY_EXISTS', message: 'Zaten teklif verdiniz.' })
+    const invalidate = jest.spyOn(queryClient, 'invalidateQueries')
+    const { result } = renderHook(() => useSendOfferMutation(), {
+      wrapper: createWrapper(queryClient),
+    })
+    act(() => result.current.mutate(payload))
+    await waitFor(() => expect(result.current.isError).toBe(true))
+    expect(invalidate).not.toHaveBeenCalled()
   })
 })

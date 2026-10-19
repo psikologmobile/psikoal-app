@@ -1,0 +1,59 @@
+{
+  "data": [
+    {
+      "id": "0b1f4c2e-9a3d-4e5f-8a7b-1c2d3e4f5a6b",
+      "type": "OFFER_FEE",
+      "typeLabel": "Teklif ücreti",
+      "amountKurus": -62500,
+      "amountLabel": "−₺625",
+      "freeRightsDelta": 0,
+      "freeRightsLabel": "",
+      "balanceAfterKurus": 125000,
+      "balanceAfterLabel": "₺1.250",
+      "description": "Teklif ücreti",
+      "listingId": "01a025d8-f8c9-78db-aa2b-aa72da13dfae",
+      "listingTitle": "Panik atak ataklarım için haftalık online destek arıyorum",
+      "offerId": "01a025d8-f9fe-7b9d-9fa6-2c3f08f7e7f6",
+      "paymentId": null,
+      "createdAt": "2026-10-18T09:12:44.120934Z",
+      "timeLabel": "1 gün önce"
+    },
+    {
+      "id": "2c3d4e5f-6a7b-4c8d-9e0f-1a2b3c4d5e6f",
+      "type": "WELCOME_RIGHT",
+      "typeLabel": "Hoş geldin hakkı",
+      "amountKurus": 0,
+      "amountLabel": "",
+      "freeRightsDelta": 1,
+      "freeRightsLabel": "+1 hak",
+      "balanceAfterKurus": 187500,
+      "balanceAfterLabel": "₺1.875",
+      "description": "Hoş geldin hakkı",
+      "listingId": null,
+      "listingTitle": null,
+      "offerId": null,
+      "paymentId": null,
+      "createdAt": "2026-10-17T08:00:00.000000Z",
+      "timeLabel": "2 gün önce"
+    },
+    {
+      "id": "3d4e5f6a-7b8c-4d9e-8f0a-2b3c4d5e6f7a",
+      "type": "TOPUP",
+      "typeLabel": "Bakiye yükleme",
+      "amountKurus": 187500,
+      "amountLabel": "+₺1.875",
+      "freeRightsDelta": 0,
+      "freeRightsLabel": "",
+      "balanceAfterKurus": 187500,
+      "balanceAfterLabel": "₺1.875",
+      "description": "Bakiye yükleme",
+      "listingId": null,
+      "listingTitle": null,
+      "offerId": null,
+      "paymentId": "4e5f6a7b-8c9d-4e0f-9a1b-3c4d5e6f7a8b",
+      "createdAt": "2026-10-16T18:30:00.000000Z",
+      "timeLabel": "3 gün önce"
+    }
+  ],
+  "meta": { "page": 1, "total": 3, "perPage": 20 }
+}

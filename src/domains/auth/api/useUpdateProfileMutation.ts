@@ -10,6 +10,8 @@ export function useUpdateProfileMutation() {
   const { updateUser } = useAuthStore()
 
   return useMutation({
+    // Hata ekranlarda satır içi gösterilir (Kişisel bilgiler, onboarding).
+    meta: { suppressErrorAlert: true },
     mutationFn: async (data: UpdateProfileRequest) => {
       return patch<UpdateProfileRequest>('/auth/me', data)
     },

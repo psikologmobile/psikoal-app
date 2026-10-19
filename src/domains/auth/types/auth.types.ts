@@ -6,6 +6,7 @@ import type {
   LoginRequestSchema,
   LoginResponseSchema,
   RegisterRequestSchema,
+  ReferrerSchema,
   ResetPasswordFormSchema,
   ResetPasswordRequestSchema,
   UpdateProfileSchema,
@@ -24,3 +25,4 @@ export type ChangePasswordRequest = z.infer<typeof ChangePasswordSchema>
 export type ForgotPasswordRequest = z.infer<typeof ForgotPasswordSchema>
 export type ResetPasswordForm = z.infer<typeof ResetPasswordFormSchema>
 export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequestSchema>
+export type Referrer = z.infer<typeof ReferrerSchema>

@@ -1,12 +1,20 @@
 import { z } from 'zod'
 
 import listingOffersResponse from './__fixtures__/listing-offers.response.json'
-import { OfferSchema, SendOfferSchema } from './offer.schema'
+import {
+  OfferFeeMetaSchema,
+  OfferQuoteResponseSchema,
+  OfferSchema,
+  SendOfferSchema,
+} from './offer.schema'
 
 // Fixture UYDURMA DEĞİL: lokal stack'e karşı koşan gerçek
 // GET /listings/{id}/offers yanıtının kaydı (21 Ağustos 2026). Elle yazılmış bir
 // gövde backend'in null yazma davranışını yansıtmaz ve tam da bu testin yakalaması
 // gereken sapmayı kaçırırdı.
+// Revize 2 (2026-10-19): kayda yeni alanlar (feePaid*, usedFreeRight, closedReason,
+// statusLabel, claimed, clientContact) backend OfferDto'ya göre eklendi; danışan
+// görünümünde feePaid* ve clientContact null gelir.
 //
 // Yakalanan hata: teklif listesinin TAMAMI parse hatasına düşüyordu, çünkü
 // matchId şemada `.optional()` idi ve Zod 4'te `.optional()` null'ı KABUL ETMEZ.
@@ -88,5 +96,58 @@ describe('SendOfferSchema — opsiyonel metin alanları', () => {
 
     expect(result.success).toBe(false)
     expect(result.error?.issues[0]?.message).toBe('En az 3 karakter')
+  })
+})
+
+describe('Revize 2 alanları', () => {
+  const base = listingOffersResponse.data[0]
+
+  it('uzman görünümü: ödenen ücret ve danışan iletişimi', () => {
+    const result = OfferSchema.safeParse({
+      ...base,
+      feePaidKurus: 62500,
+      feePaidLabel: '₺625',
+      clientContact: { fullName: 'Ayşe Yılmaz', phone: null, email: 'ayse@psikoal.test' },
+    })
+    expect(result.error?.issues ?? []).toEqual([])
+    expect(result.data?.clientContact?.phone).toBeNull()
+  })
+
+  it('ücretsiz hakla gönderilmiş teklif', () => {
+    const result = OfferSchema.safeParse({
+      ...base,
+      feePaidKurus: 0,
+      feePaidLabel: 'Ücretsiz hak',
+      usedFreeRight: true,
+    })
+    expect(result.data?.usedFreeRight).toBe(true)
+  })
+
+  it('bilinmeyen closedReason reddedilir; statusLabel zorunludur', () => {
+    expect(OfferSchema.safeParse({ ...base, closedReason: 'ADMIN' }).success).toBe(false)
+    const { statusLabel: _omit, ...withoutLabel } = base ?? { statusLabel: '' }
+    expect(OfferSchema.safeParse(withoutLabel).success).toBe(false)
+  })
+
+  it('GET /offers/quote yanıtı', () => {
+    const quote = OfferQuoteResponseSchema.parse({
+      data: {
+        feeKurus: 62500,
+        feeLabel: '₺625',
+        balanceKurus: 125000,
+        balanceLabel: '₺1.250',
+        freeOfferRights: 0,
+        willUseFreeRight: false,
+        balanceAfterKurus: 62500,
+        balanceAfterLabel: '₺625',
+        sufficient: true,
+      },
+    }).data
+    expect(quote.sufficient).toBe(true)
+  })
+
+  it('OFFER_FEE_CHANGED meta şeması', () => {
+    expect(OfferFeeMetaSchema.safeParse({ feeKurus: 56000, feeLabel: '₺560' }).success).toBe(true)
+    expect(OfferFeeMetaSchema.safeParse({ feeKurus: '560' }).success).toBe(false)
   })
 })

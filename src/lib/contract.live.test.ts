@@ -10,17 +10,23 @@ import { AssessmentListItemSchema, MyAssessmentResultSchema } from '@/domains/as
 import {
   AuthUserSchema,
   LoginResponseSchema,
+  ReferrerResponseSchema,
   RegisterRequestSchema,
   ResetPasswordRequestSchema,
 } from '@/domains/auth'
 import { BlogLikeResponseSchema, BlogListResponseSchema, BlogSchema } from '@/domains/blog'
 import { CategoryDetailSchema, CategorySchema } from '@/domains/category'
-import { CreditBalanceResponseSchema, CreditTransactionListResponseSchema } from '@/domains/credit'
 import { ExpertSchema, ReviewSchema } from '@/domains/expert'
-import { ListingSchema } from '@/domains/listing'
+import { ListingRulesResponseSchema, ListingSchema } from '@/domains/listing'
 import { MatchDetailSchema, MatchSchema } from '@/domains/match'
 import { NotificationListResponseSchema } from '@/domains/notification'
-import { OfferSchema } from '@/domains/offer'
+import { OfferQuoteResponseSchema, OfferSchema } from '@/domains/offer'
+import {
+  TopupOptionsResponseSchema,
+  WalletPaymentPageSchema,
+  WalletResponseSchema,
+  WalletTransactionPageSchema,
+} from '@/domains/wallet'
 
 // Şemalar domain barrel'ından alınıyor (domain izolasyonu kuralı), barrel ise
 // api/ hook'larını da açıyor ve onlar AsyncStorage'a iniyor. Bu test ağa çıkıyor
@@ -171,6 +177,8 @@ describeLive('canlı sözleşme — danışan', () => {
     ['/assessment', listOf(AssessmentListItemSchema)],
     ['/assessment/results/my', listOf(MyAssessmentResultSchema)],
     ['/auth/me', AuthUserSchema],
+    ['/listings/rules', ListingRulesResponseSchema],
+    ['/me/referrer', ReferrerResponseSchema],
   ])('%s uygulamanın şemasına uyar', async (path, schema) => {
     expectMatchesContract(path, schema, await fetchJson(path, token))
   })
@@ -365,43 +373,67 @@ describeLive('canlı sözleşme — uzman', () => {
   })
 })
 
-// Uzman kredisi (backend CREDIT-1, docs/PAYMENTS.md). Uçlar henüz yayında olmayan
+// Uzman cüzdanı (Revize 2 §2.2, backend docs/PAYMENTS.md). Uçlar henüz yayında olmayan
 // bir backend'e karşı koşulursa (lokal dev API'si o dalı çalıştırmıyorsa) bu blok
 // sessizce geçer: uç yoksa ASP.NET çıplak 404 döner. Uzmanın profili yoksa da 404
-// gelir ama gövdesinde EXPERT_NOT_FOUND kodu bulunur — o durum bir kurulum hatasıdır
+// gelir ama gövdesinde EXPERT_NOT_FOUND kodu bulunur; o durum bir kurulum hatasıdır
 // ve test kırmızıya döner.
-describeLive('canlı sözleşme — uzman kredisi', () => {
+describeLive('canlı sözleşme — uzman cüzdanı ve teklif ücreti', () => {
   let expertToken = ''
   let available = false
 
   beforeAll(async () => {
     expertToken = await login(EXPERT)
-    const probe = await request('GET', '/credits/me', expertToken)
+    const probe = await request('GET', '/wallet/me', expertToken)
     const code = (probe.body as { code?: string } | null)?.code
     available = !(probe.status === 404 && code !== 'EXPERT_NOT_FOUND')
   })
 
-  it('uzman: GET /credits/me şemaya uyar', async () => {
+  it('uzman: GET /wallet/me şemaya uyar', async () => {
     if (!available) return
     expectMatchesContract(
-      '/credits/me',
-      CreditBalanceResponseSchema,
-      await fetchJson('/credits/me', expertToken)
+      '/wallet/me',
+      WalletResponseSchema,
+      await fetchJson('/wallet/me', expertToken)
     )
   })
 
-  it('uzman: GET /credits/transactions şemaya uyar ve perPage uygulanır', async () => {
+  it('uzman: GET /wallet/transactions şemaya uyar ve perPage uygulanır', async () => {
     if (!available) return
-    const path = '/credits/transactions?page=1&perPage=5'
+    const path = '/wallet/transactions?page=1&perPage=5'
     const body = await fetchJson(path, expertToken)
-    expectMatchesContract(path, CreditTransactionListResponseSchema, body)
-    expect(CreditTransactionListResponseSchema.parse(body).meta.perPage).toBe(5)
+    expectMatchesContract(path, WalletTransactionPageSchema, body)
+    expect(WalletTransactionPageSchema.parse(body).meta.perPage).toBe(5)
   })
 
-  it('danışan: GET /credits/me 403 EXPERT_ROLE_REQUIRED döner', async () => {
+  it('uzman: GET /wallet/payments şemaya uyar', async () => {
+    if (!available) return
+    const path = '/wallet/payments?page=1&perPage=5'
+    expectMatchesContract(path, WalletPaymentPageSchema, await fetchJson(path, expertToken))
+  })
+
+  it('anonim: GET /wallet/topup-options şemaya uyar', async () => {
+    if (!available) return
+    const { status, body } = await request('GET', '/wallet/topup-options')
+    expect(status).toBe(200)
+    expectMatchesContract('/wallet/topup-options', TopupOptionsResponseSchema, body)
+  })
+
+  it('uzman: GET /offers/quote şemaya uyar', async () => {
+    if (!available) return
+    const feed = (await fetchJson('/listings', expertToken)) as {
+      data: { id: string; viewerHasOffered: boolean }[]
+    }
+    const listingId = feed.data.find((listing) => !listing.viewerHasOffered)?.id
+    if (!listingId) return
+    const path = `/offers/quote?listingId=${listingId}`
+    expectMatchesContract(path, OfferQuoteResponseSchema, await fetchJson(path, expertToken))
+  })
+
+  it('danışan: GET /wallet/me 403 EXPERT_ROLE_REQUIRED döner', async () => {
     if (!available) return
     const clientToken = await login(CLIENT)
-    const response = await request('GET', '/credits/me', clientToken)
+    const response = await request('GET', '/wallet/me', clientToken)
     expect(response.status).toBe(403)
     expect(response.body).toMatchObject({ code: 'EXPERT_ROLE_REQUIRED' })
   })

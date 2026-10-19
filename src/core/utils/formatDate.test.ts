@@ -26,6 +26,10 @@ describe('formatDate', () => {
     expect(formatDate(date, 'dayMonthShort')).toMatch(/Haz/)
   })
 
+  it('monthYearShort format contains abbreviated month and year', () => {
+    expect(formatDate(date, 'monthYearShort')).toMatch(/Haz.*2024/)
+  })
+
   it('accepts a string date', () => {
     expect(formatDate('2024-06-15', 'short')).toMatch(/2024/)
   })

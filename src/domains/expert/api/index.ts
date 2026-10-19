@@ -8,3 +8,7 @@ export {
   DOCUMENT_MAX_BYTES,
 } from './useUploadExpertDocumentMutation'
 export { useCreateReviewMutation } from './useCreateReviewMutation'
+export {
+  useRemoveExpertCertificateMutation,
+  CERTIFICATE_NOT_FOUND,
+} from './useRemoveExpertCertificateMutation'

@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "id": "4e5f6a7b-8c9d-4e0f-9a1b-3c4d5e6f7a8b",
+      "amountKurus": 187500,
+      "amountLabel": "₺1.875",
+      "status": "PAID",
+      "statusLabel": "Ödendi",
+      "createdAt": "2026-10-16T18:29:10.000000Z",
+      "completedAt": "2026-10-16T18:30:00.000000Z",
+      "invoice": { "fileName": "fatura-2026-0012.pdf", "uploadedAt": "2026-10-17T10:00:00.000000Z" }
+    },
+    {
+      "id": "5f6a7b8c-9d0e-4f1a-8b2c-4d5e6f7a8b9c",
+      "amountKurus": 50000,
+      "amountLabel": "₺500",
+      "status": "FAILED",
+      "statusLabel": "Başarısız",
+      "createdAt": "2026-10-15T12:00:00.000000Z",
+      "completedAt": null,
+      "invoice": null
+    }
+  ],
+  "meta": { "page": 1, "total": 2, "perPage": 20 }
+}
