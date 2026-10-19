@@ -127,6 +127,38 @@ describe('useCreateListingWizard', () => {
     expect(result.current.errors.form).toBeDefined()
   })
 
+  it('web tek sayfa: publishAll bütün hataları birlikte yazar; tamamsa yayınlar', () => {
+    const { result } = setup()
+    expect(result.current.stepDone(0)).toBe(false)
+    expect(result.current.stepDone(4)).toBe(true)
+    expect(result.current.stepDone(6)).toBe(false)
+    let ok = true
+    act(() => {
+      ok = result.current.publishAll()
+    })
+    expect(ok).toBe(false)
+    expect(result.current.errors.title).toBeDefined()
+    expect(result.current.errors.phone).toBe('Telefon numaranı yaz')
+    expect(result.current.errors.contactConsent).toBe(
+      'Yayınlamak için iletişim iznini işaretlemelisin.'
+    )
+    expect(mockMutate).not.toHaveBeenCalled()
+
+    act(() => result.current.update('title', 'Sınav dönemlerinde kaygı'))
+    act(() => result.current.update('contactConsent', true))
+    act(() => result.current.update('phone', '05000000000'))
+    expect(result.current.stepDone(0)).toBe(true)
+    expect(result.current.stepDone(5)).toBe(true)
+    act(() => {
+      ok = result.current.publishAll()
+    })
+    expect(ok).toBe(true)
+    expect(mockMutate).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Sınav dönemlerinde kaygı', contactConsent: true }),
+      expect.any(Object)
+    )
+  })
+
   it('önizlemede eksik alan varsa o adıma döner', () => {
     const { result } = setup()
     act(() => result.current.update('title', 'Sınav dönemlerinde kaygı'))

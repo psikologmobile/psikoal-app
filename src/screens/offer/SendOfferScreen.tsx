@@ -17,9 +17,11 @@ import { ScreenHeader } from '@/core/components/molecules/ScreenHeader'
 import { SegmentedControl } from '@/core/components/molecules/SegmentedControl'
 import { TextArea } from '@/core/components/molecules/TextArea'
 import { TextField } from '@/core/components/molecules/TextField'
+import { WebPageHeader } from '@/core/components/molecules/WebPageHeader'
 import { ContactCard } from '@/core/components/organisms/ContactCard'
 import { SuccessHero } from '@/core/components/organisms/SuccessHero'
-import { Screen } from '@/core/components/templates'
+import { Screen, WebColumns } from '@/core/components/templates'
+import { useBreakpoint } from '@/core/hooks'
 import { EnterUp, haptic } from '@/core/motion'
 import { getInitials } from '@/core/utils/personName'
 import { useExpertApprovalGate } from '@/domains/expert'
@@ -118,6 +120,7 @@ export function SendOfferScreen() {
   const quoteQuery = useOfferQuoteQuery(listingId || undefined)
   const [sentFeeLabel, setSentFeeLabel] = useState<string>()
   const [sent, setSent] = useState<SentResult>()
+  const { isWebLayout } = useBreakpoint()
 
   const {
     control,
@@ -193,44 +196,8 @@ export function SendOfferScreen() {
     )
   }
 
-  return (
-    <Screen
-      keyboard
-      testID="screen-send-offer"
-      footer={
-        <Button
-          label={ctaLabel}
-          size="xl"
-          fullWidth
-          isDisabled={!canSend || feeGate.isRefreshing}
-          isLoading={send.isPending}
-          loadingLabel="Gönderiliyor…"
-          testID="offer-submit"
-          onPress={quoteMissing ? () => void quoteQuery.refetch() : handleSubmit(onSubmit)}
-        />
-      }
-    >
-      <EnterUp>
-        <ScreenHeader title="Teklif gönder" />
-      </EnterUp>
-
-      {listing ? (
-        <EnterUp index={1}>
-          <View className="gap-1 rounded-card bg-accent-soft px-4 py-3.5">
-            <Text className="font-body-semibold text-label text-accent-soft-fg">
-              {[
-                listing.clientDisplayName,
-                SESSION_MODE_LABELS[listing.preferredSessionType],
-                listing.budgetLabel,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </Text>
-            <Text className="font-body-bold text-base text-accent-soft-fg">{listing.title}</Text>
-          </View>
-        </EnterUp>
-      ) : null}
-
+  const formFields = (
+    <>
       <EnterUp index={2} className="flex-row gap-2.5">
         <View className="flex-1">
           <Controller
@@ -303,10 +270,98 @@ export function SendOfferScreen() {
           )}
         />
       </EnterUp>
+    </>
+  )
 
-      <EnterUp index={4}>
-        <OfferFeePanel state={state} quote={quote} previousFeeLabel={sentFeeLabel} />
+  const feePanel = (
+    <OfferFeePanel
+      state={state}
+      quote={quote}
+      previousFeeLabel={sentFeeLabel}
+      rejectionReason={gate.rejectionReason}
+    />
+  )
+
+  const submitButton = (
+    <Button
+      label={ctaLabel}
+      size="xl"
+      fullWidth
+      isDisabled={!canSend || feeGate.isRefreshing}
+      isLoading={send.isPending}
+      loadingLabel="Gönderiliyor…"
+      testID="offer-submit"
+      onPress={quoteMissing ? () => void quoteQuery.refetch() : handleSubmit(onSubmit)}
+    />
+  )
+
+  if (isWebLayout) {
+    return (
+      <Screen keyboard testID="screen-send-offer" contentClassName="gap-[22px]">
+        <WebPageHeader
+          size="md"
+          backLabel="İlan"
+          onBack={() => router.back()}
+          title="Teklif gönder"
+          subtitle={
+            listing
+              ? [
+                  listing.title,
+                  listing.clientDisplayName,
+                  SESSION_MODE_LABELS[listing.preferredSessionType],
+                  listing.budgetLabel,
+                ]
+                  .filter(Boolean)
+                  .join(' · ')
+              : undefined
+          }
+        />
+        <WebColumns
+          asideWidth={400}
+          asideWidthNarrow={340}
+          stackAt={860}
+          testID="send-offer-columns"
+          aside={
+            <EnterUp index={2} className="gap-3">
+              {feePanel}
+              {canSend || quoteMissing ? submitButton : null}
+            </EnterUp>
+          }
+        >
+          <EnterUp index={1}>
+            <View className="gap-4 rounded-3xl border border-border p-6">{formFields}</View>
+          </EnterUp>
+        </WebColumns>
+      </Screen>
+    )
+  }
+
+  return (
+    <Screen keyboard testID="screen-send-offer" footer={submitButton}>
+      <EnterUp>
+        <ScreenHeader title="Teklif gönder" />
       </EnterUp>
+
+      {listing ? (
+        <EnterUp index={1}>
+          <View className="gap-1 rounded-card bg-accent-soft px-4 py-3.5">
+            <Text className="font-body-semibold text-label text-accent-soft-fg">
+              {[
+                listing.clientDisplayName,
+                SESSION_MODE_LABELS[listing.preferredSessionType],
+                listing.budgetLabel,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </Text>
+            <Text className="font-body-bold text-base text-accent-soft-fg">{listing.title}</Text>
+          </View>
+        </EnterUp>
+      ) : null}
+
+      {formFields}
+
+      <EnterUp index={4}>{feePanel}</EnterUp>
     </Screen>
   )
 }

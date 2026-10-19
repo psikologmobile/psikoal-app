@@ -8,6 +8,7 @@ import { StatusPill } from '@/core/components/atoms/StatusPill'
 import { TagChip } from '@/core/components/atoms/TagChip'
 import { Text } from '@/core/components/atoms/Text'
 import { Pop, PressableScale } from '@/core/motion'
+import { hoverLift } from '@/core/theme'
 
 export type AdCardProps = {
   listing: Listing
@@ -31,7 +32,7 @@ export function AdCard({ listing, onPress, className }: AdCardProps) {
       accessibilityLabel={`${status.label}: ${listing.title}`}
       testID={`ad-card-${listing.id}`}
       wrapperClassName={className}
-      className="gap-2.5 rounded-2xl border border-border bg-surface p-4"
+      className={`gap-2.5 rounded-2xl border border-border bg-surface p-4 ${hoverLift}`}
     >
       <View className="flex-row items-center justify-between gap-2">
         <StatusPill label={status.label} variant={status.variant} />

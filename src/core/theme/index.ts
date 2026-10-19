@@ -14,3 +14,5 @@ export {
 export type { SemanticColorName, SemanticColors } from './tokens'
 export { useApplyThemePreference } from './useApplyThemePreference'
 export type { ThemePreferenceValue } from './useApplyThemePreference'
+export { hoverLift, hoverLiftLg, hoverNudge, hoverSurface } from './interaction'
+export { WebGlobalStyles } from './WebGlobalStyles'

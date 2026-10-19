@@ -2,7 +2,7 @@ export { Sidebar, SidebarBalanceCard, SidebarUserCard, useSidebarMode } from './
 export type {
   SidebarProps,
   SidebarMode,
-  SidebarExtraItem,
+  SidebarItem,
   SidebarBalanceCardProps,
   SidebarUserCardProps,
 } from './Sidebar'

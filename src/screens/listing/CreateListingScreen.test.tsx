@@ -5,7 +5,14 @@ import { CreateListingScreen } from './CreateListingScreen'
 import { useAuthStore } from '@/domains/auth'
 import { makeListing } from '@/test-utils/fixtures'
 import { TEST_CLIENT } from '@/test-utils/query'
-import { mockRouter, queryResult, renderScreen } from '@/test-utils/screen'
+import {
+  COMPACT_LAYOUT,
+  mockLayout,
+  mockRouter,
+  queryResult,
+  renderScreen,
+  WIDE_LAYOUT,
+} from '@/test-utils/screen'
 
 jest.mock('expo-router', () => require('@/test-utils/screen').expoRouterMock)
 jest.mock(
@@ -13,6 +20,7 @@ jest.mock(
   () => require('@/test-utils/screen').asyncStorageMock
 )
 jest.mock('expo-secure-store', () => require('@/test-utils/screen').secureStoreMock)
+jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)
 jest.mock(
   'react-native-safe-area-context',
   () => require('react-native-safe-area-context/jest/mock').default
@@ -80,6 +88,33 @@ beforeEach(() => {
 })
 
 describe('CreateListingScreen', () => {
+  afterEach(() => {
+    mockLayout.current = COMPACT_LAYOUT
+  })
+
+  it('web: tek sayfa bölümler, adım listesi, önizleme ve Yayınla', () => {
+    mockLayout.current = WIDE_LAYOUT
+    const { getByText, getByTestId, queryByText, getAllByText } = renderScreen(
+      <CreateListingScreen initialSpecialization="Kaygı" />
+    )
+    expect(getByText('Yeni ilan')).toBeTruthy()
+    expect(getAllByText('Konu').length).toBeGreaterThan(0)
+    expect(getAllByText('İletişim izni').length).toBeGreaterThan(0)
+    expect(queryByText('1/7')).toBeNull()
+    fireEvent.press(getByTestId('listing-new-publish'))
+    expect(mockCreate).not.toHaveBeenCalled()
+    expect(getByText('Yayınlamak için iletişim iznini işaretlemelisin.')).toBeTruthy()
+
+    fireEvent.changeText(getByTestId('listing-title'), 'Sınav dönemlerinde yoğun kaygı')
+    fireEvent.changeText(getByTestId('listing-phone'), '05000000000')
+    fireEvent.press(getByTestId('listing-consent'))
+    fireEvent.press(getByTestId('listing-new-publish'))
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'Sınav dönemlerinde yoğun kaygı', contactConsent: true }),
+      expect.any(Object)
+    )
+  })
+
   it('7 adımı dolaşıp yayınlar (rıza zorunlu, telefon istenir)', () => {
     const { getByText, getByTestId, getByLabelText } = renderScreen(
       <CreateListingScreen initialSpecialization="Kaygı" />

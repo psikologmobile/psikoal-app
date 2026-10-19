@@ -7,6 +7,7 @@ import type { OfferTone } from '../utils/expertOffer'
 
 import { Text } from '@/core/components/atoms/Text'
 import { EnterUp, Pop, PressableScale, PulseDot } from '@/core/motion'
+import { hoverLift } from '@/core/theme'
 import { formatTry } from '@/core/utils/formatTry'
 import { SESSION_MODE_LABELS } from '@/domains/listing'
 
@@ -59,7 +60,7 @@ export function ExpertOfferCard({ offer, onPress, index = 0 }: ExpertOfferCardPr
         accessibilityRole="button"
         accessibilityLabel={`${offer.statusLabel}: ${title}. ${client}. Ödenen ${offer.feePaidLabel ?? '—'}`}
         testID={`expert-offer-${offer.id}`}
-        className="gap-2.5 rounded-2xl border border-border bg-surface p-4"
+        className={`gap-2.5 rounded-2xl border border-border bg-surface p-4 ${hoverLift}`}
       >
         <View className="flex-row items-center justify-between gap-2">
           <StatusBadge tone={offerTone(offer)} label={offer.statusLabel} />

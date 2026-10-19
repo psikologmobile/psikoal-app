@@ -5,10 +5,13 @@ import { ClientListingDetailScreen } from './ClientListingDetailScreen'
 import { makeListing, makeOffer } from '@/test-utils/fixtures'
 import {
   errorQuery,
+  COMPACT_LAYOUT,
   loadingQuery,
+  mockLayout,
   mockRouter,
   queryResult,
   renderScreen,
+  WIDE_LAYOUT,
 } from '@/test-utils/screen'
 
 jest.mock('expo-router', () => require('@/test-utils/screen').expoRouterMock)
@@ -17,6 +20,7 @@ jest.mock(
   () => require('@/test-utils/screen').asyncStorageMock
 )
 jest.mock('expo-secure-store', () => require('@/test-utils/screen').secureStoreMock)
+jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)
 jest.mock(
   'react-native-safe-area-context',
   () => require('react-native-safe-area-context/jest/mock').default
@@ -105,6 +109,20 @@ describe('ClientListingDetailScreen', () => {
     fireEvent.press(getByText('Anlaşmadım'))
     expect(mockDismiss).toHaveBeenCalledWith({ listingId: LISTING_ID, expertId: EXPERT_ID })
     expect(getAllByText('Anlaştım')).toHaveLength(2)
+  })
+
+  it('web: başlıkta durum ve kapat, teklif ızgarası, yan sütunda ilan özeti', () => {
+    mockLayout.current = WIDE_LAYOUT
+    const { getByText, getByTestId, getByLabelText } = render()
+    expect(getByTestId('listing-detail-columns')).toBeTruthy()
+    expect(getByText('Teklifler (2)')).toBeTruthy()
+    expect(getByText('İlan özeti')).toBeTruthy()
+    expect(getByText('Açıldı')).toBeTruthy()
+    fireEvent.press(getByText('İlanı kapat'))
+    expect(getByText('İlanın kapanacak ve yeni teklif gelmeyecek.')).toBeTruthy()
+    fireEvent.press(getByLabelText('Geri: İlanlarım'))
+    expect(mockRouter.navigate).toHaveBeenCalledWith('/(tabs)/offers')
+    mockLayout.current = COMPACT_LAYOUT
   })
 
   it('ilanı kapat sheet’i kapatma isteği gönderir', () => {

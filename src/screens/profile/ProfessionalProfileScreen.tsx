@@ -13,6 +13,7 @@ import { AppRefreshControl } from '@/core/components/atoms/AppRefreshControl'
 import { Button } from '@/core/components/atoms/Button'
 import { ChoiceChip } from '@/core/components/atoms/ChoiceChip'
 import { Icon } from '@/core/components/atoms/Icon'
+import { IconButton } from '@/core/components/atoms/IconButton'
 import { Skeleton } from '@/core/components/atoms/Skeleton'
 import { Text } from '@/core/components/atoms/Text'
 import { ErrorBanner } from '@/core/components/molecules/ErrorBanner'
@@ -21,6 +22,7 @@ import { SegmentedControl } from '@/core/components/molecules/SegmentedControl'
 import { Stepper } from '@/core/components/molecules/Stepper'
 import { TextArea } from '@/core/components/molecules/TextArea'
 import { TextField } from '@/core/components/molecules/TextField'
+import { BottomSheet } from '@/core/components/organisms/BottomSheet'
 import { useToast } from '@/core/components/organisms/Toast'
 import { Screen } from '@/core/components/templates'
 import { useRefresh } from '@/core/hooks'
@@ -30,6 +32,7 @@ import { useAuthStore } from '@/domains/auth'
 import { useCategoriesQuery } from '@/domains/category'
 import {
   ProfessionalProfileFormSchema,
+  useCertificateRemoval,
   useExpertDocumentUpload,
   useExpertProfileMutation,
   useExpertProfileQuery,
@@ -64,6 +67,7 @@ export function ProfessionalProfileScreen() {
   const { data: categories } = useCategoriesQuery()
   const save = useExpertProfileMutation()
   const documents = useExpertDocumentUpload()
+  const removal = useCertificateRemoval({ onDone: (message) => toast.show(message) })
   const { isRefreshing, onRefresh } = useRefresh(expertQuery)
 
   const {
@@ -280,16 +284,26 @@ export function ProfessionalProfileScreen() {
           <Text variant="label" className="mt-1">
             Sertifikalar
           </Text>
-          {(expert.certificates ?? []).map((path, index) => (
-            <EnterRight key={path} index={index + 1}>
-              <View className="min-h-touch flex-row items-center gap-2.5 rounded-lg border border-border px-3.5 py-3">
-                <Icon name="Award" size={18} color={colors.primaryText} />
-                <Text className="flex-1 font-body-semibold text-body-sm">
-                  {certificateName(path, index)}
-                </Text>
-              </View>
-            </EnterRight>
-          ))}
+          {(expert.certificates ?? []).map((path, index) => {
+            const label = certificateName(path, index)
+            return (
+              <EnterRight key={path} index={index + 1}>
+                <View className="min-h-touch flex-row items-center gap-2.5 rounded-lg border border-border py-1.5 pl-3.5 pr-1.5">
+                  <Icon name="Award" size={18} color={colors.primaryText} />
+                  <Text className="flex-1 font-body-semibold text-body-sm">{label}</Text>
+                  <IconButton
+                    icon="X"
+                    variant="ghost"
+                    size="sm"
+                    iconColor={colors.textMuted}
+                    accessibilityLabel={`${label} kaldır`}
+                    onPress={() => removal.ask({ value: path, label })}
+                    testID={`certificate-remove-${index}`}
+                  />
+                </View>
+              </EnterRight>
+            )
+          })}
           <PressableScale
             onPress={() => void documents.upload('certificate')}
             disabled={documents.isUploading('certificate')}
@@ -323,6 +337,46 @@ export function ProfessionalProfileScreen() {
           />
         </EnterRight>
       )}
+
+      <BottomSheet
+        visible={removal.target !== null}
+        onClose={removal.cancel}
+        dismissable={!removal.isPending}
+        title="Sertifika kaldırılsın mı?"
+        description={
+          removal.target
+            ? `${removal.target.label} profilinden kaldırılacak. Gerekirse yeniden ekleyebilirsin.`
+            : undefined
+        }
+        actions={
+          <View className="flex-row gap-2.5">
+            <View className="flex-1">
+              <Button
+                label="Vazgeç"
+                variant="outline"
+                size="lg"
+                fullWidth
+                isDisabled={removal.isPending}
+                onPress={removal.cancel}
+              />
+            </View>
+            <View className="flex-1">
+              <Button
+                label="Kaldır"
+                variant="danger"
+                size="lg"
+                fullWidth
+                isLoading={removal.isPending}
+                loadingLabel="Kaldırılıyor…"
+                onPress={removal.confirm}
+                testID="certificate-remove-confirm"
+              />
+            </View>
+          </View>
+        }
+      >
+        {removal.errorMessage ? <ErrorBanner message={removal.errorMessage} /> : null}
+      </BottomSheet>
     </Screen>
   )
 }

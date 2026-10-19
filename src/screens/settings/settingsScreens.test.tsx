@@ -9,13 +9,20 @@ import { SettingsScreen } from './SettingsScreen'
 import { useAuthStore, useLogoutMutation } from '@/domains/auth'
 import { useNotificationsQuery } from '@/domains/notification'
 import { TEST_CLIENT, TEST_EXPERT } from '@/test-utils/query'
-import { mockRouter, renderScreen } from '@/test-utils/screen'
+import {
+  COMPACT_LAYOUT,
+  mockLayout,
+  mockRouter,
+  renderScreen,
+  WIDE_LAYOUT,
+} from '@/test-utils/screen'
 
 jest.mock(
   '@react-native-async-storage/async-storage',
   () => require('@/test-utils/screen').asyncStorageMock
 )
 jest.mock('expo-secure-store', () => require('@/test-utils/screen').secureStoreMock)
+jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)
 jest.mock('@/lib/appVersion', () => ({ APP_VERSION: '2.0.0' }))
 jest.mock('@/lib/externalLinks', () => ({
   openLegalDocument: jest.fn(),
@@ -45,8 +52,14 @@ jest.mock('@/domains/wallet', () => ({
     isLoading: false,
   }),
 }))
+const mockGate = {
+  isPendingApproval: false,
+  isRejected: false,
+  rejectionReason: null as string | null,
+}
 jest.mock('@/domains/expert', () => ({
-  useExpertApprovalGate: () => ({ isPendingApproval: false, isRejected: false }),
+  ...jest.requireActual('@/domains/expert'),
+  useExpertApprovalGate: () => mockGate,
 }))
 jest.mock('@/domains/notification', () => {
   const actual = jest.requireActual('@/domains/notification')
@@ -67,6 +80,37 @@ beforeEach(() => {
 })
 
 describe('Ayarlar', () => {
+  afterEach(() => {
+    mockLayout.current = COMPACT_LAYOUT
+    mockGate.isRejected = false
+    mockGate.rejectionReason = null
+  })
+
+  it('web: sol sekmeler, panel değişimi ve çıkış', () => {
+    mockLayout.current = WIDE_LAYOUT
+    renderScreen(<SettingsScreen />)
+    expect(screen.getByText('Testlerim')).toBeTruthy()
+    fireEvent.press(screen.getByLabelText('Görünüm ve bildirimler'))
+    expect(
+      screen.getByText('Tarayıcı bildirimlerini tarayıcı ayarlarından yönetebilirsin.')
+    ).toBeTruthy()
+    expect(screen.queryByText('Testlerim')).toBeNull()
+    fireEvent.press(screen.getByLabelText('Destek ve gizlilik'))
+    expect(screen.getByText('Veri ve gizlilik')).toBeTruthy()
+    fireEvent.press(screen.getByTestId('settings-logout'))
+    expect(screen.getByText('Çıkış yapılsın mı?')).toBeTruthy()
+  })
+
+  it('uzman: profil reddedildiyse gerekçe görünür', () => {
+    mockGate.isRejected = true
+    mockGate.rejectionReason = 'Diploma eksik.'
+    act(() => {
+      useAuthStore.setState({ user: TEST_EXPERT, role: 'expert' })
+    })
+    renderScreen(<SettingsScreen />)
+    expect(screen.getByText(/Diploma eksik./)).toBeTruthy()
+  })
+
   it('danışan menüsü ve çıkış onayı', () => {
     renderScreen(<SettingsScreen />)
     expect(screen.getByText('Testlerim')).toBeTruthy()

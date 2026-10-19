@@ -12,7 +12,7 @@ import { Icon } from '@/core/components/atoms/Icon'
 import { TagChip } from '@/core/components/atoms/TagChip'
 import { Text } from '@/core/components/atoms/Text'
 import { EnterUp, Jiggle, PressableScale } from '@/core/motion'
-import { useThemeColors } from '@/core/theme'
+import { hoverLift, useThemeColors } from '@/core/theme'
 
 export type ExpertListingCardProps = {
   listing: Listing
@@ -44,7 +44,7 @@ export function ExpertListingCard({
     <EnterUp index={index}>
       <View
         testID={`expert-listing-${listing.id}`}
-        className="overflow-hidden rounded-3xl border border-border bg-surface"
+        className={`overflow-hidden rounded-3xl border border-border bg-surface ${hoverLift}`}
       >
         <PressableScale
           onPress={onOpen}

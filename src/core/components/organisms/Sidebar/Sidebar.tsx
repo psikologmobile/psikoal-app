@@ -5,7 +5,6 @@ import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { NavIconName } from '@/core/components/atoms/NavIcon'
-import type { BottomTabBarProps } from 'expo-router/js-tabs'
 
 import { BrandMark } from '@/core/components/atoms/BrandMark'
 import { CountBadge } from '@/core/components/atoms/CountBadge'
@@ -25,39 +24,44 @@ export function useSidebarMode(): SidebarMode {
   return 'full'
 }
 
-export type SidebarExtraItem = {
+export type SidebarItem = {
   key: string
   label: string
   icon: NavIconName
   onPress: () => void
   badge?: number
   active?: boolean
-  /** Bu rota adından SONRA listelenir; verilmezse sona eklenir. */
-  after?: string
 }
 
-export type SidebarProps = BottomTabBarProps & {
+export type SidebarProps = {
+  /** Gezinme öğeleri (sekmeler + Bildirimler/Bakiyem gibi ek bağlantılar), sırasıyla. */
+  items: SidebarItem[]
   /** Logo altındaki birincil düğme (Danışan: "Yeni ilan"). */
   primaryAction?: { label: string; icon?: NavIconName; onPress: () => void }
-  /** Sekme olmayan bağlantılar (Bildirimler, Bakiyem). */
-  extraItems?: SidebarExtraItem[]
   /** Alt kart: uzmanda bakiye kartı + "Bakiye yükle", danışanda kullanıcı kartı. Yalnız tam modda. */
   footer?: ReactNode
-  /** Rota adı → ikon. Verilmezse `tabBarIcon` kullanılır. */
-  icons?: Record<string, NavIconName>
+  /** Logoya basınca (ana sayfa). */
+  onBrandPress?: () => void
 }
 
 type NavItemProps = {
-  label: string
-  icon: ReactNode
-  active: boolean
+  item: SidebarItem
   mode: SidebarMode
-  badge?: number
-  onPress: () => void
 }
 
-function NavItem({ label, icon, active, mode, badge = 0, onPress }: NavItemProps) {
+function NavItem({ item, mode }: NavItemProps) {
+  const colors = useThemeColors()
+  const { label, active = false, badge = 0, onPress } = item
   const showLabel = mode === 'full'
+  const color = active ? colors.onAccentSoft : colors.textMuted
+  const icon =
+    item.icon === 'notifications' ? (
+      <Bell>
+        <NavIcon name="notifications" color={color} />
+      </Bell>
+    ) : (
+      <NavIcon name={item.icon} color={color} />
+    )
   return (
     <Pressable
       onPress={() => {
@@ -67,10 +71,12 @@ function NavItem({ label, icon, active, mode, badge = 0, onPress }: NavItemProps
       accessibilityRole="link"
       accessibilityLabel={badge > 0 ? `${label}, ${badge} yeni` : label}
       accessibilityState={{ selected: active }}
+      aria-current={active ? 'page' : undefined}
+      testID={`sidebar-${item.key}`}
       className={cn(
         'relative h-[46px] flex-row items-center gap-3 rounded-md',
         showLabel ? 'px-3' : 'w-13 justify-center',
-        active ? 'bg-accent-soft' : 'hover:bg-surface'
+        active ? 'bg-accent-soft' : 'web:hover:bg-surface'
       )}
     >
       {icon}
@@ -100,91 +106,14 @@ function NavItem({ label, icon, active, mode, badge = 0, onPress }: NavItemProps
 /**
  * Sidebar (web) — 248 px; ≤1100 px 84 px ikon rayı; ≤640 px üst yatay menü.
  * Aktif öğe accent-soft. Uzmanda altta bakiye kartı + "Bakiye yükle" (`footer`).
- * Expo Router Tabs'ta `tabBarPosition: 'left' | 'top'` ile kullanılır.
+ * Hem sekme düzeninde (Tabs `tabBar`) hem yığın sayfalarında (AppWebShell) kullanılır.
  */
-export function Sidebar({
-  state,
-  descriptors,
-  navigation,
-  primaryAction,
-  extraItems = [],
-  footer,
-  icons,
-}: SidebarProps) {
+export function Sidebar({ items, primaryAction, footer, onBrandPress }: SidebarProps) {
   const colors = useThemeColors()
   const insets = useSafeAreaInsets()
   const mode = useSidebarMode()
 
-  type Entry = { key: string; node: ReactNode }
-  const entries: Entry[] = []
-
-  state.routes.forEach((route, index) => {
-    const descriptor = descriptors[route.key]
-    if (!descriptor) return
-    const { options } = descriptor
-    if ((options as { href?: unknown }).href === null) return
-    const focused = state.index === index
-    const label =
-      typeof options.tabBarLabel === 'string' ? options.tabBarLabel : (options.title ?? route.name)
-    const iconColor = focused ? colors.onAccentSoft : colors.textMuted
-    const iconName = icons?.[route.name]
-    const icon = iconName ? (
-      <NavIcon name={iconName} color={iconColor} />
-    ) : (
-      (options.tabBarIcon?.({ focused, color: iconColor, size: 20 }) ?? null)
-    )
-    const badge = typeof options.tabBarBadge === 'number' ? options.tabBarBadge : 0
-    entries.push({
-      key: route.key,
-      node: (
-        <NavItem
-          key={route.key}
-          label={label}
-          icon={icon}
-          active={focused}
-          mode={mode}
-          badge={badge}
-          onPress={() => {
-            const event = navigation.emit({
-              type: 'tabPress',
-              target: route.key,
-              canPreventDefault: true,
-            })
-            if (!focused && !event.defaultPrevented) navigation.navigate(route.name, route.params)
-          }}
-        />
-      ),
-    })
-    extraItems
-      .filter((x) => x.after === route.name)
-      .forEach((x) => entries.push({ key: x.key, node: renderExtra(x) }))
-  })
-  extraItems
-    .filter((x) => !x.after || !state.routes.some((r) => r.name === x.after))
-    .forEach((x) => entries.push({ key: x.key, node: renderExtra(x) }))
-
-  function renderExtra(x: SidebarExtraItem) {
-    const color = x.active ? colors.onAccentSoft : colors.textMuted
-    const icon =
-      x.icon === 'notifications' ? (
-        <Bell>
-          <NavIcon name="notifications" color={color} />
-        </Bell>
-      ) : (
-        <NavIcon name={x.icon} color={color} />
-      )
-    return (
-      <NavItem
-        key={x.key}
-        label={x.label}
-        icon={icon}
-        active={Boolean(x.active)}
-        mode={mode}
-        badge={x.badge}
-        onPress={x.onPress}
-      />
-    )
-  }
+  const nav = items.map((item) => <NavItem key={item.key} item={item} mode={mode} />)
 
   if (mode === 'top') {
     return (
@@ -194,12 +123,13 @@ export function Sidebar({
         style={{ paddingTop: insets.top + 10 }}
         className="w-full flex-row items-center justify-around border-b border-border bg-bg px-2.5 pb-2.5"
       >
-        {entries.map((e) => e.node)}
+        {nav}
       </View>
     )
   }
 
   const rail = mode === 'rail'
+  const brand = <BrandMark size="md" iconOnly={rail} className="self-start" />
   return (
     <View
       accessibilityRole="menu"
@@ -214,7 +144,18 @@ export function Sidebar({
         showsVerticalScrollIndicator={false}
       >
         <View className={cn('pb-4.5', rail ? 'items-center' : 'px-2 pt-1')}>
-          <BrandMark size="md" iconOnly={rail} className="self-start" />
+          {onBrandPress ? (
+            <Pressable
+              onPress={onBrandPress}
+              accessibilityRole="link"
+              accessibilityLabel="PsikoAl ana sayfa"
+              className="self-start rounded-sm"
+            >
+              {brand}
+            </Pressable>
+          ) : (
+            brand
+          )}
         </View>
         {primaryAction ? (
           <PressableScale
@@ -235,7 +176,7 @@ export function Sidebar({
             )}
           </PressableScale>
         ) : null}
-        {entries.map((e) => e.node)}
+        {nav}
         {!rail && footer ? <View className="mt-auto pt-4">{footer}</View> : null}
       </ScrollView>
     </View>

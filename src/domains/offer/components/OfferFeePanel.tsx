@@ -19,6 +19,8 @@ export type OfferFeePanelProps = {
   quote: OfferQuote | undefined
   /** Ücret değiştiyse uzmanın onayladığı eski ücret (üstü çizili gösterilir). */
   previousFeeLabel?: string
+  /** Profil reddedildiyse admin gerekçesi (`ExpertDto.rejectionReason`). */
+  rejectionReason?: string | null
 }
 
 const CAN_SEND: OfferComposerState[] = ['normal', 'free', 'feeChanged']
@@ -27,7 +29,12 @@ const CAN_SEND: OfferComposerState[] = ['normal', 'free', 'feeChanged']
  * Teklif gönder ekranındaki ücret kutusu (accent zemin): o anki ücret, bakiyeye
  * etkisi ve durum metni. Ücret ve "yeterli mi" kararı sunucudan (`/offers/quote`).
  */
-export function OfferFeePanel({ state, quote, previousFeeLabel }: OfferFeePanelProps) {
+export function OfferFeePanel({
+  state,
+  quote,
+  previousFeeLabel,
+  rejectionReason,
+}: OfferFeePanelProps) {
   const free = state === 'free'
   const feeLabel = free ? 'Ücretsiz' : (quote?.feeLabel ?? '—')
   const balanceLine = quote
@@ -105,6 +112,12 @@ export function OfferFeePanel({ state, quote, previousFeeLabel }: OfferFeePanelP
               className="rounded-sm border border-danger bg-danger-soft p-3"
             >
               <Text className="text-body-sm text-danger-soft-fg">{block}</Text>
+              {state === 'rejected' && rejectionReason ? (
+                <Text className="mt-1.5 text-body-sm text-danger-soft-fg">
+                  <Text className="font-body-bold text-body-sm text-danger-soft-fg">Gerekçe: </Text>
+                  {rejectionReason}
+                </Text>
+              ) : null}
             </View>
           </Shake>
         ) : (

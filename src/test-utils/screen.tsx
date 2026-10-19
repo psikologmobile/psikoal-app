@@ -24,13 +24,17 @@ export const mockRouter = {
   push: jest.fn(),
   replace: jest.fn(),
   back: jest.fn(),
+  navigate: jest.fn(),
 }
+
+export const mockPathname: { current: string } = { current: '/' }
 
 export const mockSearchParams: { current: Record<string, string> } = { current: {} }
 
 export const expoRouterMock = {
   useRouter: () => mockRouter,
   useLocalSearchParams: () => mockSearchParams.current,
+  usePathname: () => mockPathname.current,
   useRootNavigationState: () => ({ key: 'test' }),
 }
 
@@ -87,4 +91,43 @@ export function renderScreen(ui: ReactElement) {
     )
   }
   return render(ui, { wrapper: Wrapper })
+}
+
+type BreakpointState = {
+  breakpoint: 'compact' | 'medium' | 'wide'
+  width: number
+  isWeb: boolean
+  isWebLayout: boolean
+  isWide: boolean
+}
+
+export const COMPACT_LAYOUT: BreakpointState = {
+  breakpoint: 'compact',
+  width: 390,
+  isWeb: false,
+  isWebLayout: false,
+  isWide: false,
+}
+export const WIDE_LAYOUT: BreakpointState = {
+  breakpoint: 'wide',
+  width: 1440,
+  isWeb: true,
+  isWebLayout: true,
+  isWide: true,
+}
+export const MEDIUM_LAYOUT: BreakpointState = {
+  breakpoint: 'medium',
+  width: 1024,
+  isWeb: true,
+  isWebLayout: true,
+  isWide: false,
+}
+
+/** Web yerleşim testleri: `mockLayout.current = WIDE_LAYOUT`. Her testten sonra COMPACT'a döndür. */
+export const mockLayout: { current: BreakpointState } = { current: COMPACT_LAYOUT }
+
+/** `jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)` */
+export const breakpointMock = {
+  getBreakpoint: () => mockLayout.current.breakpoint,
+  useBreakpoint: () => mockLayout.current,
 }

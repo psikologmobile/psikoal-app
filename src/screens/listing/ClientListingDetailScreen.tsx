@@ -18,12 +18,15 @@ import { TagChip } from '@/core/components/atoms/TagChip'
 import { Text } from '@/core/components/atoms/Text'
 import { EmptyState } from '@/core/components/molecules/EmptyState'
 import { ErrorBanner } from '@/core/components/molecules/ErrorBanner'
+import { InfoTile } from '@/core/components/molecules/InfoTile'
 import { ScreenHeader } from '@/core/components/molecules/ScreenHeader'
+import { WebPageHeader } from '@/core/components/molecules/WebPageHeader'
 import { BottomSheet } from '@/core/components/organisms/BottomSheet'
-import { Screen } from '@/core/components/templates'
-import { useRefresh } from '@/core/hooks'
+import { Screen, WebColumns, WebGrid } from '@/core/components/templates'
+import { useBreakpoint, useRefresh } from '@/core/hooks'
 import { EnterUp, FadeIn, Pop, PressableScale, Ring, Spin } from '@/core/motion'
 import { useThemeColors } from '@/core/theme'
+import { formatDate } from '@/core/utils/formatDate'
 import { RESULT_LEVEL_LABELS } from '@/domains/assessment'
 import {
   CLIENT_LISTING_STATUS,
@@ -109,6 +112,7 @@ export function ClientListingDetailScreen({ listingId }: ClientListingDetailScre
   const [sort, setSort] = useState<OfferSort>('newest')
   const [showDescription, setShowDescription] = useState(false)
   const [closeSheet, setCloseSheet] = useState(false)
+  const { isWebLayout } = useBreakpoint()
 
   const listingQuery = useListingDetailQuery(listingId)
   const offersQuery = useListingOffersQuery(listingId)
@@ -168,51 +172,8 @@ export function ClientListingDetailScreen({ listingId }: ClientListingDetailScre
   const matchedOffer = offersQuery.data?.data.find((o) => o.status === 'ACCEPTED')
   const showOffers = listing.status !== 'PENDING_APPROVAL' && listing.status !== 'REJECTED_BY_ADMIN'
 
-  return (
-    <Screen
-      testID="screen-listing-detail"
-      refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
-      contentClassName="gap-4"
-    >
-      <EnterUp>{header}</EnterUp>
-
-      <EnterUp index={1} className="gap-3 rounded-3xl bg-surface p-4.5">
-        <View className="flex-row items-center justify-between gap-2">
-          <StatusPill label={status.label} variant={status.variant === 'live' ? 'live' : 'soft'} />
-          <Text className="shrink text-label text-fg-muted">{metaRight(listing)}</Text>
-        </View>
-        <Text className="font-body-bold text-xl text-fg">{listing.title}</Text>
-        <View className="flex-row flex-wrap gap-1.5">
-          {listing.specialization.map((spec) => (
-            <TagChip key={spec} label={spec} tone="bg" />
-          ))}
-          <TagChip label={CLIENT_SESSION_MODE_LABELS[listing.preferredSessionType]} tone="bg" />
-          {listing.city ? <TagChip label={listing.city} tone="bg" /> : null}
-          <TagChip label={listingBudgetLabel(listing)} tone="bg" />
-          {listing.assessmentResult ? (
-            <TagChip
-              tone="accent"
-              label={`${listing.assessmentResult.assessmentTitle} · ${RESULT_LEVEL_LABELS[listing.assessmentResult.level]}`}
-            />
-          ) : null}
-        </View>
-        {showDescription && listing.description ? (
-          <FadeIn>
-            <Text variant="bodySm" color="muted">
-              {listing.description}
-            </Text>
-          </FadeIn>
-        ) : null}
-        {listing.description ? (
-          <Button
-            variant="link"
-            label={showDescription ? 'Açıklamayı gizle' : 'Açıklamayı gör'}
-            onPress={() => setShowDescription((v) => !v)}
-            className="self-start px-0"
-          />
-        ) : null}
-      </EnterUp>
-
+  const statusBlocks = (
+    <>
       {listing.status === 'REJECTED_BY_ADMIN' ? (
         <EnterUp index={2}>
           <View
@@ -259,7 +220,11 @@ export function ClientListingDetailScreen({ listingId }: ClientListingDetailScre
           </Text>
         </EnterUp>
       ) : null}
+    </>
+  )
 
+  const claimBlocks = (
+    <>
       {isOpen
         ? claims.map((claim) => {
             const offer = pendingOfferOf(claim.expertId)
@@ -296,7 +261,11 @@ export function ClientListingDetailScreen({ listingId }: ClientListingDetailScre
             )
           })
         : null}
+    </>
+  )
 
+  const matchedBlock = (
+    <>
       {listing.status === 'MATCHED' && listing.matchedExpert ? (
         <EnterUp index={2}>
           <PressableScale
@@ -321,7 +290,27 @@ export function ClientListingDetailScreen({ listingId }: ClientListingDetailScre
           </PressableScale>
         </EnterUp>
       ) : null}
+    </>
+  )
 
+  const renderOffer = (offer: Offer) => (
+    <OfferCard
+      offer={offer}
+      claimed={claimedIds.has(offer.expertId)}
+      showActions={isOpen && offer.status === 'PENDING'}
+      onProfile={() =>
+        router.push({
+          pathname: '/expert/[id]',
+          params: { id: offer.expertId, offerId: offer.id },
+        })
+      }
+      onDetail={() => router.push(`/offer/${offer.id}`)}
+      onAgree={() => askFor(offer)}
+    />
+  )
+
+  const offersSection = (
+    <>
       {showOffers ? (
         offersQuery.isLoading ? (
           <View className="gap-3">
@@ -366,30 +355,32 @@ export function ClientListingDetailScreen({ listingId }: ClientListingDetailScre
                 ))}
               </ScrollView>
             </EnterUp>
-            {offers.map((offer, i) => (
-              <EnterUp key={offer.id} index={Math.min(7, i + 4)}>
-                <OfferCard
-                  offer={offer}
-                  claimed={claimedIds.has(offer.expertId)}
-                  showActions={isOpen && offer.status === 'PENDING'}
-                  onProfile={() =>
-                    router.push({
-                      pathname: '/expert/[id]',
-                      params: { id: offer.expertId, offerId: offer.id },
-                    })
-                  }
-                  onDetail={() => router.push(`/offer/${offer.id}`)}
-                  onAgree={() => askFor(offer)}
-                />
+            {isWebLayout ? (
+              <EnterUp index={4}>
+                <WebGrid columns={2}>
+                  {offers.map((offer) => (
+                    <View key={offer.id}>{renderOffer(offer)}</View>
+                  ))}
+                </WebGrid>
               </EnterUp>
-            ))}
-            {isOpen ? (
+            ) : (
+              offers.map((offer, i) => (
+                <EnterUp key={offer.id} index={Math.min(7, i + 4)}>
+                  {renderOffer(offer)}
+                </EnterUp>
+              ))
+            )}
+            {isOpen && !isWebLayout ? (
               <Button variant="link" label="İlanı kapat" onPress={() => setCloseSheet(true)} />
             ) : null}
           </>
         )
       ) : null}
+    </>
+  )
 
+  const sheets = (
+    <>
       <MatchConfirmSheet
         target={match.target}
         onCancel={match.cancel}
@@ -441,6 +432,136 @@ export function ClientListingDetailScreen({ listingId }: ClientListingDetailScre
           <ErrorBanner message={getErrorMessage(closeMutation.error)} />
         ) : null}
       </BottomSheet>
+    </>
+  )
+
+  if (isWebLayout) {
+    return (
+      <Screen
+        testID="screen-listing-detail"
+        refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        contentClassName="gap-6"
+      >
+        <WebPageHeader
+          size="sm"
+          backLabel="İlanlarım"
+          onBack={() => router.navigate('/(tabs)/offers')}
+          eyebrow={
+            <>
+              <StatusPill
+                label={status.label}
+                variant={status.variant === 'live' ? 'live' : 'soft'}
+              />
+              <Text className="text-label text-fg-muted">{metaRight(listing)}</Text>
+            </>
+          }
+          title={listing.title}
+          right={
+            isOpen ? (
+              <Button label="İlanı kapat" variant="outline" onPress={() => setCloseSheet(true)} />
+            ) : null
+          }
+        />
+        <WebColumns
+          asideWidth={360}
+          testID="listing-detail-columns"
+          aside={
+            <>
+              {claimBlocks}
+              <EnterUp index={3}>
+                <View className="gap-3 rounded-2xl border border-border p-5">
+                  <Text variant="overline" color="muted">
+                    İlan özeti
+                  </Text>
+                  {listing.description ? (
+                    <Text className="text-body-sm text-fg-muted">{listing.description}</Text>
+                  ) : null}
+                  <WebGrid columns={2} gapClassName="gap-2">
+                    <InfoTile label="Alan" value={listing.specialization.join(', ') || '—'} />
+                    <InfoTile
+                      label="Görüşme"
+                      value={`${CLIENT_SESSION_MODE_LABELS[listing.preferredSessionType]}${listing.city ? ` · ${listing.city}` : ''}`}
+                    />
+                    <InfoTile label="Bütçe" value={listingBudgetLabel(listing)} />
+                    <InfoTile
+                      label="Açıldı"
+                      value={formatDate(listing.createdAt, 'dayMonthShort')}
+                    />
+                  </WebGrid>
+                  {listing.assessmentResult ? (
+                    <TagChip
+                      tone="accent"
+                      label={`${listing.assessmentResult.assessmentTitle} · ${RESULT_LEVEL_LABELS[listing.assessmentResult.level]}`}
+                    />
+                  ) : null}
+                </View>
+              </EnterUp>
+            </>
+          }
+        >
+          {statusBlocks}
+          {matchedBlock}
+          {offersSection}
+        </WebColumns>
+        {sheets}
+      </Screen>
+    )
+  }
+
+  return (
+    <Screen
+      testID="screen-listing-detail"
+      refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+      contentClassName="gap-4"
+    >
+      <EnterUp>{header}</EnterUp>
+
+      <EnterUp index={1} className="gap-3 rounded-3xl bg-surface p-4.5">
+        <View className="flex-row items-center justify-between gap-2">
+          <StatusPill label={status.label} variant={status.variant === 'live' ? 'live' : 'soft'} />
+          <Text className="shrink text-label text-fg-muted">{metaRight(listing)}</Text>
+        </View>
+        <Text className="font-body-bold text-xl text-fg">{listing.title}</Text>
+        <View className="flex-row flex-wrap gap-1.5">
+          {listing.specialization.map((spec) => (
+            <TagChip key={spec} label={spec} tone="bg" />
+          ))}
+          <TagChip label={CLIENT_SESSION_MODE_LABELS[listing.preferredSessionType]} tone="bg" />
+          {listing.city ? <TagChip label={listing.city} tone="bg" /> : null}
+          <TagChip label={listingBudgetLabel(listing)} tone="bg" />
+          {listing.assessmentResult ? (
+            <TagChip
+              tone="accent"
+              label={`${listing.assessmentResult.assessmentTitle} · ${RESULT_LEVEL_LABELS[listing.assessmentResult.level]}`}
+            />
+          ) : null}
+        </View>
+        {showDescription && listing.description ? (
+          <FadeIn>
+            <Text variant="bodySm" color="muted">
+              {listing.description}
+            </Text>
+          </FadeIn>
+        ) : null}
+        {listing.description ? (
+          <Button
+            variant="link"
+            label={showDescription ? 'Açıklamayı gizle' : 'Açıklamayı gör'}
+            onPress={() => setShowDescription((v) => !v)}
+            className="self-start px-0"
+          />
+        ) : null}
+      </EnterUp>
+
+      {statusBlocks}
+
+      {claimBlocks}
+
+      {matchedBlock}
+
+      {offersSection}
+
+      {sheets}
     </Screen>
   )
 }

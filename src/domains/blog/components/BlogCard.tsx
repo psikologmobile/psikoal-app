@@ -7,6 +7,7 @@ import type { BlogListItem } from '../types/blog.types'
 
 import { Text } from '@/core/components/atoms/Text'
 import { PressableScale } from '@/core/motion'
+import { hoverLift } from '@/core/theme'
 import { formatDate } from '@/core/utils/formatDate'
 
 export type BlogCardProps = {
@@ -27,7 +28,7 @@ export function BlogCard({ blog, onPress, variant = 'row' }: BlogCardProps) {
         onPress={onPress}
         accessibilityRole="button"
         accessibilityLabel={`${blog.title}, ${blog.readingTime} dakika okuma`}
-        className="overflow-hidden rounded-panel bg-surface"
+        className={`overflow-hidden rounded-panel bg-surface ${hoverLift}`}
       >
         <BlogCover imageUrl={blog.coverImage} size="card" seed={blog.slug} />
         <View className="gap-2 p-4">

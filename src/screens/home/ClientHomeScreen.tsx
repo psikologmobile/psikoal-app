@@ -2,6 +2,8 @@ import { ScrollView, View } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
+import { ClientHomeWeb } from './ClientHomeWeb'
+
 import { AppRefreshControl } from '@/core/components/atoms/AppRefreshControl'
 import { Avatar } from '@/core/components/atoms/Avatar'
 import { CountBadge } from '@/core/components/atoms/CountBadge'
@@ -14,7 +16,7 @@ import { ReminderBanner } from '@/core/components/molecules/ReminderBanner'
 import { SectionHeader } from '@/core/components/molecules/SectionHeader'
 import { HeroCard } from '@/core/components/organisms/HeroCard'
 import { Screen } from '@/core/components/templates'
-import { useRefresh } from '@/core/hooks'
+import { useBreakpoint, useRefresh } from '@/core/hooks'
 import { Bell, EnterRight, EnterUp, Float, PressableScale } from '@/core/motion'
 import { useThemeColors } from '@/core/theme'
 import { cn } from '@/core/utils/cn'
@@ -102,6 +104,64 @@ export function ClientHomeScreen() {
 
   const goNewListing = () => router.push('/listing/new')
   const firstName = user?.firstName ?? ''
+  const { isWebLayout, isWide } = useBreakpoint()
+
+  if (isWebLayout) {
+    return (
+      <Screen
+        testID="screen-home-client"
+        refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        contentClassName="gap-6"
+      >
+        <ClientHomeWeb
+          firstName={firstName}
+          isWide={isWide}
+          isLoading={myListingsQuery.isLoading}
+          isError={myListingsQuery.isError}
+          onRetry={() => void myListingsQuery.refetch()}
+          reminder={
+            reminder
+              ? {
+                  expertName: reminder.claim.expertName,
+                  onGo: () => router.push(`/listing/${reminder.listing.id}`),
+                  onDismiss: () =>
+                    dismissClaim({
+                      listingId: reminder.listing.id,
+                      expertId: reminder.claim.expertId,
+                    }),
+                }
+              : null
+          }
+          quotaNote={
+            myListingsQuery.isSuccess ? listingQuotaNote(activeCount, maxActive) : undefined
+          }
+          listings={listings.filter((l) => l.status === 'OPEN' || l.status === 'PENDING_APPROVAL')}
+          isFirstTime={isFirstTime}
+          tests={tests ?? []}
+          results={results}
+          blogs={blogsQuery.data?.data ?? []}
+          categories={categories}
+          referrer={
+            referrer
+              ? {
+                  name: referrer.name,
+                  title: referrer.title,
+                  onPress: () => router.push(`/expert/${referrer.id}`),
+                }
+              : null
+          }
+          onNewListing={goNewListing}
+          onListing={(id) => router.push(`/listing/${id}`)}
+          onAllListings={() => router.push('/(tabs)/offers')}
+          onTest={() => router.push('/assessment')}
+          onResults={() => router.push('/assessment/list')}
+          onBlog={(slug) => router.push(`/blog/${slug}`)}
+          onAllBlogs={() => router.push('/blog')}
+          onCategory={(slug) => router.push(`/category/${slug}`)}
+        />
+      </Screen>
+    )
+  }
 
   return (
     <Screen

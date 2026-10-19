@@ -26,7 +26,7 @@ export type ScreenProps = {
 
 /**
  * Screen (template) — bg zemin, mobilde 20 px yatay kenar + üstte güvenli alan
- * + 12 px; web'de (kenar çubuğu yanında) 40 px kenar, en çok 1200 px ve ortalı.
+ * + 12 px; web'de (kenar çubuğu yanında) 40 px kenar (ikon rayında 28), en çok 1200 px ve ortalı.
  * Sekme ekranlarında alt boşluğu (tabs)/_layout verir.
  */
 export function Screen({
@@ -42,7 +42,8 @@ export function Screen({
   const insets = useSafeAreaInsets()
   const mode = useSidebarMode()
   const isWebWide = Platform.OS === 'web' && mode !== 'top'
-  const pad = isWebWide ? 'px-10 pb-14 pt-8' : 'px-5 pb-8'
+  // Web: tam kenar çubuğunda 40/32/56, ikon rayında (≤1100) 28/28/48 (tasarım `.main`).
+  const pad = !isWebWide ? 'px-5 pb-8' : mode === 'rail' ? 'px-7 pb-12 pt-7' : 'px-10 pb-14 pt-8'
   // REASON: üst boşluk cihazın güvenli alanından hesaplanır
   const topStyle = safeTop && !isWebWide ? { paddingTop: insets.top + 12 } : undefined
 

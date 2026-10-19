@@ -5,25 +5,16 @@ import { Platform } from 'react-native'
 import { Tabs } from 'expo-router/js-tabs'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { Redirect, useRouter, useSegments } from 'expo-router'
+import { Redirect, useRouter } from 'expo-router'
 
 import type { NavIconName } from '@/core/components/atoms/NavIcon'
-import type { BottomTabBarProps } from 'expo-router/js-tabs'
 
 import { NavIcon } from '@/core/components/atoms/NavIcon'
-import {
-  Sidebar,
-  SidebarBalanceCard,
-  SidebarUserCard,
-  TabBar,
-  useSidebarMode,
-} from '@/core/components/organisms'
+import { TabBar, useSidebarMode } from '@/core/components/organisms'
 import { size, useThemeColors } from '@/core/theme'
-import { getFullName, getInitials } from '@/core/utils/personName'
 import { useAuthStore } from '@/domains/auth'
 import { useExpertApprovalGate } from '@/domains/expert'
-import { useUnreadNotificationCount } from '@/domains/notification'
-import { useWalletQuery } from '@/domains/wallet'
+import { AppSidebar } from '@/screens/shell'
 import { SiteLandingScreen, useWebLandingGate } from '@/screens/site'
 
 /** Role göre 4 sekme (docs/design-v2/components.md §4). */
@@ -40,71 +31,6 @@ const TABS: Record<'expert' | 'client', Record<string, { title: string; icon: Na
     matches: { title: 'Eşleşmeler', icon: 'matches' },
     profile: { title: 'Ayarlar', icon: 'settings' },
   },
-}
-
-/** Web kenar çubuğu: role göre ek bağlantılar ve alt kart. */
-function WebSidebar(props: BottomTabBarProps & { isExpert: boolean }) {
-  const { isExpert, ...tabProps } = props
-  const router = useRouter()
-  const segments = useSegments()
-  const user = useAuthStore((s) => s.user)
-  const unread = useUnreadNotificationCount()
-  const { data: wallet } = useWalletQuery()
-  const icons = Object.fromEntries(
-    Object.entries(TABS[isExpert ? 'expert' : 'client']).map(([k, v]) => [k, v.icon])
-  )
-  const current = segments[segments.length - 1]
-
-  return (
-    <Sidebar
-      {...tabProps}
-      icons={icons}
-      primaryAction={
-        isExpert ? undefined : { label: 'Yeni ilan', onPress: () => router.push('/listing/new') }
-      }
-      extraItems={
-        isExpert
-          ? [
-              {
-                key: 'wallet',
-                label: 'Bakiyem',
-                icon: 'balance',
-                after: 'matches',
-                active: current === 'wallet',
-                onPress: () => router.push('/wallet'),
-              },
-            ]
-          : [
-              {
-                key: 'notifications',
-                label: 'Bildirimler',
-                icon: 'notifications',
-                after: 'matches',
-                badge: unread,
-                active: current === 'notifications',
-                onPress: () => router.push('/notifications'),
-              },
-            ]
-      }
-      footer={
-        isExpert ? (
-          <SidebarBalanceCard
-            balanceLabel={wallet?.balanceLabel ?? '—'}
-            // Bakiye yükleme YALNIZ web uygulamasında (/bakiye — PayTR); kenar çubuğu
-            // yalnız web'de çizildiği için mobil mağaza kuralı ihlal edilmez.
-            // REASON: /bakiye web yükleme sayfası ayrı işte eklenecek; typed routes henüz tanımıyor.
-            onAction={() => router.push('/bakiye' as never)}
-          />
-        ) : (
-          <SidebarUserCard
-            initials={getInitials(user) || 'K'}
-            name={getFullName(user) || 'Hesabım'}
-            roleLabel="Danışan"
-          />
-        )
-      }
-    />
-  )
 }
 
 function AppTabsLayout() {
@@ -139,9 +65,7 @@ function AppTabsLayout() {
 
   return (
     <Tabs
-      tabBar={(props) =>
-        isWeb ? <WebSidebar {...props} isExpert={isExpert} /> : <TabBar {...props} />
-      }
+      tabBar={(props) => (isWeb ? <AppSidebar /> : <TabBar {...props} />)}
       screenOptions={{
         headerShown: false,
         tabBarPosition: isWeb ? (sidebarMode === 'top' ? 'top' : 'left') : 'bottom',

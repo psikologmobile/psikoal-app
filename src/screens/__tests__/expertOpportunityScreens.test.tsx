@@ -10,6 +10,7 @@ import listingFixtures from '@/domains/listing/schemas/__fixtures__/listings.res
 import { OfferSchema } from '@/domains/offer'
 import offerFixtures from '@/domains/offer/schemas/__fixtures__/listing-offers.response.json'
 import { EXPERT_PROFILE, QUOTE, WALLET, setupExpertScreen } from '@/test-utils/expertScreen'
+import { COMPACT_LAYOUT, mockLayout, WIDE_LAYOUT } from '@/test-utils/screen'
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn() }
 let mockParams: Record<string, string> = {}
@@ -33,6 +34,7 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(async () => undefined),
   deleteItemAsync: jest.fn(async () => undefined),
 }))
+jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }))
 
 const OFFERED = listingFixtures.expertView
@@ -69,7 +71,10 @@ beforeEach(() => {
   mockParams = {}
   env = setupExpertScreen()
 })
-afterEach(() => env.cleanup())
+afterEach(() => {
+  env.cleanup()
+  mockLayout.current = COMPACT_LAYOUT
+})
 
 describe('Fırsatlar', () => {
   it('lists opportunities with fee footer and offer action', async () => {
@@ -129,6 +134,29 @@ describe('Fırsatlar', () => {
     expect(await screen.findByText('Kilitli')).toBeTruthy()
   })
 
+  it('rejected profile shows the admin reason', async () => {
+    serveCommon({ ...EXPERT_PROFILE, status: 'rejected', rejectionReason: 'Diploma okunmuyor.' })
+    env.mock.onGet('/listings').reply(200, { data: [], meta: { page: 1, total: 0, perPage: 20 } })
+    const screen = env.renderScreen(<ExpertHomeScreen />)
+    expect(await screen.findByText(/Diploma okunmuyor./)).toBeTruthy()
+    fireEvent.press(screen.getByText('Belgelerimi güncelle'))
+    expect(mockRouter.push).toHaveBeenCalledWith('/profile/professional?tab=belgeler')
+  })
+
+  it('web: header, stat tiles, card grid and sort button', async () => {
+    mockLayout.current = WIDE_LAYOUT
+    serveCommon()
+    env.mock
+      .onGet('/listings')
+      .reply(200, { data: [OPEN], meta: { page: 1, total: 1, perPage: 20 } })
+    const screen = env.renderScreen(<ExpertHomeScreen />)
+    expect(await screen.findByText('1 açık ilan')).toBeTruthy()
+    expect(screen.getByText('Bekleyen teklif')).toBeTruthy()
+    expect(screen.getByText('Aktif eşleşme')).toBeTruthy()
+    fireEvent.press(screen.getByTestId('opportunities-sort'))
+    expect(screen.getByText('Sırala: Yüksek bütçe')).toBeTruthy()
+  })
+
   it('shows the error state with retry', async () => {
     serveCommon()
     env.mock.onGet('/listings').reply(500)
@@ -182,6 +210,29 @@ describe('İlan detayı (uzman)', () => {
     expect(await screen.findByText('Teklif ücreti · bakiye ₺1.250')).toBeTruthy()
     fireEvent.press(screen.getByTestId('listing-send-offer'))
     expect(mockRouter.push).toHaveBeenCalledWith(`/offer/new?listingId=${LISTING_ID}`)
+  })
+
+  it('web: fee card with topup action and back link', async () => {
+    mockLayout.current = WIDE_LAYOUT
+    mockParams = { id: LISTING_ID }
+    serveCommon()
+    env.mock.onGet(`/listings/${LISTING_ID}`).reply(200, OPEN)
+    env.mock.onGet('/offers/quote').reply(200, { data: { ...QUOTE, sufficient: false } })
+    const screen = env.renderScreen(<ExpertListingDetailScreen />)
+    expect(await screen.findByText('Bakiyen yetersiz')).toBeTruthy()
+    expect(screen.getByText('Teklif ücreti')).toBeTruthy()
+    fireEvent.press(screen.getByText('Bakiye yükle'))
+    expect(mockRouter.push).toHaveBeenCalledWith('/bakiye')
+    fireEvent.press(screen.getByLabelText('Geri: Fırsatlar'))
+    expect(mockRouter.back).toHaveBeenCalled()
+  })
+
+  it('rejected profile: reason in listing detail', async () => {
+    mockParams = { id: LISTING_ID }
+    serveCommon({ ...EXPERT_PROFILE, status: 'rejected', rejectionReason: 'Belge eksik.' })
+    env.mock.onGet(`/listings/${LISTING_ID}`).reply(200, OPEN)
+    const screen = env.renderScreen(<ExpertListingDetailScreen />)
+    expect(await screen.findByText(/Belge eksik./)).toBeTruthy()
   })
 
   it('insufficient balance and matched-with-other states', async () => {
@@ -256,6 +307,28 @@ describe('Teklif gönder', () => {
       price: 2400,
     })
     expect(screen.getByText('Ayşe Yılmaz')).toBeTruthy()
+  })
+
+  it('web: form card + fee aside; sends with the same flow', async () => {
+    mockLayout.current = WIDE_LAYOUT
+    env.mock.onGet('/offers/quote').reply(200, { data: QUOTE })
+    env.mock.onPost('/offers').reply(200, MY_OFFER)
+    env.mock.onGet('/wallet/me').reply(200, { data: WALLET })
+    const screen = env.renderScreen(<SendOfferScreen />)
+    expect(await screen.findByText(/bakiyenden düşer/)).toBeTruthy()
+    expect(screen.getByLabelText('Geri: İlan')).toBeTruthy()
+    fireEvent.changeText(screen.getByTestId('offer-price'), '2400')
+    fireEvent.press(screen.getByText('Teklif gönder (₺625)'))
+    expect(await screen.findByText('Teklif gönderildi')).toBeTruthy()
+  })
+
+  it('rejected profile: reason inside the fee panel', async () => {
+    env.mock
+      .onGet(`/experts/${EXPERT_PROFILE.id}`)
+      .reply(200, { ...EXPERT_PROFILE, status: 'rejected', rejectionReason: 'Lisans eksik.' })
+    env.mock.onGet('/offers/quote').reply(200, { data: QUOTE })
+    const screen = env.renderScreen(<SendOfferScreen />)
+    expect(await screen.findByText(/Lisans eksik./)).toBeTruthy()
   })
 
   it('free right and insufficient balance variants', async () => {

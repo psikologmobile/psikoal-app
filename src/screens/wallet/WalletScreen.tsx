@@ -4,6 +4,8 @@ import { ScrollView, View } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
+import { WalletWeb } from './WalletWeb'
+
 import type { WalletTransactionFilterKey } from '@/domains/wallet'
 
 import { AppRefreshControl } from '@/core/components/atoms/AppRefreshControl'
@@ -20,10 +22,11 @@ import { SettingsGroup, SettingsRow } from '@/core/components/molecules/Settings
 import { TransactionRow } from '@/core/components/molecules/TransactionRow'
 import { HeroCard } from '@/core/components/organisms/HeroCard'
 import { Screen } from '@/core/components/templates'
-import { useRefresh } from '@/core/hooks'
+import { useBreakpoint, useRefresh } from '@/core/hooks'
 import { Coin, CountRoll, EnterUp, Pop, Spin } from '@/core/motion'
 import { useThemeColors } from '@/core/theme'
 import {
+  TOPUP_WEB_PATH,
   TopupNotice,
   WALLET_TRANSACTION_FILTERS,
   isRightsTransaction,
@@ -56,6 +59,36 @@ export function WalletScreen() {
   const loaded = transactionsQuery.data?.pages.flatMap((page) => page.data) ?? []
   const transactions = filter === 'rights' ? loaded.filter(isRightsTransaction) : loaded
   const isFetching = walletQuery.isFetching || transactionsQuery.isFetching
+  const { isWebLayout, isWide } = useBreakpoint()
+
+  if (isWebLayout) {
+    return (
+      <Screen
+        testID="screen-wallet"
+        refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        contentClassName="gap-[22px]"
+      >
+        <WalletWeb
+          wallet={wallet}
+          isWalletLoading={walletQuery.isLoading}
+          isWide={isWide}
+          filter={filter}
+          onFilter={setFilter}
+          transactions={transactions}
+          isLoading={transactionsQuery.isLoading}
+          isError={transactionsQuery.isError}
+          onRetry={() => void transactionsQuery.refetch()}
+          hasNextPage={Boolean(transactionsQuery.hasNextPage)}
+          isFetchingNextPage={transactionsQuery.isFetchingNextPage}
+          onNextPage={() => void transactionsQuery.fetchNextPage()}
+          // REASON: /bakiye web yükleme sayfası; typed routes onu tanımıyor.
+          onTopup={() => router.push(TOPUP_WEB_PATH as never)}
+          onInvoices={() => router.push('/wallet/invoices')}
+          onReferral={() => router.push('/referral')}
+        />
+      </Screen>
+    )
+  }
 
   return (
     <Screen
