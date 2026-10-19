@@ -20,6 +20,8 @@ export type ErrorBannerProps = {
   onRetry?: () => void
   /** Her değiştiğinde yeniden sallanır (ör. deneme sayacı). */
   shakeKey?: unknown
+  /** Satır içi kutuda solda uyarı ikonu (Giriş). */
+  showIcon?: boolean
   className?: string
 }
 
@@ -36,6 +38,7 @@ export function ErrorBanner({
   retryLabel = 'Tekrar dene',
   onRetry,
   shakeKey,
+  showIcon = false,
   className,
 }: ErrorBannerProps) {
   const colors = useThemeColors()
@@ -67,7 +70,14 @@ export function ErrorBanner({
             ) : null}
           </>
         ) : (
-          <Text className="font-body-semibold text-body-sm text-danger-soft-fg">{message}</Text>
+          <View className="flex-row items-start gap-2.5">
+            {showIcon ? (
+              <Icon name="CircleAlert" size={20} color={colors.onDangerSoft} strokeWidth={2.2} />
+            ) : null}
+            <Text className="flex-1 font-body-semibold text-body-sm text-danger-soft-fg">
+              {message}
+            </Text>
+          </View>
         )}
       </View>
     </Shake>

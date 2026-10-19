@@ -16,14 +16,20 @@ export { ReviewForm } from './components/ReviewForm'
 export type { ReviewFormProps } from './components/ReviewForm'
 export { useMatchReview, REVIEW_ALREADY_EXISTS } from './hooks/useMatchReview'
 export {
-  OnboardingStepTitle,
-  OnboardingStepSpecs,
-  OnboardingStepExperience,
-  OnboardingStepContact,
-  OnboardingStepBio,
-  OnboardingStepDocuments,
-  OnboardingStepPhoto,
-} from './components/onboarding'
+  useExpertOnboarding,
+  validateExpertOnboardingStep,
+  toExpertOnboardingPayload,
+  EXPERT_ONBOARDING_STEPS,
+  BIO_MIN,
+  BIO_MAX,
+  EXPERIENCE_MAX,
+} from './hooks/useExpertOnboarding'
+export type {
+  UseExpertOnboardingReturn,
+  ExpertOnboardingValues,
+  ExpertOnboardingErrors,
+  ExpertOnboardingField,
+} from './hooks/useExpertOnboarding'
 export { useExpertApprovalGate, isExpertProfileMissing } from './hooks/useExpertApprovalGate'
 export { expertKeys } from './expert.constants'
 export { EXPERT_NOT_FOUND, isExpertNotVisibleError } from './utils/expertVisibility'
