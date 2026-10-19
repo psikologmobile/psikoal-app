@@ -61,3 +61,10 @@ export const EXPERT_OFFER_FILTERS = [
 ] as const
 
 export type ExpertOfferFilter = (typeof EXPERT_OFFER_FILTERS)[number]
+
+/** Teklif kartındaki görüşme şekli adları (tasarım dili). */
+export const OFFER_SESSION_LABELS = {
+  online: 'Online',
+  yüz_yüze: 'Yüz yüze',
+  yüz_yüze_online: 'İkisi de',
+} as const

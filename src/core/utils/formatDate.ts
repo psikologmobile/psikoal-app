@@ -1,7 +1,7 @@
 const TR = 'tr-TR'
 
 const FORMAT_OPTIONS: Record<
-  'short' | 'long' | 'time' | 'dayMonth' | 'dayMonthShort',
+  'short' | 'long' | 'time' | 'dayMonth' | 'dayMonthShort' | 'monthYearShort',
   Intl.DateTimeFormatOptions
 > = {
   short: { day: '2-digit', month: '2-digit', year: 'numeric' },
@@ -9,6 +9,7 @@ const FORMAT_OPTIONS: Record<
   time: { hour: '2-digit', minute: '2-digit', hour12: false },
   dayMonth: { day: 'numeric', month: 'long' },
   dayMonthShort: { day: 'numeric', month: 'short' },
+  monthYearShort: { month: 'short', year: 'numeric' },
 }
 
 export type DateFormat = keyof typeof FORMAT_OPTIONS

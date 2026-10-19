@@ -85,8 +85,14 @@ function closedNote(offer: Offer): string | null {
  * Teklif detayı — uzman görünümü (tasarım: b4_Teklif_detayı_uzman). İletişim
  * (teklif bekliyor ya da seçildiyse), "Danışanla anlaştım", geri çek sheet'i.
  */
-export function ExpertOfferDetailScreen() {
-  const { id = '' } = useLocalSearchParams<{ id: string }>()
+export interface ExpertOfferDetailScreenProps {
+  /** Route'tan gelir; verilmezse URL parametresi okunur. */
+  offerId?: string
+}
+
+export function ExpertOfferDetailScreen({ offerId }: ExpertOfferDetailScreenProps = {}) {
+  const params = useLocalSearchParams<{ id: string }>()
+  const id = offerId ?? params.id ?? ''
   const router = useRouter()
   const colors = useThemeColors()
   const offerQuery = useOfferDetailQuery(id)

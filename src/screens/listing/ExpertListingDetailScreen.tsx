@@ -67,8 +67,14 @@ function OutlineAction({ label, onPress }: { label: string; onPress: () => void 
  * teklifVerilebilir · teklifVerdin (iletişim açık) · başkasıylaEşleşti · kapandı ·
  * onayBekliyor · bakiyeYetersiz. Alt çubukta YALNIZ o anki ücret (düşüş göstergesi yok).
  */
-export function ExpertListingDetailScreen() {
-  const { id = '' } = useLocalSearchParams<{ id: string }>()
+export interface ExpertListingDetailScreenProps {
+  /** Route'tan gelir; verilmezse URL parametresi okunur. */
+  listingId?: string
+}
+
+export function ExpertListingDetailScreen({ listingId }: ExpertListingDetailScreenProps = {}) {
+  const params = useLocalSearchParams<{ id: string }>()
+  const id = listingId ?? params.id ?? ''
   const router = useRouter()
   const colors = useThemeColors()
 

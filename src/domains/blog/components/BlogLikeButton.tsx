@@ -1,51 +1,73 @@
-import { Pressable } from 'react-native'
+import { View } from 'react-native'
 
 import { useBlogLike } from '../hooks/useBlogLike'
 
-import { Icon } from '@/core/components/atoms/Icon'
 import { Text } from '@/core/components/atoms/Text'
+import { HeartBurst, PressableScale } from '@/core/motion'
+import { useThemeColors } from '@/core/theme'
 import { cn } from '@/core/utils/cn'
 
-type BlogLikeButtonProps = {
+export type BlogLikeButtonProps = {
   slug: string
   liked: boolean
   likeCount: number
+  /** icon: liste satırı (48 kare, sayı altta) · pill: detay alt çubuğu (dolgu değişir) */
+  variant?: 'icon' | 'pill'
 }
 
+/** Beğen düğmesi — `heart` + `burst` (kalp büyür, halka yayılır). */
 export function BlogLikeButton({
   slug,
   liked: initialLiked,
   likeCount: initialCount,
+  variant = 'icon',
 }: BlogLikeButtonProps) {
+  const colors = useThemeColors()
   const { liked, likeCount, toggleLike } = useBlogLike({
     slug,
     liked: initialLiked,
     likeCount: initialCount,
   })
 
-  return (
-    <Pressable
-      onPress={toggleLike}
-      accessibilityRole="button"
-      accessibilityLabel={liked ? 'Beğeniyi geri al' : 'Beğen'}
-      className={cn(
-        'flex-row items-center gap-2 rounded-full border px-4 py-2.5 active:opacity-70',
-        liked
-          ? 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-900'
-          : 'bg-neutral-50 dark:bg-dark-elevated border-neutral-200 dark:border-dark-border2'
-      )}
-    >
-      <Icon name="Heart" size={18} color={liked ? '#EF4444' : '#A3A3A3'} />
-      <Text
-        variant="label"
-        className={
-          liked
-            ? 'text-red-500 font-semibold'
-            : 'text-neutral-500 dark:text-neutral-400 font-medium'
-        }
+  if (variant === 'pill') {
+    return (
+      <PressableScale
+        onPress={toggleLike}
+        haptics="light"
+        accessibilityRole="button"
+        accessibilityState={{ selected: liked }}
+        accessibilityLabel={liked ? `Beğeniyi geri al, ${likeCount}` : `Beğen, ${likeCount}`}
+        className={cn(
+          'h-12 flex-row items-center gap-2 rounded-md px-4',
+          liked ? 'bg-primary' : 'bg-bg'
+        )}
       >
-        {likeCount} Beğeni
-      </Text>
-    </Pressable>
+        <HeartBurst
+          liked={liked}
+          size={20}
+          color={liked ? colors.onPrimary : colors.primary}
+          idleColor={colors.text}
+        />
+        <Text className={cn('font-body-bold text-body', liked ? 'text-primary-fg' : 'text-fg')}>
+          {likeCount}
+        </Text>
+      </PressableScale>
+    )
+  }
+
+  return (
+    <PressableScale
+      onPress={toggleLike}
+      haptics="light"
+      accessibilityRole="button"
+      accessibilityState={{ selected: liked }}
+      accessibilityLabel={liked ? `Beğeniyi geri al, ${likeCount}` : `Beğen, ${likeCount}`}
+      className="h-12 w-12 items-center justify-center gap-px rounded-md"
+    >
+      <HeartBurst liked={liked} size={20} color={colors.primary} idleColor={colors.text} />
+      <View>
+        <Text className="font-body-bold text-[11px] text-fg">{likeCount}</Text>
+      </View>
+    </PressableScale>
   )
 }

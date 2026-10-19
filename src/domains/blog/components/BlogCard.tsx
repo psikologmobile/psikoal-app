@@ -1,95 +1,80 @@
-import { Image, Pressable, View } from 'react-native'
+import { View } from 'react-native'
 
-import { useBlogLike } from '../hooks/useBlogLike'
+import { BlogCover } from './BlogCover'
+import { BlogLikeButton } from './BlogLikeButton'
 
 import type { BlogListItem } from '../types/blog.types'
 
-import { Icon } from '@/core/components/atoms/Icon'
 import { Text } from '@/core/components/atoms/Text'
+import { PressableScale } from '@/core/motion'
+import { formatDate } from '@/core/utils/formatDate'
 
-type BlogCardProps = {
+export type BlogCardProps = {
   blog: BlogListItem
   onPress: () => void
+  /** feature: büyük kapaklı ilk yazı · row: küçük kapak + beğen */
+  variant?: 'feature' | 'row'
 }
 
-export function BlogCard({ blog, onPress }: BlogCardProps) {
-  const { liked, likeCount, toggleLike } = useBlogLike({
-    slug: blog.slug,
-    liked: blog.liked,
-    likeCount: blog.likeCount,
-  })
+/** BlogCard — düz geometrik kapak, kategori, okuma süresi, başlık, beğeni. */
+export function BlogCard({ blog, onPress, variant = 'row' }: BlogCardProps) {
+  const category = blog.categories[0]
+  const date = formatDate(blog.publishedAt, 'dayMonthShort')
+
+  if (variant === 'feature') {
+    return (
+      <PressableScale
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${blog.title}, ${blog.readingTime} dakika okuma`}
+        className="overflow-hidden rounded-panel bg-surface"
+      >
+        <BlogCover imageUrl={blog.coverImage} size="card" seed={blog.slug} />
+        <View className="gap-2 p-4">
+          <View className="flex-row items-center gap-1.5">
+            {category ? (
+              <View className="rounded-full bg-accent-soft px-2.5 py-1">
+                <Text variant="badge" className="text-accent-soft-fg">
+                  {category}
+                </Text>
+              </View>
+            ) : null}
+            <Text className="text-label text-fg-muted">{blog.readingTime} dk okuma</Text>
+          </View>
+          <Text className="font-display text-[22px] leading-[26px] text-fg">{blog.title}</Text>
+          <Text variant="bodySm" color="muted" numberOfLines={3}>
+            {blog.excerpt}
+          </Text>
+          <Text className="text-label text-fg-muted">
+            {blog.author.name} · {date}
+          </Text>
+        </View>
+      </PressableScale>
+    )
+  }
 
   return (
-    <View className="gap-3 px-4 py-4">
-      <Pressable onPress={onPress} className="active:opacity-90">
-        <Image
-          source={{ uri: blog.coverImage }}
-          style={{ width: '100%', aspectRatio: 16 / 9, borderRadius: 16 }}
-          resizeMode="cover"
-        />
-      </Pressable>
-
-      <View className="flex-row flex-wrap gap-x-2 gap-y-1">
-        {blog.categories.map((cat) => (
-          <Text key={cat} variant="caption" className="font-semibold text-sky-500">
-            #{cat}
+    <View className="flex-row items-center gap-3.5 rounded-card border border-border p-3">
+      <PressableScale
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${blog.title}, ${blog.readingTime} dakika okuma`}
+        wrapperClassName="min-w-0 flex-1"
+        className="flex-row items-center gap-3.5"
+      >
+        <BlogCover imageUrl={blog.coverImage} size="thumb" seed={blog.slug} />
+        <View className="min-w-0 flex-1 gap-1">
+          <Text className="font-body-bold text-xs text-link">
+            {category ? `${category} · ` : ''}
+            {blog.readingTime} dk
           </Text>
-        ))}
-      </View>
-
-      <Pressable onPress={onPress} className="active:opacity-80">
-        <Text
-          variant="label"
-          className="font-semibold leading-snug text-neutral-900 dark:text-[#F5F5F7]"
-        >
-          {blog.title}
-        </Text>
-      </Pressable>
-
-      <Pressable onPress={onPress} className="active:opacity-80">
-        <Text
-          variant="caption"
-          numberOfLines={4}
-          className="-mt-1 leading-relaxed text-neutral-500 dark:text-neutral-400"
-        >
-          {blog.excerpt}
-        </Text>
-      </Pressable>
-
-      <View className="flex-row items-center justify-between pt-1">
-        <View className="flex-row items-center gap-3">
-          <Pressable
-            onPress={toggleLike}
-            className="flex-row items-center gap-1.5 active:opacity-70"
-            accessibilityRole="button"
-            accessibilityLabel={liked ? 'Beğeniyi geri al' : 'Beğen'}
-          >
-            <Icon name="Heart" size={17} color={liked ? '#EF4444' : '#A3A3A3'} />
-            <Text
-              variant="caption"
-              className={
-                liked ? 'text-red-500 font-semibold' : 'text-neutral-400 dark:text-neutral-500'
-              }
-            >
-              {likeCount}
-            </Text>
-          </Pressable>
-
-          <View className="flex-row items-center gap-1">
-            <Icon name="Clock" size={13} color="#A3A3A3" />
-            <Text variant="caption" className="text-neutral-400 dark:text-neutral-500">
-              {blog.readingTime} dk okuma
-            </Text>
-          </View>
+          <Text className="font-body-bold text-body leading-5 text-fg" numberOfLines={2}>
+            {blog.title}
+          </Text>
+          <Text className="text-xs text-fg-muted">{date}</Text>
         </View>
-
-        <Pressable onPress={onPress} className="flex-row items-center gap-1 active:opacity-70">
-          <Text variant="caption" className="font-semibold text-sky-500">
-            Devamını Oku
-          </Text>
-          <Icon name="ChevronRight" size={14} color="#0EA5E9" />
-        </Pressable>
-      </View>
+      </PressableScale>
+      <BlogLikeButton slug={blog.slug} liked={blog.liked} likeCount={blog.likeCount} />
     </View>
   )
 }

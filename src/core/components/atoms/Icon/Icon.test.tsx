@@ -2,7 +2,7 @@ import React from 'react'
 
 import { render } from '@testing-library/react-native'
 
-import { Icon } from './Icon'
+import { Icon, isIconName } from './Icon'
 
 describe('Icon', () => {
   it('renders without crashing for common icon names', () => {
@@ -30,5 +30,12 @@ describe('Icon', () => {
     )
     const { View } = require('react-native')
     expect(UNSAFE_queryAllByType(View).length).toBeGreaterThanOrEqual(0)
+  })
+})
+
+describe('isIconName', () => {
+  it('recognises Lucide names and rejects unknown ones', () => {
+    expect(isIconName('Heart')).toBe(true)
+    expect(isIconName('BoyleBirIkonYok')).toBe(false)
   })
 })
