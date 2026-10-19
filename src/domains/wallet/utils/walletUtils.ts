@@ -84,3 +84,21 @@ export function isTopupLinkAvailable(): boolean {
 export function isRightsTransaction(transaction: WalletTransaction): boolean {
   return transaction.freeRightsDelta !== 0
 }
+
+/** POST /payments/paytr/init → PAYMENT_PROVIDER_UNAVAILABLE (PayTR henüz yapılandırılmadı). */
+export function isPaymentProviderUnavailableError(error: unknown): boolean {
+  return isApiErrorCode(error, WALLET_ERROR_CODES.paymentProviderUnavailable)
+}
+
+/**
+ * Bakiye yükleme sayfasında elle yazılan tutar (tam TL) → kuruş. Rakam dışı
+ * karakterler (₺, nokta, boşluk) atılır; boş ya da sıfırsa null. Aralık
+ * denetiminin son sözü sunucuda (TOPUP_AMOUNT_OUT_OF_RANGE).
+ */
+export function parseTopupAmountInput(text: string): number | null {
+  const digits = text.replace(/\D/g, '')
+  if (!digits) return null
+  const lira = Number(digits)
+  if (!Number.isSafeInteger(lira) || lira <= 0) return null
+  return lira * 100
+}

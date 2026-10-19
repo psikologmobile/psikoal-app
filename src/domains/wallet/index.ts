@@ -19,6 +19,8 @@ export {
   INSUFFICIENT_BALANCE_MESSAGE,
   TOPUP_WEB_PATH,
   WALLET_TRANSACTION_FILTERS,
+  TOPUP_RESULT_POLL_ATTEMPTS,
+  TOPUP_RESULT_POLL_INTERVAL_MS,
 } from './wallet.constants'
 export type { WalletTransactionFilterKey } from './wallet.constants'
 
@@ -49,6 +51,8 @@ export {
   toTransactionView,
   isTopupLinkAvailable,
   isRightsTransaction,
+  isPaymentProviderUnavailableError,
+  parseTopupAmountInput,
 } from './utils/walletUtils'
 export type { WalletTransactionView } from './utils/walletUtils'
 
@@ -68,3 +72,21 @@ export type {
   PayTrInitRequest,
   PayTrInitResult,
 } from './types/wallet.types'
+
+export { useTopupForm } from './hooks/useTopupForm'
+export type {
+  UseTopupFormReturn,
+  TopupConsentKey,
+  TopupSubmitError,
+  TopupStep,
+  TopupPresetView,
+} from './hooks/useTopupForm'
+export { useTopupResult } from './hooks/useTopupResult'
+export type { TopupResultStatus, UseTopupResultReturn } from './hooks/useTopupResult'
+export {
+  savePendingTopup,
+  readPendingTopup,
+  clearPendingTopup,
+  PendingTopupSchema,
+} from './utils/topupSession'
+export type { PendingTopup } from './utils/topupSession'

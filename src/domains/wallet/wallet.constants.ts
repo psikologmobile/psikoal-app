@@ -30,6 +30,8 @@ export const WALLET_ERROR_CODES = {
   invoiceNotFound: 'INVOICE_NOT_FOUND',
   /** Fatura yalnız ödenmiş ödeme için var. */
   invoicePaymentNotPaid: 'INVOICE_PAYMENT_NOT_PAID',
+  /** POST /payments/paytr/init → 503: PayTR mağaza bilgileri sunucuda tanımlı değil. */
+  paymentProviderUnavailable: 'PAYMENT_PROVIDER_UNAVAILABLE',
   /** Danışan token'ı cüzdan uçlarında. */
   expertRoleRequired: 'EXPERT_ROLE_REQUIRED',
 } as const
@@ -57,3 +59,7 @@ export const WALLET_TRANSACTION_FILTERS = [
 ] as const satisfies ReadonlyArray<{ key: string; label: string; type?: WalletTransactionType }>
 
 export type WalletTransactionFilterKey = (typeof WALLET_TRANSACTION_FILTERS)[number]['key']
+
+/** Ödeme sonrası /bakiye/basarili: bakiye kaç kez, hangi aralıkla yeniden okunur. */
+export const TOPUP_RESULT_POLL_INTERVAL_MS = 2000
+export const TOPUP_RESULT_POLL_ATTEMPTS = 6
