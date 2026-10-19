@@ -40,6 +40,9 @@ export function resolveNotificationRoute(data: unknown): string {
     case 'OFFER_RECEIVED':
       return listing
     case 'MATCHED':
+      // Uzman eşleşme bildirimini açınca önce kutlama; kutlama cihazda bir kez
+      // gösterilir, sonrakilerde ekran kendisi detaya yönlendirir.
+      return entityId ? `/match/${entityId}/celebrate` : match
     case 'OFFER_ACCEPTED':
       return match
     case 'LISTING_EXPIRING':

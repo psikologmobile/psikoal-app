@@ -46,9 +46,7 @@ export function useMatchReview({
         { expertId, review: { matchId, rating, comment, sessionType: sessionType ?? null } },
         {
           onSuccess: () =>
-            setDoneMessage(
-              'Değerlendirmeniz alındı. Onaylandıktan sonra uzmanın profilinde görünecek.'
-            ),
+            setDoneMessage('Değerlendirmen alındı, onaylandıktan sonra profilde görünecek.'),
           onError: (error) => {
             if (error instanceof ApiError && error.code === REVIEW_ALREADY_EXISTS) {
               setDoneMessage(error.message)

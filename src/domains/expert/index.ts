@@ -12,8 +12,8 @@ export { pickExpertDocument } from './utils/pickDocument'
 export type { PickedDocument } from './utils/pickDocument'
 export { ExpertSchema, ExpertOnboardingSchema } from './schemas/expert.schema'
 export { ReviewSchema, CreateReviewSchema } from './schemas/review.schema'
-export { ReviewForm } from './components/ReviewForm'
-export type { ReviewFormProps } from './components/ReviewForm'
+export { ReviewCard } from './components/ReviewCard'
+export type { ReviewCardProps } from './components/ReviewCard'
 export { useMatchReview, REVIEW_ALREADY_EXISTS } from './hooks/useMatchReview'
 export {
   useExpertOnboarding,

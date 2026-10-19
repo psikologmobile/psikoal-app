@@ -14,7 +14,7 @@ describe('resolveNotificationRoute', () => {
   it.each([
     ['OFFER_RECEIVED', ID, `/listing/${ID}`],
     ['OFFER_ACCEPTED', ID, `/match/${ID}`],
-    ['MATCHED', ID, `/match/${ID}`],
+    ['MATCHED', ID, `/match/${ID}/celebrate`],
     ['LISTING_EXPIRING', ID, `/listing/${ID}`],
     ['LISTING_APPROVED', ID, `/listing/${ID}`],
     ['LISTING_REJECTED', ID, `/listing/${ID}`],
