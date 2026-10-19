@@ -1,14 +1,55 @@
+import { Platform } from 'react-native'
+
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import * as SecureStore from 'expo-secure-store'
 
 import type { StateStorage } from 'zustand/middleware'
 
+/**
+ * Web derlemesi (static output) sayfaları Node'da önceden çizer: orada `window` ve
+ * localStorage yoktur. Depo okumaları sunucuda boş döner, yazmalar yok sayılır;
+ * böylece zustand persist ve token okumaları statik çizimi düşürmez.
+ */
+const isServerRender = Platform.OS === 'web' && typeof window === 'undefined'
+
 export const zustandStorage: StateStorage = {
-  getItem: (key) => AsyncStorage.getItem(key),
-  setItem: (key, value) => AsyncStorage.setItem(key, value),
-  removeItem: (key) => AsyncStorage.removeItem(key),
+  getItem: (key) => (isServerRender ? null : AsyncStorage.getItem(key)),
+  setItem: (key, value) => (isServerRender ? undefined : AsyncStorage.setItem(key, value)),
+  removeItem: (key) => (isServerRender ? undefined : AsyncStorage.removeItem(key)),
 }
+
+type SecureBackend = {
+  getItemAsync: (key: string) => Promise<string | null>
+  setItemAsync: (key: string, value: string) => Promise<void>
+  deleteItemAsync: (key: string) => Promise<void>
+}
+
+/**
+ * expo-secure-store'un web uygulaması YOK (çağrı TypeError verir). Web'de token
+ * tarayıcının localStorage'ındadır — tarayıcıda Keychain eşdeğeri yok; XSS'e karşı
+ * koruma sitenin CSP/başlıklarıyla (render.yaml) sağlanır.
+ */
+const webSecureBackend: SecureBackend = {
+  getItemAsync: async (key) => {
+    if (isServerRender) return null
+    try {
+      return window.localStorage.getItem(key)
+    } catch {
+      return null
+    }
+  },
+  setItemAsync: async (key, value) => {
+    if (isServerRender) return
+    window.localStorage.setItem(key, value)
+  },
+  deleteItemAsync: async (key) => {
+    if (isServerRender) return
+    window.localStorage.removeItem(key)
+  },
+}
+
+const secureBackend: SecureBackend = Platform.OS === 'web' ? webSecureBackend : SecureStore
 
 // Oturum token'ları şifreli depoda (iOS Keychain / Android Keystore) tutulur.
 // AsyncStorage şifresizdir ve yedeklere girer; token orada durmamalı.
@@ -32,11 +73,11 @@ export async function migrateLegacyTokens(): Promise<void> {
   const legacyRefresh = entries[1]?.[1] ?? null
   if (legacyAccess == null && legacyRefresh == null) return
 
-  if (legacyAccess != null && (await SecureStore.getItemAsync(ACCESS_TOKEN_KEY)) == null) {
-    await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, legacyAccess)
+  if (legacyAccess != null && (await secureBackend.getItemAsync(ACCESS_TOKEN_KEY)) == null) {
+    await secureBackend.setItemAsync(ACCESS_TOKEN_KEY, legacyAccess)
   }
-  if (legacyRefresh != null && (await SecureStore.getItemAsync(REFRESH_TOKEN_KEY)) == null) {
-    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, legacyRefresh)
+  if (legacyRefresh != null && (await secureBackend.getItemAsync(REFRESH_TOKEN_KEY)) == null) {
+    await secureBackend.setItemAsync(REFRESH_TOKEN_KEY, legacyRefresh)
   }
 
   await AsyncStorage.multiRemove([LEGACY_TOKEN_KEYS.access, LEGACY_TOKEN_KEYS.refresh])
@@ -53,18 +94,18 @@ function ensureMigrated(): Promise<void> {
 export const tokenStorage = {
   getAccessToken: async () => {
     await ensureMigrated()
-    return SecureStore.getItemAsync(ACCESS_TOKEN_KEY)
+    return secureBackend.getItemAsync(ACCESS_TOKEN_KEY)
   },
-  setAccessToken: (token: string) => SecureStore.setItemAsync(ACCESS_TOKEN_KEY, token),
+  setAccessToken: (token: string) => secureBackend.setItemAsync(ACCESS_TOKEN_KEY, token),
   getRefreshToken: async () => {
     await ensureMigrated()
-    return SecureStore.getItemAsync(REFRESH_TOKEN_KEY)
+    return secureBackend.getItemAsync(REFRESH_TOKEN_KEY)
   },
-  setRefreshToken: (token: string) => SecureStore.setItemAsync(REFRESH_TOKEN_KEY, token),
+  setRefreshToken: (token: string) => secureBackend.setItemAsync(REFRESH_TOKEN_KEY, token),
   clearTokens: async () => {
     await Promise.all([
-      SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY),
-      SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY),
+      secureBackend.deleteItemAsync(ACCESS_TOKEN_KEY),
+      secureBackend.deleteItemAsync(REFRESH_TOKEN_KEY),
       AsyncStorage.multiRemove([LEGACY_TOKEN_KEYS.access, LEGACY_TOKEN_KEYS.refresh]),
     ])
   },

@@ -2,7 +2,7 @@ import '../../global.css'
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { View } from 'react-native'
+import { Platform, View } from 'react-native'
 
 import {
   BricolageGrotesque_700Bold,
@@ -73,7 +73,9 @@ export default function RootLayout() {
   const scheme = useResolvedColorScheme()
   const hydrated = useAppHydrated()
   // Açılış animasyonu yalnız soğuk açılışta: kök düzen bir kez bağlanır.
-  const [splashDone, setSplashDone] = useState(false)
+  // Web'de açılış katmanı yok: sayfalar statik HTML olarak gelir (SEO) ve katman
+  // içeriği örterdi; hidrasyon sırasında yönlendirmeleri kök/sekme düzenleri yönetir.
+  const [splashDone, setSplashDone] = useState(Platform.OS === 'web')
   const finishSplash = useCallback(() => setSplashDone(true), [])
 
   const [fontsLoaded, fontError] = useFonts({
