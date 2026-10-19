@@ -13,6 +13,7 @@ import type { CreateListingRequest } from '../types/listing.types'
 
 import { Icon } from '@/core/components/atoms/Icon'
 import { Text } from '@/core/components/atoms/Text'
+import { CheckboxRow } from '@/core/components/molecules/CheckboxRow'
 import { StepProgress } from '@/core/components/molecules/StepProgress'
 import { BottomActionBar } from '@/core/components/organisms/BottomActionBar'
 import { useMyAssessmentResultsQuery } from '@/domains/assessment'
@@ -20,6 +21,8 @@ import { useMyAssessmentResultsQuery } from '@/domains/assessment'
 const TOTAL_STEPS = 3
 const STEP_LABELS = ['Konu & Açıklama', 'Tercihler', 'Test Sonucu']
 const ICON_ON_BRAND = '#FFFFFF'
+const CONSENT_TEXT =
+  'Ad soyad, telefon ve e-posta bilgilerimin ilanıma teklif veren uzmanlarla paylaşılmasına onay veriyorum.'
 
 type CreateListingFormProps = {
   step: number
@@ -51,6 +54,9 @@ export function CreateListingForm({
   const [budgetMaxError, setBudgetMaxError] = useState<string | undefined>()
 
   const [selectedResultId, setSelectedResultId] = useState<string | undefined>()
+  // Revize 2 §3.2: iletişim paylaşımına AÇIK rıza; işaretlenmeden yayınlanmaz.
+  const [contactConsent, setContactConsent] = useState(false)
+  const [consentError, setConsentError] = useState(false)
 
   const { data: myResultsResponse } = useMyAssessmentResultsQuery()
   const myResults = myResultsResponse?.data ?? []
@@ -65,6 +71,10 @@ export function CreateListingForm({
   }
 
   const submitListing = () => {
+    if (!contactConsent) {
+      setConsentError(true)
+      return
+    }
     onSubmit({
       title: title.trim(),
       description: description.trim() || undefined,
@@ -73,6 +83,7 @@ export function CreateListingForm({
       budgetMax: parseFloat(budgetMax),
       preferredSessionType: sessionType,
       assessmentResultId: selectedResultId,
+      contactConsent,
     })
   }
 
@@ -185,6 +196,22 @@ export function CreateListingForm({
               Test sonucu ilanına eklenecek
             </Text>
           </View>
+        )}
+        {step === TOTAL_STEPS && (
+          <CheckboxRow
+            checked={contactConsent}
+            onToggle={() => {
+              setContactConsent((value) => !value)
+              setConsentError(false)
+            }}
+            hasError={consentError}
+            accessibilityLabel={CONSENT_TEXT}
+            testID="listing-contact-consent"
+          >
+            <Text variant="bodySm" className="text-white">
+              {CONSENT_TEXT}
+            </Text>
+          </CheckboxRow>
         )}
       </ScrollView>
 

@@ -10,6 +10,7 @@ export const LISTING_SORT_OPTIONS = [
   { label: 'Yüksek Bütçe', value: 'budget_desc' },
   { label: 'Düşük Bütçe', value: 'budget_asc' },
   { label: 'Az Teklif', value: 'offer_asc' },
+  { label: 'Düşük Teklif Ücreti', value: 'fee_asc' },
 ] as const
 
 export type ListingSortValue = (typeof LISTING_SORT_OPTIONS)[number]['value']

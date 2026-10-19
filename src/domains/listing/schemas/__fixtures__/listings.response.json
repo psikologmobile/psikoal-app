@@ -1,0 +1,86 @@
+{
+  "expertView": {
+    "id": "01a025d8-f8c9-78db-aa2b-aa72da13dfae",
+    "clientId": "a20e139a-2652-47f6-924a-59e402c13726",
+    "client": {
+      "id": "a20e139a-2652-47f6-924a-59e402c13726",
+      "initials": "AY",
+      "avatarUrl": null,
+      "createdAt": "2026-08-01T10:00:00.000000Z"
+    },
+    "clientDisplayName": "Ayşe Y.",
+    "title": "Panik atak ataklarım için haftalık online destek arıyorum",
+    "description": "Son üç aydır sık panik atak yaşıyorum.",
+    "specialization": ["anksiyete"],
+    "budgetMin": 800,
+    "budgetMax": 1500,
+    "preferredSessionType": "online",
+    "city": null,
+    "offerCount": 2,
+    "status": "OPEN",
+    "budgetLabel": "₺800 – ₺1.500",
+    "expiresAt": "2026-11-17T10:00:00.000000Z",
+    "createdAt": "2026-10-18T10:00:00.000000Z",
+    "createdAtRelative": "1 gün önce",
+    "viewerHasOffered": true,
+    "viewerOfferId": "01a025d8-f9fe-7b9d-9fa6-2c3f08f7e7f6",
+    "rejectionReason": null,
+    "assessmentResult": null,
+    "offerFeeKurus": 62500,
+    "offerFeeLabel": "₺625",
+    "invitedByViewer": true,
+    "viewerClaim": { "createdAt": "2026-10-19T08:00:00.000000Z" },
+    "clientContact": {
+      "fullName": "Ayşe Yılmaz",
+      "phone": "+905551112233",
+      "email": "ayse@psikoal.test"
+    },
+    "matchedWithOther": false,
+    "matchedExpert": null,
+    "claims": null,
+    "contactConsentAt": null
+  },
+  "clientView": {
+    "id": "01a025d8-f8c9-78db-aa2b-aa72da13dfae",
+    "clientId": "a20e139a-2652-47f6-924a-59e402c13726",
+    "client": {
+      "id": "a20e139a-2652-47f6-924a-59e402c13726",
+      "initials": "AY",
+      "avatarUrl": null,
+      "createdAt": "2026-08-01T10:00:00.000000Z"
+    },
+    "clientDisplayName": "Ayşe Y.",
+    "title": "Panik atak ataklarım için haftalık online destek arıyorum",
+    "description": "Son üç aydır sık panik atak yaşıyorum.",
+    "specialization": ["anksiyete"],
+    "budgetMin": 800,
+    "budgetMax": 1500,
+    "preferredSessionType": "yüz_yüze",
+    "city": "İstanbul",
+    "offerCount": 2,
+    "status": "MATCHED",
+    "budgetLabel": "₺800 – ₺1.500",
+    "expiresAt": null,
+    "createdAt": "2026-10-18T10:00:00.000000Z",
+    "createdAtRelative": "1 gün önce",
+    "viewerHasOffered": false,
+    "viewerOfferId": null,
+    "rejectionReason": null,
+    "assessmentResult": null,
+    "offerFeeKurus": null,
+    "offerFeeLabel": null,
+    "invitedByViewer": false,
+    "viewerClaim": null,
+    "clientContact": null,
+    "matchedWithOther": false,
+    "matchedExpert": { "id": "ebd85687-7c16-481d-a456-b09565928a2a", "name": "Mehmet Demir" },
+    "claims": [
+      {
+        "expertId": "c519bd04-67c3-4e6a-af6f-f88999a8a53f",
+        "expertName": "Elif Kaya",
+        "createdAt": "2026-10-19T08:00:00.000000Z"
+      }
+    ],
+    "contactConsentAt": "2026-10-18T10:00:00.000000Z"
+  }
+}
