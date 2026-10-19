@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 
+import { Platform } from 'react-native'
+
 import * as Notifications from 'expo-notifications'
 import { useRootNavigationState, useRouter } from 'expo-router'
 
@@ -17,6 +19,8 @@ export function useNotificationResponseRouting(isAuthenticated: boolean) {
   const handledIdsRef = useRef(new Set<string>())
 
   useEffect(() => {
+    // Web'de push yok; expo-notifications'ın yanıt API'leri orada tanımsız ve hata fırlatır.
+    if (Platform.OS === 'web') return
     if (!isAuthenticated || !navigationKey) return
 
     const open = (response: Notifications.NotificationResponse | null) => {
