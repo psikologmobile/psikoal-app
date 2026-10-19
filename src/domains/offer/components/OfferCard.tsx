@@ -11,6 +11,7 @@ import { TagChip } from '@/core/components/atoms/TagChip'
 import { Text } from '@/core/components/atoms/Text'
 import { VerifiedBadge } from '@/core/components/atoms/VerifiedBadge'
 import { PressableScale } from '@/core/motion'
+import { hoverLift } from '@/core/theme'
 import { formatTry } from '@/core/utils/formatTry'
 
 export type OfferCardProps = {
@@ -76,7 +77,7 @@ export function OfferCard({
   return (
     <View
       testID={`offer-card-${offer.id}`}
-      className="gap-3 rounded-2xl border border-border bg-surface p-4"
+      className={`gap-3 rounded-2xl border border-border bg-surface p-4 ${hoverLift}`}
     >
       <View className="flex-row items-center gap-3">
         <Avatar

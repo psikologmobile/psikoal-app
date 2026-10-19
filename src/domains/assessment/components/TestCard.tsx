@@ -7,7 +7,7 @@ import type { AssessmentListItem } from '../types/assessment.types'
 import { Icon } from '@/core/components/atoms/Icon'
 import { Text } from '@/core/components/atoms/Text'
 import { PressableScale } from '@/core/motion'
-import { useThemeColors } from '@/core/theme'
+import { hoverLift, useThemeColors } from '@/core/theme'
 import { cn } from '@/core/utils/cn'
 
 export type TestCardProps = {
@@ -80,7 +80,7 @@ export function TestCard({
         onPress={onPress}
         accessibilityRole="button"
         accessibilityLabel={`${test.title}, ${meta}`}
-        className="flex-row items-center justify-between gap-3 rounded-xl border border-border px-4 py-3.5"
+        className={`flex-row items-center justify-between gap-3 rounded-xl border border-border px-4 py-3.5 ${hoverLift}`}
       >
         <View className="flex-1 gap-0.5">
           <Text className="font-body-bold text-body text-fg">{test.title}</Text>

@@ -8,9 +8,12 @@ import { TEST_CLIENT } from '@/test-utils/query'
 import {
   errorQuery,
   loadingQuery,
+  COMPACT_LAYOUT,
+  mockLayout,
   mockRouter,
   queryResult,
   renderScreen,
+  WIDE_LAYOUT,
 } from '@/test-utils/screen'
 
 jest.mock('expo-router', () => require('@/test-utils/screen').expoRouterMock)
@@ -19,6 +22,7 @@ jest.mock(
   () => require('@/test-utils/screen').asyncStorageMock
 )
 jest.mock('expo-secure-store', () => require('@/test-utils/screen').secureStoreMock)
+jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)
 jest.mock(
   'react-native-safe-area-context',
   () => require('react-native-safe-area-context/jest/mock').default
@@ -173,5 +177,29 @@ describe('ClientHomeScreen', () => {
     expect(getByText('Bağlantı kurulamadı')).toBeTruthy()
     fireEvent.press(getByText('Tekrar dene'))
     expect(failed.refetch).toHaveBeenCalled()
+  })
+})
+
+describe('ClientHomeScreen · web', () => {
+  afterEach(() => {
+    mockLayout.current = COMPACT_LAYOUT
+  })
+
+  it('masaüstü: başlık, aktif ilanlar ızgarası, testler ve konular yan sütunda', () => {
+    mockLayout.current = WIDE_LAYOUT
+    useAuthStore.setState({ user: TEST_CLIENT })
+    mockMyListings.mockReturnValue(
+      listingsResult([open, makeListing({ id: 'l2', status: 'PENDING_APPROVAL', title: 'İkinci' })])
+    )
+    mockReferrer.mockReturnValue(queryResult(null))
+    mockOffers.mockReturnValue(queryResult({ data: [] }))
+    const view = renderScreen(<ClientHomeScreen />)
+    expect(view.getByText('Bugün ne yapmak istersin?')).toBeTruthy()
+    expect(view.getByText('Aktif ilanların')).toBeTruthy()
+    expect(view.getByText('İkinci')).toBeTruthy()
+    expect(view.getByText('Ücretsiz testler')).toBeTruthy()
+    expect(view.getByText('Konular')).toBeTruthy()
+    fireEvent.press(view.getByLabelText('Yeni ilan aç'))
+    expect(mockRouter.push).toHaveBeenCalledWith('/listing/new')
   })
 })

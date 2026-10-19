@@ -9,6 +9,7 @@ import type { MatchViewerRole } from '../utils/matchView'
 import { StatusPill } from '@/core/components/atoms/StatusPill'
 import { Text } from '@/core/components/atoms/Text'
 import { PressableScale } from '@/core/motion'
+import { hoverLift } from '@/core/theme'
 import { formatDate } from '@/core/utils/formatDate'
 
 export type MatchCardProps = {
@@ -37,7 +38,7 @@ export function MatchCard({ match, viewerRole, viewerInitials, onPress }: MatchC
       scaleTo={0.98}
       accessibilityRole="button"
       accessibilityLabel={`${other.name}, ${status}. ${title}`}
-      className="gap-3 rounded-2xl border border-border bg-surface p-4"
+      className={`gap-3 rounded-2xl border border-border bg-surface p-4 ${hoverLift}`}
     >
       <View className="flex-row items-center gap-3">
         <View className="flex-row" accessibilityElementsHidden>
