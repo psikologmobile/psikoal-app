@@ -1,0 +1,207 @@
+# Render Blueprint — PsikoAl web sitesi + web uygulaması (tek Expo Router web derlemesi)
+# Kurulum adımları: docs/DEPLOY-WEB.md
+#
+# Derleme statik HTML üretir (app.json → web.output: "static"): her rota kendi
+# .html dosyasıdır. Render statik sitelerde "/destek" adresini "destek.html"e kendiliğinden
+# EŞLEMEZ; aşağıdaki yeniden yazma kuralları bunu yapar. Render bir kuralı yalnız istenen
+# yolda dosya YOKSA uygular (statik dosyalar her zaman önce sunulur) ve kurallar sırayla,
+# ilk eşleşen kazanır: önce sabit rotalar, sonra dinamik şablonlar, en sonda 404.
+# Dinamik şablonlar ([id].html) scripts/web-postexport.mjs ile _id_.html adına kopyalanır.
+
+services:
+  - type: web
+    name: psikoal-web
+    runtime: static
+    branch: master
+    buildCommand: npm ci && npm run build:web
+    staticPublishPath: ./dist
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_VERSION
+        value: "22.23.2"
+      - key: EXPO_PUBLIC_API_URL
+        value: https://psikoal-api.onrender.com
+      - key: EXPO_PUBLIC_APP_ENV
+        value: production
+      - key: EXPO_PUBLIC_SUPPORT_EMAIL
+        sync: false
+      # Yasal metinler bu sitenin sayfalarıdır: <site>/gizlilik, /kosullar, /kvkk.
+      - key: EXPO_PUBLIC_PRIVACY_URL
+        sync: false
+      - key: EXPO_PUBLIC_TERMS_URL
+        sync: false
+      - key: EXPO_PUBLIC_KVKK_URL
+        sync: false
+      # Sitenin kök adresi (kanonik adres, og:url). Alan adı alınınca değişir.
+      - key: EXPO_PUBLIC_SITE_URL
+        sync: false
+      # Mağaza rozetleri; boşsa "Yakında" gösterilir.
+      - key: EXPO_PUBLIC_APP_STORE_URL
+        sync: false
+      - key: EXPO_PUBLIC_PLAY_STORE_URL
+        sync: false
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      # PayTR dönüş sayfası (OkUrl/FailUrl) ödeme iframe'inin içinde açılabilir; ebeveyn
+      # aynı köken olduğu için SAMEORIGIN yeterli, başka siteler çerçeveleyemez.
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: Content-Security-Policy
+        value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'"
+      - path: /*
+        name: Permissions-Policy
+        value: 'camera=(), microphone=(), geolocation=(), payment=(self "https://www.paytr.com")'
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
+      # Adı içerik özetli (hash) paketler ve varlıklar: bir yıl, değişmez.
+      - path: /_expo/static/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /uzmanlar-icin
+        destination: /uzmanlar-icin.html
+      - type: rewrite
+        source: /destek
+        destination: /destek.html
+      - type: rewrite
+        source: /gizlilik
+        destination: /gizlilik.html
+      - type: rewrite
+        source: /kosullar
+        destination: /kosullar.html
+      - type: rewrite
+        source: /kvkk
+        destination: /kvkk.html
+      - type: rewrite
+        source: /mesafeli-satis
+        destination: /mesafeli-satis.html
+      - type: rewrite
+        source: /on-bilgilendirme
+        destination: /on-bilgilendirme.html
+      - type: rewrite
+        source: /login
+        destination: /login.html
+      - type: rewrite
+        source: /register
+        destination: /register.html
+      - type: rewrite
+        source: /welcome
+        destination: /welcome.html
+      - type: rewrite
+        source: /forgot-password
+        destination: /forgot-password.html
+      - type: rewrite
+        source: /reset-password
+        destination: /reset-password.html
+      - type: rewrite
+        source: /onboarding/client
+        destination: /onboarding/client.html
+      - type: rewrite
+        source: /onboarding/expert
+        destination: /onboarding/expert.html
+      - type: rewrite
+        source: /offers
+        destination: /offers.html
+      - type: rewrite
+        source: /matches
+        destination: /matches.html
+      - type: rewrite
+        source: /profile
+        destination: /profile.html
+      - type: rewrite
+        source: /referral
+        destination: /referral.html
+      - type: rewrite
+        source: /notifications
+        destination: /notifications.html
+      - type: rewrite
+        source: /listing/new
+        destination: /listing/new.html
+      - type: rewrite
+        source: /offer/new
+        destination: /offer/new.html
+      - type: rewrite
+        source: /assessment/list
+        destination: /assessment/list.html
+      - type: rewrite
+        source: /assessment/result
+        destination: /assessment/result.html
+      - type: rewrite
+        source: /profile/documents
+        destination: /profile/documents.html
+      - type: rewrite
+        source: /profile/password
+        destination: /profile/password.html
+      - type: rewrite
+        source: /profile/personal
+        destination: /profile/personal.html
+      - type: rewrite
+        source: /profile/privacy
+        destination: /profile/privacy.html
+      - type: rewrite
+        source: /profile/professional
+        destination: /profile/professional.html
+      - type: rewrite
+        source: /wallet/invoices
+        destination: /wallet/invoices.html
+      - type: rewrite
+        source: /bakiye/basarili
+        destination: /bakiye/basarili.html
+      - type: rewrite
+        source: /bakiye/hata
+        destination: /bakiye/hata.html
+      - type: rewrite
+        source: /bakiye
+        destination: /bakiye/index.html
+      - type: rewrite
+        source: /blog
+        destination: /blog/index.html
+      - type: rewrite
+        source: /wallet
+        destination: /wallet/index.html
+      - type: rewrite
+        source: /assessment
+        destination: /assessment/index.html
+      - type: rewrite
+        source: /blog/:slug
+        destination: /blog/_slug_.html
+      - type: rewrite
+        source: /category/:slug
+        destination: /category/_slug_.html
+      - type: rewrite
+        source: /davet/:code
+        destination: /davet/_code_.html
+      - type: rewrite
+        source: /expert/:id
+        destination: /expert/_id_.html
+      - type: rewrite
+        source: /listing/:id
+        destination: /listing/_id_.html
+      - type: rewrite
+        source: /offer/:id
+        destination: /offer/_id_.html
+      - type: rewrite
+        source: /claim/:listingId
+        destination: /claim/_listingId_.html
+      - type: rewrite
+        source: /match/:id/celebrate
+        destination: /match/_id_/celebrate.html
+      - type: rewrite
+        source: /match/:id
+        destination: /match/_id_.html
+      # Bilinmeyen adres: 404 sayfası (Render 200 döner; sayfa noindex).
+      - type: rewrite
+        source: /*
+        destination: /404.html

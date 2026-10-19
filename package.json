@@ -78,6 +78,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "build:web": "expo export --platform web && node scripts/web-postexport.mjs",
     "test": "jest --watchAll",
     "test:ci": "jest --coverage --ci",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
