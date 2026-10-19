@@ -8,6 +8,8 @@ type UseExpertApprovalGateReturn = {
   isPendingApproval: boolean
   /** Uzman profili reddedilmiş mi? */
   isRejected: boolean
+  /** Reddedildiyse admin gerekçesi (yoksa null). */
+  rejectionReason: string | null
   /** Uzman rolünde ama uzman profili hiç oluşturulmamış (onboarding yarım kalmış). */
   needsOnboarding: boolean
   /** Teklif gönderme gibi onay gerektiren aksiyonlar serbest mi? */
@@ -34,6 +36,7 @@ export function useExpertApprovalGate(): UseExpertApprovalGateReturn {
     return {
       isPendingApproval: false,
       isRejected: false,
+      rejectionReason: null,
       needsOnboarding: false,
       canAct: true,
       isLoading: false,
@@ -48,6 +51,7 @@ export function useExpertApprovalGate(): UseExpertApprovalGateReturn {
   return {
     isPendingApproval,
     isRejected,
+    rejectionReason: isRejected ? expert?.rejectionReason?.trim() || null : null,
     needsOnboarding,
     // Profil başka bir nedenle yüklenemediyse (ağ vb.) aksiyonu engellemiyoruz;
     // backend son sözü söyler. Profil HİÇ yoksa ise teklif gönderilemez.

@@ -1,7 +1,6 @@
 export { useOfferDetailQuery } from './useOfferDetailQuery'
+export { useOfferQuoteQuery } from './useOfferQuoteQuery'
 export { useSendOfferMutation } from './useSendOfferMutation'
-export { useAcceptOfferMutation } from './useAcceptOfferMutation'
-export { useRejectOfferMutation } from './useRejectOfferMutation'
 export { useWithdrawOfferMutation } from './useWithdrawOfferMutation'
 export { useListingOffersQuery } from './useListingOffersQuery'
 export { useExpertOffersQuery } from './useExpertOffersQuery'

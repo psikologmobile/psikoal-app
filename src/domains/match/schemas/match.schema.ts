@@ -11,6 +11,7 @@ export const MatchSchema = z.object({
   status: MatchStatusSchema,
   createdAt: z.string().datetime(),
   createdAtRelative: z.string().optional(),
+  // Revize 2: kullanıcı sonlandırma ucu kalktı; alanlar yalnız admin sonlandırmasının izi.
   clientReleasedAt: z.string().datetime().nullable().optional(),
   expertReleasedAt: z.string().datetime().nullable().optional(),
   client: z
@@ -28,8 +29,8 @@ export const MatchSchema = z.object({
       name: z.string(),
       title: z.string(),
       initials: z.string().nullable().optional(),
-      // Uzmanın iletişim bilgisi API tarafından henüz dönülmüyor; geldiğinde
-      // eşleşme ekranı ek değişiklik gerektirmeden gösterir.
+      // Revize 2 §5: eşleşmede iki taraf da karşı tarafın telefon ve e-postasını görür
+      // (uzman profilindeki telefon, auth e-postası). Yoksa null.
       email: z.string().nullable().optional(),
       phone: z.string().nullable().optional(),
     })
@@ -39,14 +40,14 @@ export const MatchSchema = z.object({
     .object({
       id: z.string().uuid(),
       title: z.string(),
-      description: z.string().optional(),
+      description: z.string().nullable().optional(),
       specialization: z.array(z.string()).default([]),
       budgetMin: z.number(),
       budgetMax: z.number(),
-      budgetLabel: z.string().optional(),
+      budgetLabel: z.string().nullable().optional(),
       preferredSessionType: z.string(),
       status: z.string(),
-      city: z.string().optional(),
+      city: z.string().nullable().optional(),
     })
     .nullable()
     .optional(),
@@ -75,27 +76,29 @@ const EmbeddedListingSchema = z
   .object({
     id: z.string().uuid(),
     title: z.string(),
-    description: z.string().optional(),
+    description: z.string().nullable().optional(),
     specialization: z.array(z.string()).default([]),
     budgetMin: z.number(),
     budgetMax: z.number(),
-    budgetLabel: z.string().optional(),
+    budgetLabel: z.string().nullable().optional(),
     preferredSessionType: z.string(),
     status: z.string(),
-    city: z.string().optional(),
+    city: z.string().nullable().optional(),
     assessmentResult: EmbeddedAssessmentResultSchema,
   })
+  .nullable()
   .optional()
 
 const EmbeddedOfferSchema = z
   .object({
     id: z.string().uuid(),
-    title: z.string().optional(),
+    title: z.string().nullable().optional(),
     price: z.number(),
     description: z.string().default(''),
     sessionType: z.enum(['online', 'yüz_yüze', 'yüz_yüze_online']),
     status: z.string(),
   })
+  .nullable()
   .optional()
 
 export const MatchDetailSchema = MatchSchema.extend({
@@ -105,13 +108,8 @@ export const MatchDetailSchema = MatchSchema.extend({
     initials: z.string().nullable().optional(),
     email: z.string().nullable().optional(),
     phone: z.string().nullable().optional(),
-    createdAt: z.string().datetime().optional(),
+    createdAt: z.string().datetime().nullable().optional(),
   }),
   listing: EmbeddedListingSchema,
   offer: EmbeddedOfferSchema,
-})
-
-export const ReleaseMatchBodySchema = z.object({
-  matchId: z.string().uuid(),
-  reason: z.string().max(500).optional(),
 })

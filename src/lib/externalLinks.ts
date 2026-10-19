@@ -72,3 +72,12 @@ export function openPhone(phone: string): void {
 export function openEmail(email: string): void {
   Linking.openURL(`mailto:${email}`).catch(() => showOpenFailed('E-posta uygulaması açılamadı.'))
 }
+
+/** Uygulama içi tarayıcıda bir adres açar (ör. imzalı fatura PDF'i). */
+export async function openWebUrl(url: string): Promise<void> {
+  try {
+    await WebBrowser.openBrowserAsync(url)
+  } catch {
+    showOpenFailed('Sayfa açılamadı. Lütfen daha sonra tekrar deneyin.')
+  }
+}

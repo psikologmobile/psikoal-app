@@ -12,7 +12,7 @@ type CreateReviewVariables = {
   review: CreateReviewRequest
 }
 
-/** Danışan, tamamlanmış/sonlandırılmış eşleşmesindeki uzmanı değerlendirir. */
+/** Danışan eşleşmesindeki uzmanı değerlendirir — eşleşme ACTIVE iken de açık (Revize 2 §5). */
 export function useCreateReviewMutation() {
   const queryClient = useQueryClient()
 

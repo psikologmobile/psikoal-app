@@ -22,7 +22,11 @@ type ApiErrorBody = {
   field?: string | null
   title?: string
   errors?: unknown[] | Record<string, string[] | string>
+  /** Domain hatasının ek verisi (ör. OFFER_FEE_CHANGED → { feeKurus, feeLabel }). */
+  meta?: unknown
 }
+
+export type ApiErrorMeta = Record<string, unknown>
 
 // Kullanıcıya gösterilen bütün yedek mesajlar Türkçe ve tek yerde.
 export const ERROR_MESSAGES = {
@@ -41,7 +45,9 @@ export class ApiError extends Error {
     public readonly code: string,
     message: string,
     public readonly status: number,
-    public readonly validationErrors?: ValidationError[]
+    public readonly validationErrors?: ValidationError[],
+    /** Sunucunun `meta` nesnesi; şekli koda göre ilgili domain'de Zod ile okunur. */
+    public readonly meta?: ApiErrorMeta
   ) {
     super(message)
     this.name = 'ApiError'
@@ -184,7 +190,18 @@ export function toApiError(status: number, body: ApiErrorBody | undefined | null
   )?.message
   const code = data.code ?? firstValidationCode ?? fallbackCode(status)
 
-  return new ApiError(code, message, status, validationErrors)
+  return new ApiError(code, message, status, validationErrors, toMeta(data.meta))
+}
+
+function toMeta(meta: unknown): ApiErrorMeta | undefined {
+  if (typeof meta !== 'object' || meta === null || Array.isArray(meta)) return undefined
+  // REASON: typeof/null/Array kontrolünden geçen JSON değeri düz bir nesnedir
+  return meta as ApiErrorMeta
+}
+
+/** Hata verilen domain koduna sahip bir ApiError mı? Ekranlar dallanmayı bununla yapar. */
+export function isApiErrorCode(error: unknown, code: string): error is ApiError {
+  return error instanceof ApiError && error.code === code
 }
 
 /** Herhangi bir hatayı kullanıcıya gösterilebilir Türkçe metne çevirir. */

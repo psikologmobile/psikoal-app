@@ -9,16 +9,62 @@ export const offerKeys = {
   detail: (id: string) => [...offerKeys.details(), id] as const,
   listings: () => [...offerKeys.all, 'listing'] as const,
   forListing: (listingId: string) => [...offerKeys.listings(), listingId] as const,
+  quotes: () => [...offerKeys.all, 'quote'] as const,
+  quote: (listingId: string) => [...offerKeys.quotes(), listingId] as const,
 } as const
 
 export const OFFER_STALE_TIME = 60 * 1000
+/** Ücret zamanla ve her yeni teklifle düşer: teklif ekranında kısa ömürlü. */
+export const OFFER_QUOTE_STALE_TIME = 15 * 1000
 
+/** Sunucunun teklif hata kodları (ErrorKeys). */
+export const OFFER_ERROR_CODES = {
+  /** 409: anlık ücret uzmanın onayladığından farklı; meta { feeKurus, feeLabel }. */
+  feeChanged: 'OFFER_FEE_CHANGED',
+  /** 422: bakiye ücrete yetmiyor ve ücretsiz hak yok; meta { feeKurus, feeLabel }. */
+  insufficientBalance: 'INSUFFICIENT_BALANCE',
+  /** 409/422: ilan artık teklife açık değil. */
+  listingNotOpen: 'OFFER_LISTING_NOT_OPEN',
+  /** 409: uzman bu ilana zaten teklif verdi. */
+  alreadyExists: 'OFFER_ALREADY_EXISTS',
+  /** 403: uzman profili onaylı değil. */
+  expertNotApproved: 'OFFER_EXPERT_NOT_APPROVED',
+} as const
+
+/**
+ * Yalnız ikon. Durum METNİ backend'in `statusLabel` alanından gelir
+ * (Gönderildi · Seçildi · Başka uzmanla eşleşti · İlan kapandı · Süresi doldu · Geri çekildi).
+ * `label` eski ekranlar derlensin diye duruyor; yeni kodda `offer.statusLabel` kullanılır.
+ */
 export const OFFER_STATUS_CONFIG: Record<
   OfferStatus,
   { label: string; icon: IconName; iconColor: string }
 > = {
-  PENDING: { label: 'Beklemede', icon: 'Clock', iconColor: '#D97706' },
-  ACCEPTED: { label: 'Kabul Edildi', icon: 'CheckCircle2', iconColor: '#16A34A' },
-  REJECTED: { label: 'Reddedildi', icon: 'XCircle', iconColor: '#DC2626' },
-  WITHDRAWN: { label: 'Geri Çekildi', icon: 'MinusCircle', iconColor: '#737373' },
+  PENDING: { label: 'Gönderildi', icon: 'Clock', iconColor: '#D97706' },
+  ACCEPTED: { label: 'Seçildi', icon: 'CheckCircle2', iconColor: '#16A34A' },
+  REJECTED: { label: 'Kapandı', icon: 'XCircle', iconColor: '#DC2626' },
+  WITHDRAWN: { label: 'Geri çekildi', icon: 'MinusCircle', iconColor: '#737373' },
 }
+
+/**
+ * Tekliflerim süzgeçleri — backend `statusLabel` grupları (Revize 2 §4). Süzme
+ * etiketle yapılır: REJECTED üç ayrı kapanış nedenine bölünür.
+ */
+export const EXPERT_OFFER_FILTERS = [
+  'Tümü',
+  'Gönderildi',
+  'Seçildi',
+  'Başka uzmanla eşleşti',
+  'İlan kapandı',
+  'Süresi doldu',
+  'Geri çekildi',
+] as const
+
+export type ExpertOfferFilter = (typeof EXPERT_OFFER_FILTERS)[number]
+
+/** Teklif kartındaki görüşme şekli adları (tasarım dili). */
+export const OFFER_SESSION_LABELS = {
+  online: 'Online',
+  yüz_yüze: 'Yüz yüze',
+  yüz_yüze_online: 'İkisi de',
+} as const

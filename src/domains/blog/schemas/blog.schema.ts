@@ -11,7 +11,11 @@ export const BlogSchema = z.object({
   title: z.string(),
   excerpt: z.string(),
   content: z.string().optional(),
-  coverImage: z.string().url(),
+  // Kapak yoksa (null/boş) uygulama geometrik dalga kapağı çizer (BlogCover).
+  coverImage: z
+    .union([z.string().url(), z.literal('')])
+    .nullish()
+    .transform((value) => value || null),
   categories: z.array(z.string()),
   likeCount: z.number().int().min(0),
   liked: z.boolean().default(false),

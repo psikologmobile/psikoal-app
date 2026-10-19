@@ -19,6 +19,14 @@ export const envSchema = z
     // Mağaza sayfası yayından sonra belli olur; yoksa değerlendirme yalnız
     // sistemin uygulama içi penceresiyle istenir.
     EXPO_PUBLIC_STORE_URL: z.string().url('EXPO_PUBLIC_STORE_URL must be a URL').optional(),
+    // Web sitesinin kök adresi (kanonik adres / og:url). Alan adı alınınca verilir.
+    EXPO_PUBLIC_SITE_URL: z.string().url('EXPO_PUBLIC_SITE_URL must be a URL').optional(),
+    // Tanıtım sayfasındaki mağaza rozetleri; boşsa rozet "Yakında" olarak çizilir.
+    EXPO_PUBLIC_APP_STORE_URL: z.string().url('EXPO_PUBLIC_APP_STORE_URL must be a URL').optional(),
+    EXPO_PUBLIC_PLAY_STORE_URL: z
+      .string()
+      .url('EXPO_PUBLIC_PLAY_STORE_URL must be a URL')
+      .optional(),
   })
   .superRefine((value, ctx) => {
     if (value.EXPO_PUBLIC_APP_ENV !== 'production') return
@@ -43,6 +51,9 @@ export function parseEnv(source: Record<string, string | undefined>) {
     EXPO_PUBLIC_TERMS_URL: source['EXPO_PUBLIC_TERMS_URL'],
     EXPO_PUBLIC_KVKK_URL: source['EXPO_PUBLIC_KVKK_URL'],
     EXPO_PUBLIC_STORE_URL: source['EXPO_PUBLIC_STORE_URL'] || undefined,
+    EXPO_PUBLIC_SITE_URL: source['EXPO_PUBLIC_SITE_URL'] || undefined,
+    EXPO_PUBLIC_APP_STORE_URL: source['EXPO_PUBLIC_APP_STORE_URL'] || undefined,
+    EXPO_PUBLIC_PLAY_STORE_URL: source['EXPO_PUBLIC_PLAY_STORE_URL'] || undefined,
   })
 
   if (!result.success) {
@@ -63,6 +74,9 @@ export const env = parseEnv({
   EXPO_PUBLIC_TERMS_URL: process.env.EXPO_PUBLIC_TERMS_URL,
   EXPO_PUBLIC_KVKK_URL: process.env.EXPO_PUBLIC_KVKK_URL,
   EXPO_PUBLIC_STORE_URL: process.env.EXPO_PUBLIC_STORE_URL,
+  EXPO_PUBLIC_SITE_URL: process.env.EXPO_PUBLIC_SITE_URL,
+  EXPO_PUBLIC_APP_STORE_URL: process.env.EXPO_PUBLIC_APP_STORE_URL,
+  EXPO_PUBLIC_PLAY_STORE_URL: process.env.EXPO_PUBLIC_PLAY_STORE_URL,
 })
 
 export type Env = typeof env

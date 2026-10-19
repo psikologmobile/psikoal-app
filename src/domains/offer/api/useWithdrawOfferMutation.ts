@@ -9,6 +9,8 @@ export function useWithdrawOfferMutation() {
   const queryClient = useQueryClient()
 
   return useMutation({
+    // Hata geri çek sheet'inde satır içinde gösterilir.
+    meta: { suppressErrorAlert: true },
     mutationFn: async (offerId: string) => {
       const raw = await post(`/offers/${offerId}/withdraw`, {})
       return OfferSchema.parse(raw)

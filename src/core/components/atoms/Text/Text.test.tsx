@@ -82,7 +82,7 @@ describe('Text', () => {
     const { getByText } = render(<Text variant="heading">Title</Text>)
     const el = getByText('Title')
     expect(el.props.className).toContain('font-display')
-    expect(el.props.className).toContain('text-4xl')
+    expect(el.props.className).toContain('text-h2')
   })
 
   it('custom weight overrides variant default weight', () => {
@@ -92,6 +92,70 @@ describe('Text', () => {
       </Text>
     )
     const el = getByText('Bold body')
-    expect(el.props.className).toContain('font-bold')
+    expect(el.props.className).toContain('font-body-bold')
+    expect(el.props.className).not.toContain('font-body ')
+  })
+
+  it('maps weight to display family on display variants', () => {
+    const { getByText } = render(
+      <Text variant="h1" weight="bold">
+        Başlık
+      </Text>
+    )
+    expect(getByText('Başlık').props.className).toContain('font-display-bold')
+  })
+
+  it('renders every v2 variant and color', () => {
+    const variants = [
+      'hero',
+      'h1',
+      'h2',
+      'h3',
+      'sheet',
+      'title',
+      'number',
+      'bodyLg',
+      'body',
+      'bodySm',
+      'label',
+      'button',
+      'badge',
+      'overline',
+      'caption',
+    ] as const
+    variants.forEach((v) => {
+      const { getByText, unmount } = render(<Text variant={v}>{v}</Text>)
+      expect(getByText(v)).toBeTruthy()
+      unmount()
+    })
+    const colors = [
+      'default',
+      'muted',
+      'link',
+      'onPrimary',
+      'onAccent',
+      'onAccentMuted',
+      'onAccentSoft',
+      'danger',
+      'onDangerSoft',
+      'onDanger',
+      'inherit',
+    ] as const
+    colors.forEach((c) => {
+      const { getByText, unmount } = render(<Text color={c}>{c}</Text>)
+      expect(getByText(c)).toBeTruthy()
+      unmount()
+    })
+  })
+
+  it('keeps size and color classes side by side (tailwind-merge config)', () => {
+    const { getByText } = render(
+      <Text variant="body" color="muted">
+        Metin
+      </Text>
+    )
+    const cls = getByText('Metin').props.className
+    expect(cls).toContain('text-body')
+    expect(cls).toContain('text-fg-muted')
   })
 })

@@ -50,8 +50,11 @@ src/
     types/              ← Evrensel tipler
     theme/              ← Design tokens, NativeWind config
   screens/              ← Rol bazlı ekran kompozisyonları (route dosyaları ince switch olarak kalır)
-    home/               ← ExpertHomeScreen + ClientHomeScreen + HomeHero
+    home/               ← ExpertHomeScreen + ClientHomeScreen
     offers/             ← ExpertOffersScreen + ClientListingsScreen
+    listing/, offer/    ← Client*/Expert*DetailScreen, CreateListingScreen, SendOfferScreen
+    auth/, match/, settings/, notifications/, splash/, wallet/, profile/, claim/,
+    expert/, assessment/, blog/, category/  ← ekran grupları
   domains/              ← İş mantığı katmanları
     [domain-adı]/
       api/              ← TanStack Query hooks (useXxxQuery, useXxxMutation)
@@ -173,7 +176,7 @@ import { Text } from '@/core/components/atoms/Text'; // ← Absolute import
 type ButtonProps = {
   label: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   isDisabled?: boolean;
@@ -182,9 +185,9 @@ type ButtonProps = {
 
 // 2. Variant/style map — component dışında, render'da hesaplanmaz
 const variantStyles = {
-  primary:   'bg-sky-500 active:bg-sky-600',
-  secondary: 'bg-sky-50 border border-sky-200 active:bg-sky-100',
-  ghost:     'border border-neutral-200 active:bg-neutral-100',
+  primary:   'bg-primary',
+  secondary: 'bg-accent',
+  outline:   'border border-border-strong',
 } as const;
 
 const sizeStyles = {
@@ -216,8 +219,8 @@ export function Button({
       `}
     >
       {isLoading
-        ? <ActivityIndicator size="small" color={variant === 'primary' ? '#fff' : '#5C4FD6'} />
-        : <Text variant="label" className={variant === 'primary' ? 'text-white' : 'text-sky-700'}>{label}</Text>
+        ? <Spinner />
+        : <Text variant="label" className={variant === 'primary' ? 'text-primary-fg' : 'text-accent-fg'}>{label}</Text>
       }
     </Pressable>
   );
@@ -372,9 +375,9 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 ### 8. Styling Kuralları (NativeWind)
 
 ```typescript
-// ✅ Doğru: className, design token'lardan — shadow KULLANILMAZ, border ile derinlik
-<View className="bg-surface-base px-5 pt-4 rounded-xl border border-neutral-100">
-  <Text className="text-2xl font-bold text-neutral-900 font-display">Başlık</Text>
+// ✅ Doğru: className, semantik token'lardan — shadow KULLANILMAZ, border ile derinlik
+<View className="bg-surface px-5 pt-4 rounded-3xl border border-border">
+  <Text variant="title">Başlık</Text>
 </View>
 
 // ✅ Doğru: Platform-specific prefix
@@ -382,7 +385,7 @@ export const useAuthStore = create<AuthState & AuthActions>()(
 
 // ✅ Doğru: Conditional (cn() utility ile)
 import { cn } from '@/core/utils/cn';
-<View className={cn('rounded-xl p-4', isActive && 'bg-sky-50 border border-sky-200')}>
+<View className={cn('rounded-xl p-4', isActive && 'bg-accent-soft border border-accent-line')}>
 
 // ❌ Yanlış: StyleSheet
 const styles = StyleSheet.create({ container: { padding: 16 } });
@@ -390,17 +393,18 @@ const styles = StyleSheet.create({ container: { padding: 16 } });
 // ❌ Yanlış: inline style
 <View style={{ padding: 16, backgroundColor: '#F2F1FD' }}>
 
-// ❌ Yanlış: arbitrary value (design token varsa)
-<View className="bg-[#0EA5E9]">   // → bg-sky-500 kullan
+// ❌ Yanlış: arbitrary value / ham palet (design token varsa)
+<View className="bg-[#0EA5E9]">   // → bg-primary kullan
+<View className="bg-sky-500">     // → bg-primary kullan
 
 // ❌ PSİKOAL KURALI — shadow sınıfı ASLA kullanılmaz (flat design)
 <View className="shadow-sm">      // YASAK
 <View className="shadow-md">      // YASAK
 <View className="shadow-lg">      // YASAK
 // ✅ Derinlik için border + arka plan rengi farkı kullan:
-<View className="border border-neutral-100 bg-white">      // raised card
-<View className="border border-sky-100 bg-sky-50">         // brand tinted surface
-<View className="border-b border-neutral-100">             // subtle separator
+<View className="border border-border bg-surface">         // kart
+<View className="bg-accent-soft">                          // vurgulu bilgi yüzeyi
+<View className="border-b border-border">                  // ayraç
 ```
 
 **`cn()` utility (clsx + tailwind-merge):**
@@ -594,203 +598,153 @@ PsikoAl, psikologları (Uzman) ve terapi almak isteyen kullanıcıları (Danış
 
 ---
 
-### 2. Tasarım Kısıtları (Değiştirilemez)
+### 2. Tasarım Kısıtları (Değiştirilemez) — v2 "PsikoAl · Flat"
 
-Bu kurallar tüm PsikoAl geliştirmelerinde kesinlikle uygulanır. Yeni component yazarken, PR review'da ve kod üretirken kontrol et.
+Kaynak: `docs/design-v2/` (README, components.md, animations.md, screens.md, theme.ts, tokens.css) ve ekran çizimleri `tasarim-paketi/v2-ekranlar/`. Bu kurallar tüm PsikoAl geliştirmelerinde uygulanır; PR review'da kontrol edilir.
 
-**Renk — Sky Palette (Primary)**
+**Renk — semantik tokenlar (zinc %80 · sky %20 · hata için red)**
 
-Core'daki generic `brand-*` token'ları PsikoAl'da Sky paletine bağlıdır:
+Ekranlar YALNIZ semantik sınıfları kullanır; açık/koyu tema `global.css` CSS değişkenleriyle tek yerden değişir, `dark:` öneki **yazılmaz**. Hex gereken prop'larda (`Icon color`, SVG `stroke`, `placeholderTextColor`) `useThemeColors()` kullanılır. Değerlerin tek kaynağı `src/core/theme/tokens.ts`; `global.css` ile eşitliğini `tokens.test.ts` denetler.
 
-```
-sky-50:  #F0F9FF    sky-400: #38BDF8
-sky-100: #E0F2FE    sky-500: #0EA5E9  ← ana marka rengi
-sky-200: #BAE6FD    sky-600: #0284C7
-sky-300: #7DD3FC    sky-700: #0369A1
-                    sky-800: #075985
-```
+| Token (`useThemeColors`)                                   | className                                                                                                      | Açık                             | Koyu                              | Kullanım                                                                        |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
+| bg                                                         | `bg-bg`                                                                                                        | zinc-50                          | zinc-950                          | sayfa zemini                                                                    |
+| surface                                                    | `bg-surface`                                                                                                   | zinc-100                         | zinc-900                          | kart, input zemini, sekme çubuğu                                                |
+| border / borderStrong                                      | `border-border` / `border-border-strong`                                                                       | zinc-200 / 300                   | zinc-800 / 700                    | ayraç · outline düğme, input                                                    |
+| text / textMuted                                           | `text-fg` / `text-fg-muted`                                                                                    | zinc-900 / 600                   | zinc-50 / 400                     | ana / ikincil yazı                                                              |
+| primary / onPrimary / primaryText                          | `bg-primary` / `text-primary-fg` / `text-primary-text`                                                         | sky-500 / 950 / 700              | sky-500 / 950 / 400               | ana eylem, seçili, rozet                                                        |
+| accent / onAccent / onAccentMuted / accentLine             | `bg-accent` / `text-accent-fg` / `text-accent-muted` / `border-accent-line`                                    | sky-200 / 950 / 800 / 300        | sky-950 / 100 / 300 / 900         | vurgu yüzeyi (hero, seçili süzgeç)                                              |
+| accentSoft / onAccentSoft                                  | `bg-accent-soft` / `text-accent-soft-fg`                                                                       | sky-100 / 800                    | sky-900 / 100                     | çip, bilgi kutusu, aktif menü                                                   |
+| link                                                       | `text-link`                                                                                                    | sky-700                          | sky-300                           | bağlantı, metin düğme                                                           |
+| danger / dangerSoft / onDangerSoft / dangerFill / onDanger | `text-danger` `border-danger` / `bg-danger-soft` / `text-danger-soft-fg` / `bg-danger-fill` / `text-danger-fg` | red-600 / 50 / 700 / 600 / beyaz | red-400 / 950 / 300 / 600 / beyaz | **yalnız** hata ve geri alınamaz işlem; hata kutusu `accessibilityRole="alert"` |
+| scrim                                                      | `bg-zinc-950/45 dark:bg-black/60`                                                                              | —                                | —                                 | sheet/dialog arkası (tek `dark:` istisnası)                                     |
 
-Iris/violet token'ları (`iris-*`) bu projede yoktur. `bg-iris-*`, `text-iris-*`, `border-iris-*` sınıfları kullanılmaz.
+- Primary üstündeki yazı **sky-950** (`text-primary-fg`), beyaz değildir.
+- v1 adları (`brand-*`, `content-*`, `surface-base/raised/sunken`, `dark-*`, `neutral-*`, `tag/session/price/semantic-*`) yalnız eski ekranlar derlensin diye v2 değişkenlerine yönlendirildi; **yeni kodda kullanılmaz**, ekranlar yenilendikçe silinecek.
+- Ham palet (`bg-sky-500`, `text-zinc-600`), hex ve arbitrary renk yazılmaz.
 
-**Tipografi — Plus Jakarta Sans**
+**Tipografi — Bricolage Grotesque (başlık, büyük rakam) + Figtree (gövde)**
 
-Core'un `font-display` ve `font-body` değişkenlerinin ikisi de Plus Jakarta Sans'a bağlıdır:
+`@expo-google-fonts/bricolage-grotesque` (700, 800) ve `@expo-google-fonts/figtree` (400–800) `src/app/_layout.tsx`'te yüklenir. RN özel fontta ağırlık sentezlemez: ağırlık = aile sınıfı (`font-display` 800, `font-display-bold` 700, `font-body` 500, `font-body-regular` 400, `font-body-semibold` 600, `font-body-bold` 700, `font-body-heavy` 800). `font-bold` gibi ağırlık sınıfları kullanılmaz; `<Text weight>` aileyi değiştirir.
 
-```css
---font-display: 'PlusJakartaSans_800ExtraBold', sans-serif; /* heading/display */
---font-body: 'PlusJakartaSans_400Regular', sans-serif;
-```
+Ölçek (`<Text variant>` ya da `text-*`): hero 44 · h1 40 · h2 34 (sekme başlığı) · h3 28 · sheet 24 · title 20 · number 22 · bodyLg 17 · body 15 · bodySm 14 · label 13/700 · button 17/800 · badge 12/800 · overline 12/800 büyük harf.
 
-`Bricolage Grotesque` bu projede kullanılmaz. Tüm tipografi Plus Jakarta Sans üzerinden yönetilir. Expo Google Fonts paketinden `@expo-google-fonts/plus-jakarta-sans` kurulur.
+**Gölge ve gradyan — kesinlikle yasak**
 
-**Gölge — Kesinlikle Yasak**
+`shadow-*`, `elevation`, `shadowColor/Opacity`, `expo-linear-gradient` kullanılmaz. Katmanlar **surface tonu + 1,5 px çizgi** ile ayrılır (`border` sınıfı = 1.5px). Sol accent border (`border-l-4`) yok.
 
-PsikoAl flat design prensibiyle çalışır. `shadow-*` sınıflarının hiçbiri kullanılmaz.
+**Köşe, boşluk, ölçü**
 
-```typescript
-// ❌ YASAK — shadow sınıfları
-className="shadow-xs"
-className="shadow-sm"
-className="shadow-md"
-className="shadow-lg"
-className="shadow-xl"
-style={{ shadowColor: '...', shadowOpacity: ... }}   // native shadow da yasak
+- Radius: `rounded-xs` 8 · `checkbox` 9 · `inner` 10 · `sm` 12 · `md` 14 (düğme/input) · `lg` 16 · `xl` 18 · `card` 20 · `2xl` 22 · `3xl` 24 (kart, tab bar) · `panel` 26 · `4xl` 28 (hero) · `sheet` 30 · `full`.
+- Ekran kenarı 20 px (`px-5`), üst = güvenli alan + 12; web'de 40 px ve en çok 1200 px (`Screen` template). 4'lük ızgara + yarım adımlar (`1.5`, `2.5`, `3.5`, `4.5`).
+- Düğme yüksekliği: sm 44 · md 50 · lg 56 · xl 58 (`h-btn-*`); input 52 (`h-input`); dokunma alanı ≥ 44 px.
 
-// ❌ YASAK — sol accent border (kaldırıldı)
-className="border-l-4 border-l-sky-500"
+**Hareket — `src/core/motion`**
 
-// ✅ iOS Health pattern — gri zemin + beyaz kart + pastel header strip
-<View className="bg-white rounded-xl overflow-hidden">
-  {/* Pastel header: status'a göre */}
-  <View className="bg-sky-100 px-4 py-3">     {/* OPEN */}
-  <View className="bg-emerald-100 px-4 py-3"> {/* MATCHED / ACTIVE / ACCEPTED */}
-  <View className="bg-amber-100 px-4 py-3">   {/* PENDING */}
-  <View className="bg-neutral-100 px-4 py-3"> {/* CLOSED / EXPIRED / geçmiş */}
-```
+Her etkileşimli yüzey `PressableScale` (basınca .96, 150 ms, haptic). Girişler `EnterUp` / `EnterRight` (60 ms sıralı), geri bildirim `Pop`, `DrawCheck`, `Shake`; döngüler `PulseDot`, `Ring`, `Bell`, `Float`, `Orbit`, `Radar`, `Coin`, `Skeleton`; vurgu `Flash`, yazı `TypeReveal`. Tümü **azaltılmış harekete** uyar (döngü yok, giriş son karede). Reanimated `Animated.View`'a className verilmez (css-interop Reanimated bileşenlerini tanımıyor) — motion bileşenleri `className`'i dış View'a uygular.
+**Müşteri kararı:** ücret düşüşü göstergesi (`bob` oku, `drain` çubuğu, "X saat sonra ₺…") hiçbir yerde yapılmaz.
 
-**Elevation ve Derinlik — iOS Health Sistemi:**
+**Gezinme**
 
-`surface-base: #F2F2F7` (Apple iOS gray) — tüm ekran zeminleri bu token'ı kullanır.
-Kart gövdesi `bg-white rounded-xl overflow-hidden` — zemin ile renk farkı yeterli derinlik sağlar.
-Border eklemeye gerek yoktur.
-
-```
-// Kart anatomisi:
-bg-[#F2F2F7] zemin
-  └── bg-white rounded-xl overflow-hidden
-        ├── [Pastel Header Strip] px-4 py-3  ← status rengi
-        └── [Kart Gövdesi]        px-4 pt-3 pb-4
-```
-
-- Input: `bg-neutral-50 border border-neutral-200` (sunken)
-- Overlay backdrop: `bg-black/40` (modal — izin verilir)
-
-**Border Radius:**
-
-- Kart / büyük container: `rounded-xl` (bu projede 24px)
-- Buton (md/lg): `rounded-lg` (bu projede 16px)
-- Badge / chip: `rounded-full`
-- Input: `rounded-xl`
+Mobil: yüzen `TabBar` (surface, 1,5 px border, alttan 20, yanlardan 12, radius 24, h 72; aktif sekme 48×30 primary hap + kalın etiket). Web: `Sidebar` (248 px; ≤1100 px 84 px ikon rayı; ≤640 px üst menü; aktif öğe accent-soft; uzmanda alt bakiye kartı). İkisi de `src/app/(tabs)/_layout.tsx`'te role göre kurulur; sahneye sekme çubuğu kadar alt boşluk layout tarafından verilir. Geliştirme derlemesinde `/dev-gallery` tüm bileşenleri açık/koyu gösterir.
 
 ---
 
 ### 3. Domain Mimarisi
 
-| Domain         | Sorumluluk                                     | Kritik Kurallar                                 |
-| -------------- | ---------------------------------------------- | ----------------------------------------------- |
-| `auth`         | Kayıt, giriş, token yönetimi, rol belirleme    | JWT refresh, role-based guard                   |
-| `expert`       | Psikolog profili, lisans doğrulama, uzmanlık   | Profil yayınlanmadan önce admin onayı şart      |
-| `client`       | Danışan profili, test geçmişi                  | Platform'a doğrudan kayıt olur                  |
-| `listing`      | Danışan ilanları                               | OPEN→MATCHED→CLOSED/EXPIRED state machine       |
-| `match`        | Eşleşme yönetimi                               | Yalnızca teklif kabulüyle oluşur                |
-| `offer`        | Teklifler (ilan bazlı)                         | PENDING→ACCEPTED/REJECTED/WITHDRAWN             |
-| `credit`       | Uzman kredisi: bakiye, defter, teklif maliyeti | Satın alma YALNIZ web sitesinde (mağaza kuralı) |
-| `assessment`   | Psikolojik test modülü                         | Ücretsiz, auth gerektirmez                      |
-| `notification` | Push, in-app, SMS bildirimleri                 | Event-driven, rate limited                      |
+| Domain         | Sorumluluk                                                          | Kritik Kurallar                                                       |
+| -------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `auth`         | Kayıt (davet kodu dahil), giriş, token, rol, davet eden uzman       | JWT refresh, role-based guard; `/davet/{code}` kodu saklar            |
+| `expert`       | Psikolog profili, belgeler, profil görünürlüğü                      | Admin onayı şart; danışan yalnız teklif veren/davet eden uzmanı görür |
+| `listing`      | İlanlar, kurallar, eşleşti işaretleme, "anlaştık" bildirimleri      | PENDING_APPROVAL→OPEN→MATCHED / CLOSED / EXPIRED                      |
+| `offer`        | Teklif, ücret teklifi (quote), gönderim                             | Ücretli; PENDING→ACCEPTED / REJECTED(closedReason) / WITHDRAWN        |
+| `match`        | Eşleşmeler, iletişim, değerlendirme                                 | Sonlandırılamaz; değerlendirme eşleşir eşleşmez açık                  |
+| `wallet`       | Uzman TL bakiyesi, ücretsiz haklar, hareketler, ödemeler, faturalar | Mobilde satın alma yolu YOK; web'de `/bakiye` (PayTR)                 |
+| `assessment`   | Psikolojik testler                                                  | Ücretsiz                                                              |
+| `notification` | Uygulama içi + push bildirimleri ve yönlendirme                     | Bilinmeyen tür `SYSTEM` sayılır                                       |
 
 ---
 
-### 4. İş Kuralları (Değiştirilemez)
+### 4. İş Kuralları (Değiştirilemez) — kanonik: `docs/design-v2/API-REVIZE-2.md`
 
-**İlan Kuralları:**
-
-```
-Durum makinesi: OPEN → MATCHED → (CLOSED | EXPIRED)
-
-OPEN:    Danışan ilan açtı, tüm uzmanlar görebilir ve teklif gönderebilir.
-MATCHED: Danışan bir teklifi kabul etti. Diğer PENDING teklifler otomatik REJECTED olur.
-CLOSED:  Danışan ilanı manuel kapattı.
-EXPIRED: 30 gün geçtikten sonra otomatik kapanır.
-
-- Danışan aynı anda maksimum 3 OPEN ilan açabilir.
-- MATCHED veya EXPIRED ilan yeniden açılamaz.
-```
-
-**Teklif Durum Makinesi:**
+**İlan:**
 
 ```
-PENDING → ACCEPTED   (danışan kabul → match otomatik oluşur)
-        → REJECTED   (danışan reddetti)
-        → WITHDRAWN  (uzman geri çekti)
-
-- Teklifler ilana gönderilir, danışana değil.
-- Bir uzman aynı ilana sadece 1 teklif gönderebilir.
-- Tek fiyat — kademe/dinamik fiyat sistemi yoktur.
-- Uzman PENDING teklifini geri çekebilir (WITHDRAWN).
+PENDING_APPROVAL → OPEN (admin onayı) → MATCHED (danışan "X uzmanla eşleşti" işaretler)
+                                      → CLOSED (danışan kapatır) / EXPIRED (30 gün)
+- Danışan aynı anda en çok 3 açık ilan açar.
+- Bütçe dönemsel genel aralıkta (GET /listings/rules; max null = sınırsız).
+- Yüz yüze ya da ikisi seçilirse şehir zorunlu.
+- İletişim izni (açık rıza) zorunlu; profilde telefon yoksa ilan açarken istenir.
 ```
 
-**Eşleşme Kuralları:**
+**Teklif ve ücret:**
 
 ```
-Durum makinesi: ACTIVE → COMPLETED | RELEASED
-
-- Eşleşme YALNIZCA teklif kabulüyle oluşur (otomatik).
-- Eşleşme: danışan + uzman + ilan + kabul edilen teklif referansı içerir.
-- RELEASED için her iki tarafın onayı gerekir (UX kuralı).
-- Eşleşme backend kaynaklı — optimistic update yapılmaz.
+- Uzman teklif GÖNDERİRKEN ücret öder (TL). Ücretsiz hakkı varsa önce o kullanılır.
+- Ücret = ilanın kalite puanına göre başlangıç, her 24 saatte ve her teklifte yüzde düşer,
+  dönemin tabanının altına inmez. Hesap backend'de; uygulama yalnız offerFeeLabel gösterir.
+- Uzmana "X saat sonra düşecek" bilgisi GÖSTERİLMEZ (müşteri kararı).
+- POST /offers expectedFeeKurus ister: 409 OFFER_FEE_CHANGED → yeni ücretle yeniden onay;
+  422 INSUFFICIENT_BALANCE → düz metin, mobilde bağlantı yok.
+- Teklif gönderilince danışanın ad soyad, telefon, e-postası uzmana açılır.
+- Ücret iade edilmez (seçilmese, geri çekilse, ilan kapansa da).
+- Kabul / ret YOK. Danışan bir teklif sahibiyle "eşleşti" işaretler; diğer bekleyen
+  teklifler REJECTED (closedReason OTHER_EXPERT / LISTING_CLOSED / LISTING_EXPIRED).
 ```
 
-**Kredi Kuralları (Armut modeli — backend `docs/PAYMENTS.md`):**
+**Eşleşme ve anlaşma bildirimi:**
 
 ```
-- Danışandan para alınmaz. Uzman ilana teklif GÖNDERİRKEN kredi harcar (offerCost).
-- Harcanan kredi iade edilmez; başlangıç kredisi yoktur.
-- Bakiye < offerCost ise teklif gönderimi kilitlenir; sunucu 422 INSUFFICIENT_CREDITS döner.
-- Kredi YALNIZ web sitesinden alınır. Uygulamada satın alma butonu, bağlantı, adres,
-  fiyat yoktur (App Store 3.1.1 / Play); yalnız düz metin:
-  "Teklif göndermek için yeterli krediniz yok. Kredi yüklemek için web sitemizi ziyaret edin."
+- Eşleşme yalnız danışanın işaretlemesiyle oluşur; sonlandırılamaz.
+- İki taraf da karşı tarafın telefon ve e-postasını görür.
+- Uzman, teklif verdiği açık ilan için bir kez "Danışanla anlaştım" bildirir → danışana
+  hatırlatma; gecikirse admin incelemesi. Danışan "Anlaşmadım" ile kapatabilir.
 ```
+
+**Bakiye (mağaza kuralı):**
+
+```
+- Mobil uygulamada bakiye satın alma düğmesi, bağlantısı, adresi, fiyatı YOKTUR
+  (App Store 3.1.1 / Play). Yalnız düz metin.
+- Web sürümünde (Platform.OS === 'web') "Bakiye yükle" → /bakiye (PayTR iFrame).
+- Hoş geldin hakkı ve davet hakkı backend'de otomatik yazılır.
+```
+
+**Davet:** Her uzmanın kişisel kodu/linki vardır (`/referral`). Danışan o linkle kayıt olursa o
+uzmanın profilini görebilir ve ilanları o uzmana "Davet" rozetiyle düşer; uzman getirirse onayda davet
+edene ücretsiz teklif hakkı yazılır. Danışan → uzman "ilana davet" özelliği yoktur.
 
 ---
 
 ### 5. Screen & Navigation Haritası
 
-**Tab Bar — Rol Bazlı (Armut Modeli)**
+**Tab Bar — Rol Bazlı**
 
 ```
-Uzman: Fırsatlar | Tekliflerim | Eşleşmelerim | Ayarlar
-Danışan: Keşfet  | İlanlarım   | Bildirimler | Ayarlar
+Uzman:   Fırsatlar | Tekliflerim | Eşleşmeler | Ayarlar   (web kenar çubuğu: + Bakiyem, alt bakiye kartı)
+Danışan: Keşfet    | İlanlarım   | Eşleşmeler | Ayarlar   (web kenar çubuğu: + Yeni ilan, Bildirimler)
 ```
 
 ```
 app/
-  (auth)/
-    login.tsx           → /login
-    register.tsx        → /register (expert | client seçimi)
-    onboarding/
-      expert.tsx        → /onboarding/expert (profil tamamlama)
-  (tabs)/
-    index.tsx           → / — Expert: Fırsatlar (ilan feed + filtreler)
-                              Client: Keşfet (popüler konular + uzmanlık alanı grid)
-    offers.tsx          → /offers — Expert: Tekliflerim (gönderilen teklifler)
-                                    Client: İlanlarım (Aktif/Geçmiş tab)
-    matches.tsx         → /matches — Expert: Eşleşmelerim (Aktif/Geçmiş tab)
-                                     Client: gizli (href: null)
-    profile.tsx         → /profile — Ayarlar (rol bazlı menü)
-  notifications.tsx     → /notifications — Bildirimler (tab dışı, header zil ikonundan erişilir)
-  expert/
-    [id].tsx            → /expert/[id] — uzman profil sayfası (public, okuma modu)
-  client/
-    [id].tsx            → /client/[id] — danışan profil (expert: okuma modu)
-  listing/
-    new.tsx             → /listing/new?spec=X — ilan oluştur (client, spec opsiyonel)
-    [id].tsx            → /listing/[id] — ilan detay + gelen teklifler + Uzmanı İncele
-  match/
-    [id].tsx            → /match/[id] — eşleşme detay (expert only): danışan iletişim + ilan + teklif özeti
-  offer/
-    new.tsx             → /offer/new?listingId=X — teklif gönder (expert)
-    [id].tsx            → /offer/[id] — teklif detay
-  assessment/
-    index.tsx           → /assessment — test başlangıç
-    list.tsx            → /assessment/list — tüm testler + geçmiş sonuçlar
-    result.tsx          → /assessment/result
-  blog/
-    index.tsx           → /blog — blog akışı
-    [slug].tsx          → /blog/[slug] — blog detayı
-  category/
-    [slug].tsx          → /category/[slug] — kategori detayı (testler + blog + ilan CTA)
-  credits/
-    index.tsx           → /credits — kredi bakiyesi + geçmiş (expert only)
+  (auth)/               → welcome, login, register (+ davet kodu), forgot/reset-password, onboarding/{client,expert}
+  (tabs)/               → index (Keşfet | Fırsatlar), offers (İlanlarım | Tekliflerim), matches, profile (Ayarlar)
+  notifications.tsx     → Bildirimler
+  davet/[code].tsx      → davet kodunu saklar, kayda yönlendirir
+  expert/[id].tsx       → uzman profili (danışan: yalnız teklif veren / davet eden)
+  listing/new.tsx       → ilan oluştur (çok adımlı; izin + şehir + bütçe kuralları)
+  listing/[id].tsx      → ilan detayı (rol switch: Client/ExpertListingDetailScreen)
+  offer/new.tsx         → teklif gönder (quote + ücret onayı)
+  offer/[id].tsx        → teklif detayı (rol switch)
+  match/[id]/index.tsx  → eşleşme detayı
+  match/[id]/celebrate.tsx → eşleşti anı (matchCelebrateRoute; eşleşme başına cihazda bir kez)
+  claim/[listingId].tsx → uzman: "Danışanla anlaştım"
+  wallet/index.tsx      → Bakiyem (uzman)
+  wallet/invoices.tsx   → Faturalarım (uzman)
+  referral.tsx          → Davet linkim (uzman)
+  assessment/*, blog/*, category/[slug].tsx
+  (site)/…              → yalnız web: tanıtım, uzmanlar-icin, bakiye, hukuk, destek (static render)
 ```
 
 **Not — kök `store/`:** `onboardingStore` ve `themeStore` domain'e ait olmayan global UI state'leridir; kök `src/store/` altında tutulur. Domain'e özgü store'lar (örn. `authStore`) kendi domain klasöründe kalır.
@@ -827,65 +781,32 @@ type ApiError = {
 
 ---
 
-### 7. PsikoAl Komponent Kataloğu
+### 7. PsikoAl Komponent Kataloğu (v2)
 
-**Atoms (core/components/atoms/):**
+Hepsi `@/core/components/{atoms,molecules,organisms,templates}` barrel'larından açılır; görsel doğrulama `/dev-gallery` (yalnız `__DEV__`).
 
-- `Text` — variant prop ile tipografik skalayı karşılar
-- `Button` — variant: primary | secondary | ghost | danger | accent
-- `Input` — state: default | focused | error | success
-- `Badge` — variant: sky | sage | warning | error | neutral
-- `Avatar` — boyut, initials fallback
-- `Icon` — Lucide icon wrapper
-- `Skeleton` — shimmer loading state
-- `Divider`
-- `Chip` — tag/filter için (closeable opsiyonu)
+**Atoms:** `Text` (variant: hero…overline; color: default/muted/brand/link/onPrimary/onAccent…/danger) · `Button` (primary · secondary · outline · link · danger · danger-outline; sm/md/lg/xl; disabled = kesikli çizgi; `isLoading` + `loadingLabel`; `icon`) · `IconButton` (outline/ghost/primary/surface, 44 daire, `badge`) · `Input` · `Checkbox` (çizilen tik) · `Switch` (46×26) · `FilterChip` (tek seçim) · `ChoiceChip` (çoklu, tik) · `TagChip` (meta) · `StatusPill` (live/soft/matched/neutral/danger) · `CountBadge` · `VerifiedBadge` · `StarRating` · `ProgressSegments` (bar/thin/dots) · `BudgetCells` · `ScoreRing` · `LevelBar` · `Avatar` (xs 30…hero 112, tone accent/primary/surface) · `Skeleton` · `Spinner` · `Icon` (Lucide) · `NavIcon` (tasarımın gezinme ikonları) · `BrandMark` · `Divider`.
 
-**Molecules (core/components/molecules/):**
+**Molecules:** `TextField` (text/email/tel/number/url/password; error/hint/optional) · `TextArea` (sayaç) · `ReadonlyField` (kesikli + kilit) · `Stepper` · `RadioCard` (large/list) · `SegmentedControl` (kayan hap) · `AvatarStack` · `InfoBanner` · `ReminderBanner` · `ErrorBanner` (alert + shake; satır içi / blok) · `EmptyState` (page/compact, yüzen illüstrasyon) · `ScreenHeader` · `SectionHeader` · `StrengthMeter` · `Accordion` / `AccordionItem` · `SettingsRow` + `SettingsGroup` · `TransactionRow` · `NotificationItem` · `StatTile` · `CheckboxRow`.
 
-- `InputField` — Input + Label + Hint/Error mesajı
-- `SearchBar` — Input + search icon + clear button
-- `RatingRow` — yıldızlar + puan + yorum sayısı
-- `StatCard` — değer + etiket (profil istatistikleri)
-- `PriceDisplay` — fiyat + birim + indirim rozeti
+**Organisms:** `Select` (arama) · `CityPicker` (81 il — `@/core/constants`) · `ContactCard` (tel:/mailto:, kopyala→tik) · `SuccessHero` (halka + pop + tik, konfeti) · `HeroCard` (accent, dönen köşe dekoru) · `BottomSheet` · `Dialog` (web) · `ToastProvider` / `useToast` · `TabBar` · `Sidebar` + `SidebarBalanceCard` / `SidebarUserCard` / `useSidebarMode`.
 
-**Organisms (domains/\*/components/ veya core/organisms/):**
+**Templates:** `AppProviders` (Toast dahil) · `Screen` (bg, kenar boşlukları, web'de en çok 1200 ortalı, `footer`, `keyboard`).
 
-- `ExpertProfileHero` — avatar + isim + ünvan + rating + doğrulama rozeti
-- `ListingCard` — ilan başlığı, uzmanlık chip'leri, bütçe, teklif sayısı, durum badge
-- `ListingDetail` — tam ilan içeriği, teklif gönder / ilanı kapat CTA
-- `OfferCard` — fiyat, açıklama, uzman avatar, durum badge, aksiyon butonları
-- `MatchBanner` — aktif eşleşme durumu (ACTIVE/COMPLETED/RELEASED)
-- `AssessmentResultCard` — test sonucu + uzman önerisi CTA
-- `CreditBalanceCard` / `CreditTransactionRow` — uzman kredi bakiyesi ve defter satırı
+**Domain kartları** (`AdCard`, `ActiveListingCard`, `ExpertListingCard`, `OfferCard`, `ExpertOfferCard`, `MatchCard`, `TestCard`, `BlogCard`, `TopupNotice`…) ilgili `domains/*/components` altında yukarıdaki parçalarla kurulur.
 
 ---
 
 ### 8. Geliştirici Notları (Önemli Edge Case'ler)
 
-1. **Rol tabanlı tab bar:** `_layout.tsx`'de `role === 'expert'` kontrolü ile `matches` sekmesi expert'e gösterilir, client için `href: null` ile gizlenir.
-
-2. **Teklif → Match otomasyonu:** Danışan bir teklifi kabul ettiğinde backend match'i otomatik oluşturur. `useAcceptOfferMutation` onSuccess'te `matchKeys.all` ve `listingKeys.detail(listingId)` invalidate eder. Optimistic update yapılmaz.
-
-3. **Danışan adı gizliliği:** Listing kartlarında (uzman görünümünde) danışan adı tam gösterilmez. `formatClientName("Zeynep Yılmaz")` → `"Zeynep Y."` formatı. `domains/listing/utils/formatClientName.ts` helper'ı kullan.
-
-4. **Danışan uzman araması YOKTUR:** Danışan "Keşfet" ekranında sadece kategori/konu seçer → bu seçim ilan oluşturma formunu açar. Uzman listesine doğrudan erişim yoktur. Danışan uzmanı pasif olarak görür: İlanlarım → İlan Detayı → Gelen Teklif → "Uzmanı İncele" → `/expert/[id]`.
-
-5. **Assessment testi auth gerektirmez:** Bu route'lar `(auth)` grubunun dışında kalır. Test tamamlandıktan sonra email lead capture opsiyonel — zorlamaz.
-
-6. **Ödeme yok:** Uygulamada ödeme akışı yoktur (eski cüzdan/paket/Iyzico modeli terk edildi). Uzman kredisi web sitesinden alınır; uygulama yalnız bakiye, geçmiş ve teklif maliyetini gösterir.
-
-7. **Bildirim izni:** İlk login'de değil, ilk teklif geldiğinde sor. `expo-notifications` ile `PermissionStatus` kontrol et.
-
-8. **Expert → client/[id] ekranı:** Uzman danışan profilini görüntüleyebilir (okuma modu). Bu ekranda "Teklif Gönder" butonu yoktur — uzman teklife ilan feed'inden (Fırsatlar) ulaşır.
-
-9. **Teklif kabul onay uyarısı:** `OfferCard`'da danışan "Kabul Et" butonuna bastığında `Alert.alert` ile "İletişim bilgileriniz uzman ile paylaşılacaktır" uyarısı gösterilir. Onay durumunda `useAcceptOfferMutation` çalışır.
-
-10. **Eşleşme detay sayfası (`/match/[id]`):** Expert-only. Eşleşme sonrası danışan adı **tam gösterilir** (gizleme yok), email ve telefon açık. `useMatchDetailQuery` → `GET /matches/:id` (embedded listing + offer döner).
-
-11. **Eşleşmelerim → match detay:** Expert Eşleşmelerim sekmesinde eşleşmeye tıklamak `/match/[id]`'ye yönlendirir. "Eşleşmeyi Sonlandır" butonu bu tab ekranında yoktur.
-
-12. **Tekliflerim — ACCEPTED teklif navigasyonu:** ACCEPTED teklif → `/match/[offer.matchId]`; PENDING/REJECTED/WITHDRAWN → `/offer/[id]`.
+1. **Danışan adı gizliliği:** Uzman görünümünde teklif vermeden önce danışan adı kısaltılmış gelir (backend maskeler); teklif verdikten sonra `clientContact` tam ad + telefon + e-posta taşır.
+2. **Danışan uzman araması YOKTUR:** Danışan uzmanı yalnız kendi ilanına gelen tekliften ya da kendisini davet eden uzman kartından görür. Profil 404 `EXPERT_NOT_FOUND` → "Bu profil görüntülenemiyor" (`useExpertProfileAccess`).
+3. **Eşleşti işaretleme:** `useMarkMatchedMutation` ilan/teklif/eşleşme/bildirim sorgularını tazeler; ardından `router.replace(matchCelebrateRoute(matchId))` (`/match/[id]/celebrate`; `useCelebratedMatchesStore` ile eşleşme başına bir kez). Optimistic update yapılmaz.
+4. **Teklif ücreti:** `useOfferFeeGate` quote'u, beklenen ücreti ve OFFER_FEE_CHANGED / INSUFFICIENT_BALANCE durumlarını yönetir; ekran iş mantığı yazmaz.
+5. **Bildirim izni:** İlk login'de değil, ilk teklif geldiğinde ya da bildirim listesi dolu geldiğinde sorulur.
+6. **Bildirim yönlendirme:** `resolveNotificationRoute` — MATCHED → `/match/{id}/celebrate` (OFFER_ACCEPTED → `/match/{id}`); LISTING_MATCHED_OTHER, CLAIM_REMINDER, INVITED_CLIENT_LISTING → `/listing/{id}`; cüzdan türleri → `/wallet`; INVOICE_READY → `/wallet/invoices`.
+7. **Tekliflerim navigasyonu:** ACCEPTED ve `matchId` varsa `/match/[matchId]`, diğerleri `/offer/[id]`.
+8. **Kayıt:** Backend kullanıcıyı onaylı oluşturup hemen oturum açar; e-posta onay adımı/ekranı YOKTUR. Kayıt başarılı olunca `onboardIntent` ile doğrudan rolün onboarding'ine (`/(auth)/onboarding/{client,expert}`) geçilir.
 
 ---
 
@@ -903,4 +824,4 @@ Yeni bir özellik eklenirken sırayla şu soruları cevapla:
 
 ---
 
-_Son güncelleme: Haziran 2026 — Tekin Labs (v3: Armut tab yapısı + rol bazlı UX)_
+_Son güncelleme: Ekim 2026 — v2 "PsikoAl · Flat" tasarım sistemi (tokenlar, hareket, bileşen kataloğu)_
