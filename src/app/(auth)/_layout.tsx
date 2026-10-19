@@ -24,8 +24,10 @@ export default function AuthLayout() {
 
   // Şifre sıfırlama bağlantısı oturum durumundan bağımsız açılabilmeli.
   const isPasswordReset = current === 'reset-password'
+  // Kayıt sonu "E-postanı onayla" ekranı oturum açılmışken gösterilir; onboarding'e o geçirir.
+  const isPostRegister = current === 'onboarding' || current === 'verify-email'
 
-  if (isAuthenticated && current !== 'onboarding' && !isPasswordReset) {
+  if (isAuthenticated && !isPostRegister && !isPasswordReset) {
     if (onboardIntent) {
       return <Redirect href={onboardIntent as never} />
     }

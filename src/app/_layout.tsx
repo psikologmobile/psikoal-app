@@ -1,6 +1,6 @@
 import '../../global.css'
 
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { View } from 'react-native'
 
@@ -31,6 +31,7 @@ import { useAuthStore, useMeQuery } from '@/domains/auth'
 import { useNotificationResponseRouting, useSilentPushRegistration } from '@/domains/notification'
 import { registerUnauthenticatedHandler } from '@/lib/api'
 import { queryClient } from '@/lib/queryClient'
+import { AnimatedSplash, useAppHydrated } from '@/screens/splash'
 import { useThemeStore } from '@/store/themeStore'
 
 SplashScreen.preventAutoHideAsync()
@@ -70,6 +71,10 @@ export default function RootLayout() {
   useApplyThemePreference(preference)
   const colors = useThemeColors()
   const scheme = useResolvedColorScheme()
+  const hydrated = useAppHydrated()
+  // Açılış animasyonu yalnız soğuk açılışta: kök düzen bir kez bağlanır.
+  const [splashDone, setSplashDone] = useState(false)
+  const finishSplash = useCallback(() => setSplashDone(true), [])
 
   const [fontsLoaded, fontError] = useFonts({
     BricolageGrotesque_700Bold,
@@ -81,6 +86,8 @@ export default function RootLayout() {
     Figtree_800ExtraBold,
   })
 
+  // Yerel açılış ekranı yazı tipleri gelince kalkar; yerini aynı renkteki
+  // AnimatedSplash alır (yazı tipi gerektirdiği için önce yüklenmeleri beklenir).
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync()
@@ -105,6 +112,7 @@ export default function RootLayout() {
       <SessionSync />
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }} />
+      {splashDone ? null : <AnimatedSplash ready={hydrated} onDone={finishSplash} />}
     </AppProviders>
   )
 }

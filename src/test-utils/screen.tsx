@@ -1,10 +1,25 @@
-import type { ReactElement } from 'react'
+import type { ReactElement, ReactNode } from 'react'
 
 import { render } from '@testing-library/react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { createTestQueryClient, createWrapper } from './query'
 
-/** expo-router yerine: `jest.mock('expo-router', () => require('@/test-utils/screen').expoRouterMock)` */
+/**
+ * Ekran smoke testleri için ortak yardımcılar.
+ *
+ * - `renderScreen(ui)`: güvenli alan (eşzamanlı ölçü) + yeniden denemesiz,
+ *   izole QueryClient ile çizer; `rerender` sağlayıcıları korur.
+ * - Modül sahteleri: `jest.mock('expo-router', () => require('@/test-utils/screen').expoRouterMock)`
+ *   (aynı kalıp `asyncStorageMock`, `secureStoreMock` için).
+ * - Sorgu sahteleri: `queryResult`, `loadingQuery`, `errorQuery`.
+ */
+
+const METRICS = {
+  frame: { x: 0, y: 0, width: 390, height: 844 },
+  insets: { top: 0, left: 0, right: 0, bottom: 0 },
+}
+
 export const mockRouter = {
   push: jest.fn(),
   replace: jest.fn(),
@@ -61,7 +76,15 @@ export function queryResult<T>(
 export const loadingQuery = () => queryResult(undefined, { isLoading: true })
 export const errorQuery = () => queryResult(undefined, { isError: true, error: new Error('x') })
 
-/** Ekranı izole QueryClient ile çizer (mutasyon kullanan alt bileşenler için). */
+/** Ekranı güvenli alan + izole QueryClient sağlayıcılarıyla çizer. */
 export function renderScreen(ui: ReactElement) {
-  return render(ui, { wrapper: createWrapper(createTestQueryClient()) })
+  const QueryWrapper = createWrapper(createTestQueryClient())
+  function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <SafeAreaProvider initialMetrics={METRICS}>
+        <QueryWrapper>{children}</QueryWrapper>
+      </SafeAreaProvider>
+    )
+  }
+  return render(ui, { wrapper: Wrapper })
 }

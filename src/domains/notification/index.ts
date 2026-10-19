@@ -32,3 +32,5 @@ export type {
   NotificationType,
   RegisterPushTokenBody,
 } from './types/notification.types'
+export { groupNotificationsByDay } from './utils/groupNotifications'
+export type { NotificationGroup } from './utils/groupNotifications'

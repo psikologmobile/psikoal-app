@@ -55,5 +55,15 @@ export type {
   ResetPasswordRequest,
   Referrer,
 } from './types/auth.types'
-export { RoleCard } from './components/RoleCard'
-export type { RoleCardProps } from './components/RoleCard'
+export {
+  AUTH_ERROR_CODES,
+  LOGIN_ERROR_MESSAGES,
+  REGISTER_ERROR_MESSAGES,
+  loginErrorKind,
+  loginErrorMessage,
+  registerErrorKind,
+  registerErrorMessage,
+} from './utils/authErrors'
+export type { LoginErrorKind, RegisterErrorKind } from './utils/authErrors'
+export { passwordStrength, PASSWORD_MIN_LENGTH } from './utils/passwordStrength'
+export type { PasswordStrength } from './utils/passwordStrength'

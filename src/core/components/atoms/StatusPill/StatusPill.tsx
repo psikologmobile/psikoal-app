@@ -11,6 +11,8 @@ export type StatusPillProps = {
   variant?: StatusPillVariant
   /** live varyantında nabız noktasını gizle. */
   hideDot?: boolean
+  /** live dışındaki varyantlarda primary nabız noktası (Eşleşmelerim · Aktif). */
+  pulse?: boolean
   className?: string
 }
 
@@ -40,6 +42,7 @@ export function StatusPill({
   label,
   variant = 'soft',
   hideDot = false,
+  pulse = false,
   className,
 }: StatusPillProps) {
   return (
@@ -53,6 +56,7 @@ export function StatusPill({
       )}
     >
       {variant === 'live' && !hideDot ? <PulseDot size={7} colorClassName="bg-primary-fg" /> : null}
+      {variant !== 'live' && pulse ? <PulseDot size={7} colorClassName="bg-primary" /> : null}
       <Text className={cn('text-badge', textStyles[variant])}>{label}</Text>
     </View>
   )

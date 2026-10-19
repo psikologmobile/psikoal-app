@@ -1,7 +1,0 @@
-export { OnboardingStepTitle } from './OnboardingStepTitle'
-export { OnboardingStepSpecs } from './OnboardingStepSpecs'
-export { OnboardingStepExperience } from './OnboardingStepExperience'
-export { OnboardingStepContact } from './OnboardingStepContact'
-export { OnboardingStepBio } from './OnboardingStepBio'
-export { OnboardingStepDocuments } from './OnboardingStepDocuments'
-export { OnboardingStepPhoto } from './OnboardingStepPhoto'

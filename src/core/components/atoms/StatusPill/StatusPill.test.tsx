@@ -28,4 +28,11 @@ describe('StatusPill', () => {
     const { getByText } = render(<StatusPill label="Bekleyen" variant="live" hideDot />)
     expect(getByText('Bekleyen')).toBeTruthy()
   })
+
+  it('soft variant can show a pulsing dot', () => {
+    const { getByLabelText } = render(<StatusPill label="Aktif" variant="soft" pulse />)
+    const pill = getByLabelText('Aktif')
+    expect(pill.props.className).toContain('bg-accent-soft')
+    expect(pill.children.length).toBeGreaterThan(1)
+  })
 })

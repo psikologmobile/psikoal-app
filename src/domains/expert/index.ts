@@ -17,18 +17,24 @@ export {
 } from './schemas/expert.schema'
 export type { ProfessionalProfileForm } from './schemas/expert.schema'
 export { ReviewSchema, CreateReviewSchema } from './schemas/review.schema'
-export { ReviewForm } from './components/ReviewForm'
-export type { ReviewFormProps } from './components/ReviewForm'
+export { ReviewCard } from './components/ReviewCard'
+export type { ReviewCardProps } from './components/ReviewCard'
 export { useMatchReview, REVIEW_ALREADY_EXISTS } from './hooks/useMatchReview'
 export {
-  OnboardingStepTitle,
-  OnboardingStepSpecs,
-  OnboardingStepExperience,
-  OnboardingStepContact,
-  OnboardingStepBio,
-  OnboardingStepDocuments,
-  OnboardingStepPhoto,
-} from './components/onboarding'
+  useExpertOnboarding,
+  validateExpertOnboardingStep,
+  toExpertOnboardingPayload,
+  EXPERT_ONBOARDING_STEPS,
+  BIO_MIN,
+  BIO_MAX,
+  EXPERIENCE_MAX,
+} from './hooks/useExpertOnboarding'
+export type {
+  UseExpertOnboardingReturn,
+  ExpertOnboardingValues,
+  ExpertOnboardingErrors,
+  ExpertOnboardingField,
+} from './hooks/useExpertOnboarding'
 export { useExpertApprovalGate, isExpertProfileMissing } from './hooks/useExpertApprovalGate'
 export { useExpertDocumentUpload } from './hooks/useExpertDocumentUpload'
 export { expertKeys } from './expert.constants'
