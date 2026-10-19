@@ -649,76 +649,74 @@ Mobil: yüzen `TabBar` (surface, 1,5 px border, alttan 20, yanlardan 12, radius 
 
 ### 3. Domain Mimarisi
 
-| Domain         | Sorumluluk                                     | Kritik Kurallar                                 |
-| -------------- | ---------------------------------------------- | ----------------------------------------------- |
-| `auth`         | Kayıt, giriş, token yönetimi, rol belirleme    | JWT refresh, role-based guard                   |
-| `expert`       | Psikolog profili, lisans doğrulama, uzmanlık   | Profil yayınlanmadan önce admin onayı şart      |
-| `client`       | Danışan profili, test geçmişi                  | Platform'a doğrudan kayıt olur                  |
-| `listing`      | Danışan ilanları                               | OPEN→MATCHED→CLOSED/EXPIRED state machine       |
-| `match`        | Eşleşme yönetimi                               | Yalnızca teklif kabulüyle oluşur                |
-| `offer`        | Teklifler (ilan bazlı)                         | PENDING→ACCEPTED/REJECTED/WITHDRAWN             |
-| `credit`       | Uzman kredisi: bakiye, defter, teklif maliyeti | Satın alma YALNIZ web sitesinde (mağaza kuralı) |
-| `assessment`   | Psikolojik test modülü                         | Ücretsiz, auth gerektirmez                      |
-| `notification` | Push, in-app, SMS bildirimleri                 | Event-driven, rate limited                      |
+| Domain         | Sorumluluk                                                          | Kritik Kurallar                                                       |
+| -------------- | ------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `auth`         | Kayıt (davet kodu dahil), giriş, token, rol, davet eden uzman       | JWT refresh, role-based guard; `/davet/{code}` kodu saklar            |
+| `expert`       | Psikolog profili, belgeler, profil görünürlüğü                      | Admin onayı şart; danışan yalnız teklif veren/davet eden uzmanı görür |
+| `listing`      | İlanlar, kurallar, eşleşti işaretleme, "anlaştık" bildirimleri      | PENDING_APPROVAL→OPEN→MATCHED / CLOSED / EXPIRED                      |
+| `offer`        | Teklif, ücret teklifi (quote), gönderim                             | Ücretli; PENDING→ACCEPTED / REJECTED(closedReason) / WITHDRAWN        |
+| `match`        | Eşleşmeler, iletişim, değerlendirme                                 | Sonlandırılamaz; değerlendirme eşleşir eşleşmez açık                  |
+| `wallet`       | Uzman TL bakiyesi, ücretsiz haklar, hareketler, ödemeler, faturalar | Mobilde satın alma yolu YOK; web'de `/bakiye` (PayTR)                 |
+| `assessment`   | Psikolojik testler                                                  | Ücretsiz                                                              |
+| `notification` | Uygulama içi + push bildirimleri ve yönlendirme                     | Bilinmeyen tür `SYSTEM` sayılır                                       |
 
 ---
 
-### 4. İş Kuralları (Değiştirilemez)
+### 4. İş Kuralları (Değiştirilemez) — kanonik: `docs/design-v2/API-REVIZE-2.md`
 
-**İlan Kuralları:**
-
-```
-Durum makinesi: OPEN → MATCHED → (CLOSED | EXPIRED)
-
-OPEN:    Danışan ilan açtı, tüm uzmanlar görebilir ve teklif gönderebilir.
-MATCHED: Danışan bir teklifi kabul etti. Diğer PENDING teklifler otomatik REJECTED olur.
-CLOSED:  Danışan ilanı manuel kapattı.
-EXPIRED: 30 gün geçtikten sonra otomatik kapanır.
-
-- Danışan aynı anda maksimum 3 OPEN ilan açabilir.
-- MATCHED veya EXPIRED ilan yeniden açılamaz.
-```
-
-**Teklif Durum Makinesi:**
+**İlan:**
 
 ```
-PENDING → ACCEPTED   (danışan kabul → match otomatik oluşur)
-        → REJECTED   (danışan reddetti)
-        → WITHDRAWN  (uzman geri çekti)
-
-- Teklifler ilana gönderilir, danışana değil.
-- Bir uzman aynı ilana sadece 1 teklif gönderebilir.
-- Tek fiyat — kademe/dinamik fiyat sistemi yoktur.
-- Uzman PENDING teklifini geri çekebilir (WITHDRAWN).
+PENDING_APPROVAL → OPEN (admin onayı) → MATCHED (danışan "X uzmanla eşleşti" işaretler)
+                                      → CLOSED (danışan kapatır) / EXPIRED (30 gün)
+- Danışan aynı anda en çok 3 açık ilan açar.
+- Bütçe dönemsel genel aralıkta (GET /listings/rules; max null = sınırsız).
+- Yüz yüze ya da ikisi seçilirse şehir zorunlu.
+- İletişim izni (açık rıza) zorunlu; profilde telefon yoksa ilan açarken istenir.
 ```
 
-**Eşleşme Kuralları:**
+**Teklif ve ücret:**
 
 ```
-Durum makinesi: ACTIVE → COMPLETED | RELEASED
-
-- Eşleşme YALNIZCA teklif kabulüyle oluşur (otomatik).
-- Eşleşme: danışan + uzman + ilan + kabul edilen teklif referansı içerir.
-- RELEASED için her iki tarafın onayı gerekir (UX kuralı).
-- Eşleşme backend kaynaklı — optimistic update yapılmaz.
+- Uzman teklif GÖNDERİRKEN ücret öder (TL). Ücretsiz hakkı varsa önce o kullanılır.
+- Ücret = ilanın kalite puanına göre başlangıç, her 24 saatte ve her teklifte yüzde düşer,
+  dönemin tabanının altına inmez. Hesap backend'de; uygulama yalnız offerFeeLabel gösterir.
+- Uzmana "X saat sonra düşecek" bilgisi GÖSTERİLMEZ (müşteri kararı).
+- POST /offers expectedFeeKurus ister: 409 OFFER_FEE_CHANGED → yeni ücretle yeniden onay;
+  422 INSUFFICIENT_BALANCE → düz metin, mobilde bağlantı yok.
+- Teklif gönderilince danışanın ad soyad, telefon, e-postası uzmana açılır.
+- Ücret iade edilmez (seçilmese, geri çekilse, ilan kapansa da).
+- Kabul / ret YOK. Danışan bir teklif sahibiyle "eşleşti" işaretler; diğer bekleyen
+  teklifler REJECTED (closedReason OTHER_EXPERT / LISTING_CLOSED / LISTING_EXPIRED).
 ```
 
-**Kredi Kuralları (Armut modeli — backend `docs/PAYMENTS.md`):**
+**Eşleşme ve anlaşma bildirimi:**
 
 ```
-- Danışandan para alınmaz. Uzman ilana teklif GÖNDERİRKEN kredi harcar (offerCost).
-- Harcanan kredi iade edilmez; başlangıç kredisi yoktur.
-- Bakiye < offerCost ise teklif gönderimi kilitlenir; sunucu 422 INSUFFICIENT_CREDITS döner.
-- Kredi YALNIZ web sitesinden alınır. Uygulamada satın alma butonu, bağlantı, adres,
-  fiyat yoktur (App Store 3.1.1 / Play); yalnız düz metin:
-  "Teklif göndermek için yeterli krediniz yok. Kredi yüklemek için web sitemizi ziyaret edin."
+- Eşleşme yalnız danışanın işaretlemesiyle oluşur; sonlandırılamaz.
+- İki taraf da karşı tarafın telefon ve e-postasını görür.
+- Uzman, teklif verdiği açık ilan için bir kez "Danışanla anlaştım" bildirir → danışana
+  hatırlatma; gecikirse admin incelemesi. Danışan "Anlaşmadım" ile kapatabilir.
 ```
+
+**Bakiye (mağaza kuralı):**
+
+```
+- Mobil uygulamada bakiye satın alma düğmesi, bağlantısı, adresi, fiyatı YOKTUR
+  (App Store 3.1.1 / Play). Yalnız düz metin.
+- Web sürümünde (Platform.OS === 'web') "Bakiye yükle" → /bakiye (PayTR iFrame).
+- Hoş geldin hakkı ve davet hakkı backend'de otomatik yazılır.
+```
+
+**Davet:** Her uzmanın kişisel kodu/linki vardır (`/referral`). Danışan o linkle kayıt olursa o
+uzmanın profilini görebilir ve ilanları o uzmana "Davet" rozetiyle düşer; uzman getirirse onayda davet
+edene ücretsiz teklif hakkı yazılır. Danışan → uzman "ilana davet" özelliği yoktur.
 
 ---
 
 ### 5. Screen & Navigation Haritası
 
-**Tab Bar — Rol Bazlı (Armut Modeli)**
+**Tab Bar — Rol Bazlı**
 
 ```
 Uzman:   Fırsatlar | Tekliflerim | Eşleşmeler | Ayarlar   (web kenar çubuğu: + Bakiyem, alt bakiye kartı)
@@ -727,43 +725,21 @@ Danışan: Keşfet    | İlanlarım   | Eşleşmeler | Ayarlar   (web kenar çub
 
 ```
 app/
-  (auth)/
-    login.tsx           → /login
-    register.tsx        → /register (expert | client seçimi)
-    onboarding/
-      expert.tsx        → /onboarding/expert (profil tamamlama)
-  (tabs)/
-    index.tsx           → / — Expert: Fırsatlar (ilan feed + filtreler)
-                              Client: Keşfet (popüler konular + uzmanlık alanı grid)
-    offers.tsx          → /offers — Expert: Tekliflerim (gönderilen teklifler)
-                                    Client: İlanlarım (Aktif/Geçmiş tab)
-    matches.tsx         → /matches — Expert: Eşleşmelerim (Aktif/Geçmiş tab)
-                                     Client: gizli (href: null)
-    profile.tsx         → /profile — Ayarlar (rol bazlı menü)
-  notifications.tsx     → /notifications — Bildirimler (tab dışı, header zil ikonundan erişilir)
-  expert/
-    [id].tsx            → /expert/[id] — uzman profil sayfası (public, okuma modu)
-  client/
-    [id].tsx            → /client/[id] — danışan profil (expert: okuma modu)
-  listing/
-    new.tsx             → /listing/new?spec=X — ilan oluştur (client, spec opsiyonel)
-    [id].tsx            → /listing/[id] — ilan detay + gelen teklifler + Uzmanı İncele
-  match/
-    [id].tsx            → /match/[id] — eşleşme detay (expert only): danışan iletişim + ilan + teklif özeti
-  offer/
-    new.tsx             → /offer/new?listingId=X — teklif gönder (expert)
-    [id].tsx            → /offer/[id] — teklif detay
-  assessment/
-    index.tsx           → /assessment — test başlangıç
-    list.tsx            → /assessment/list — tüm testler + geçmiş sonuçlar
-    result.tsx          → /assessment/result
-  blog/
-    index.tsx           → /blog — blog akışı
-    [slug].tsx          → /blog/[slug] — blog detayı
-  category/
-    [slug].tsx          → /category/[slug] — kategori detayı (testler + blog + ilan CTA)
-  credits/
-    index.tsx           → /credits — kredi bakiyesi + geçmiş (expert only)
+  (auth)/               → welcome, login, register (+ davet kodu), forgot/reset-password, onboarding/{client,expert}
+  (tabs)/               → index (Keşfet | Fırsatlar), offers (İlanlarım | Tekliflerim), matches, profile (Ayarlar)
+  notifications.tsx     → Bildirimler
+  davet/[code].tsx      → davet kodunu saklar, kayda yönlendirir
+  expert/[id].tsx       → uzman profili (danışan: yalnız teklif veren / davet eden)
+  listing/new.tsx       → ilan oluştur (çok adımlı; izin + şehir + bütçe kuralları)
+  listing/[id].tsx      → ilan detayı (rol switch: Client/ExpertListingDetailScreen)
+  offer/new.tsx         → teklif gönder (quote + ücret onayı)
+  offer/[id].tsx        → teklif detayı (rol switch)
+  match/[id].tsx        → eşleşme detayı (celebrate=1 → eşleşti anı)
+  wallet/index.tsx      → Bakiyem (uzman)
+  wallet/invoices.tsx   → Faturalarım (uzman)
+  referral.tsx          → Davet linkim (uzman)
+  assessment/*, blog/*, category/[slug].tsx
+  (site)/…              → yalnız web: tanıtım, uzmanlar-icin, bakiye, hukuk, destek (static render)
 ```
 
 **Not — kök `store/`:** `onboardingStore` ve `themeStore` domain'e ait olmayan global UI state'leridir; kök `src/store/` altında tutulur. Domain'e özgü store'lar (örn. `authStore`) kendi domain klasöründe kalır.
@@ -812,35 +788,19 @@ Hepsi `@/core/components/{atoms,molecules,organisms,templates}` barrel'larından
 
 **Templates:** `AppProviders` (Toast dahil) · `Screen` (bg, kenar boşlukları, web'de en çok 1200 ortalı, `footer`, `keyboard`).
 
-**Domain kartları** (`ListingCard`, `AdCard`, `OfferCard`, `MatchCard`, `TestCard`, `BlogCard`, `CreditBalanceCard`…) ilgili `domains/*/components` altında yukarıdaki parçalarla kurulur.
+**Domain kartları** (`ListingCard`, `AdCard`, `OfferCard`, `MatchCard`, `TestCard`, `BlogCard`, `WalletBalanceCard`…) ilgili `domains/*/components` altında yukarıdaki parçalarla kurulur.
 
 ---
 
 ### 8. Geliştirici Notları (Önemli Edge Case'ler)
 
-1. **Rol tabanlı tab bar:** `_layout.tsx`'de `role === 'expert'` kontrolü ile `matches` sekmesi expert'e gösterilir, client için `href: null` ile gizlenir.
-
-2. **Teklif → Match otomasyonu:** Danışan bir teklifi kabul ettiğinde backend match'i otomatik oluşturur. `useAcceptOfferMutation` onSuccess'te `matchKeys.all` ve `listingKeys.detail(listingId)` invalidate eder. Optimistic update yapılmaz.
-
-3. **Danışan adı gizliliği:** Listing kartlarında (uzman görünümünde) danışan adı tam gösterilmez. `formatClientName("Zeynep Yılmaz")` → `"Zeynep Y."` formatı. `domains/listing/utils/formatClientName.ts` helper'ı kullan.
-
-4. **Danışan uzman araması YOKTUR:** Danışan "Keşfet" ekranında sadece kategori/konu seçer → bu seçim ilan oluşturma formunu açar. Uzman listesine doğrudan erişim yoktur. Danışan uzmanı pasif olarak görür: İlanlarım → İlan Detayı → Gelen Teklif → "Uzmanı İncele" → `/expert/[id]`.
-
-5. **Assessment testi auth gerektirmez:** Bu route'lar `(auth)` grubunun dışında kalır. Test tamamlandıktan sonra email lead capture opsiyonel — zorlamaz.
-
-6. **Ödeme yok:** Uygulamada ödeme akışı yoktur (eski cüzdan/paket/Iyzico modeli terk edildi). Uzman kredisi web sitesinden alınır; uygulama yalnız bakiye, geçmiş ve teklif maliyetini gösterir.
-
-7. **Bildirim izni:** İlk login'de değil, ilk teklif geldiğinde sor. `expo-notifications` ile `PermissionStatus` kontrol et.
-
-8. **Expert → client/[id] ekranı:** Uzman danışan profilini görüntüleyebilir (okuma modu). Bu ekranda "Teklif Gönder" butonu yoktur — uzman teklife ilan feed'inden (Fırsatlar) ulaşır.
-
-9. **Teklif kabul onay uyarısı:** `OfferCard`'da danışan "Kabul Et" butonuna bastığında `Alert.alert` ile "İletişim bilgileriniz uzman ile paylaşılacaktır" uyarısı gösterilir. Onay durumunda `useAcceptOfferMutation` çalışır.
-
-10. **Eşleşme detay sayfası (`/match/[id]`):** Expert-only. Eşleşme sonrası danışan adı **tam gösterilir** (gizleme yok), email ve telefon açık. `useMatchDetailQuery` → `GET /matches/:id` (embedded listing + offer döner).
-
-11. **Eşleşmelerim → match detay:** Expert Eşleşmelerim sekmesinde eşleşmeye tıklamak `/match/[id]`'ye yönlendirir. "Eşleşmeyi Sonlandır" butonu bu tab ekranında yoktur.
-
-12. **Tekliflerim — ACCEPTED teklif navigasyonu:** ACCEPTED teklif → `/match/[offer.matchId]`; PENDING/REJECTED/WITHDRAWN → `/offer/[id]`.
+1. **Danışan adı gizliliği:** Uzman görünümünde teklif vermeden önce danışan adı kısaltılmış gelir (backend maskeler); teklif verdikten sonra `clientContact` tam ad + telefon + e-posta taşır.
+2. **Danışan uzman araması YOKTUR:** Danışan uzmanı yalnız kendi ilanına gelen tekliften ya da kendisini davet eden uzman kartından görür. Profil 404 `EXPERT_NOT_FOUND` → "Bu profil görüntülenemiyor" (`useExpertProfileAccess`).
+3. **Eşleşti işaretleme:** `useMarkMatchedMutation` ilan/teklif/eşleşme/bildirim sorgularını tazeler; ardından `/match/[id]?celebrate=1`. Optimistic update yapılmaz.
+4. **Teklif ücreti:** `useOfferFeeGate` quote'u, beklenen ücreti ve OFFER_FEE_CHANGED / INSUFFICIENT_BALANCE durumlarını yönetir; ekran iş mantığı yazmaz.
+5. **Bildirim izni:** İlk login'de değil, ilk teklif geldiğinde ya da bildirim listesi dolu geldiğinde sorulur.
+6. **Bildirim yönlendirme:** `resolveNotificationRoute` — MATCHED → `/match/{id}`; LISTING_MATCHED_OTHER, CLAIM_REMINDER, INVITED_CLIENT_LISTING → `/listing/{id}`; cüzdan türleri → `/wallet`; INVOICE_READY → `/wallet/invoices`.
+7. **Tekliflerim navigasyonu:** ACCEPTED ve `matchId` varsa `/match/[matchId]`, diğerleri `/offer/[id]`.
 
 ---
 
