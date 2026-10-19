@@ -309,6 +309,54 @@ export function Wobble({
   )
 }
 
+// ─── radar (boş durum) ────────────────────────────────────────────────────
+
+/**
+ * `radar`: 3 halka sırayla yayılır (2,2 sn ∞, 700 ms arayla) + ortada primary
+ * nokta. "Şu an açık ilan yok", "Henüz teklif yok".
+ */
+export function Radar({ size = 110 }: { size?: number }) {
+  const dot = Math.round(size * 0.29)
+  return (
+    // REASON: boyut prop'tan gelir.
+    <View style={{ width: size, height: size }} accessibilityElementsHidden>
+      {[0, 700, 1400].map((delay) => (
+        <View key={delay} className="absolute inset-0">
+          <Ring size={size} from={0.3} to={1.6} duration={2200} delay={delay} />
+        </View>
+      ))}
+      <View className="absolute inset-0 items-center justify-center">
+        <View style={{ width: dot, height: dot }} className="rounded-full bg-primary" />
+      </View>
+    </View>
+  )
+}
+
+// ─── coin (Bakiyem) ───────────────────────────────────────────────────────
+
+/** `coin`: ₺ rozeti zıplar (Y 0 ↔ −8) ve Y ekseninde döner (0 ↔ 180°), 3 sn ∞. */
+export function Coin({
+  children,
+  className,
+  style,
+  enabled = true,
+  duration = 3000,
+}: LoopBoxProps & { duration?: number }) {
+  const { t } = useLoopProgress({ duration: duration / 2, reverse: true, enabled })
+  const animated = useAnimatedStyle(() => ({
+    transform: [
+      { perspective: 400 },
+      { translateY: -8 * t.value },
+      { rotateY: `${180 * t.value}deg` },
+    ],
+  }))
+  return (
+    <Box className={className} style={[animated, style]}>
+      {children}
+    </Box>
+  )
+}
+
 // ─── skeleton ─────────────────────────────────────────────────────────────
 
 /** `skeleton`: opaklık .4 ↔ 1, 1,2 sn ∞. Parçalar arası 100–150 ms `delay`. */

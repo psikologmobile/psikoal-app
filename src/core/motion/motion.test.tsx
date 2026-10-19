@@ -6,6 +6,8 @@ import { act, fireEvent, render, renderHook } from '@testing-library/react-nativ
 
 import {
   Bell,
+  Coin,
+  Radar,
   Breathe,
   Confetti,
   CopyTick,
@@ -15,6 +17,7 @@ import {
   EnterRight,
   EnterUp,
   FadeIn,
+  Flash,
   Fill,
   Float,
   Glow,
@@ -112,6 +115,17 @@ describe('motion components', () => {
         <Glow>
           <Text>glow</Text>
         </Glow>
+        <Radar />
+        <Radar size={80} />
+        <Coin className="p-1">
+          <Text>coin</Text>
+        </Coin>
+        <Flash replayKey="₺575">
+          <Text>flash</Text>
+        </Flash>
+        <Flash className="p-1">
+          <Text>flash2</Text>
+        </Flash>
         <DrawCheck color="#000" />
         <CountRoll value="₺1.250" />
         <Fill value={0.5} />
@@ -120,9 +134,20 @@ describe('motion components', () => {
         <CopyTick copied={false} color="#000" />
       </View>
     )
-    ;['up', 'right', 'left', 'fade', 'pop', 'shake', 'jiggle', 'bell', 'float'].forEach((t) =>
-      expect(getByText(t)).toBeTruthy()
-    )
+    ;[
+      'up',
+      'right',
+      'left',
+      'fade',
+      'pop',
+      'shake',
+      'jiggle',
+      'bell',
+      'float',
+      'coin',
+      'flash',
+      'flash2',
+    ].forEach((t) => expect(getByText(t)).toBeTruthy())
   })
 
   it('count-roll reads as one label', () => {
