@@ -193,6 +193,20 @@ describe('Mesleki bilgiler ve belgeler', () => {
     })
   })
 
+  it('removes a certificate after confirmation', async () => {
+    mockParams = { tab: 'belgeler' }
+    env.mock.onGet(`/experts/${EXPERT_PROFILE.id}`).reply(200, EXPERT_PROFILE)
+    env.mock.onDelete(/certificates/).reply(200, { certificates: [] })
+    const screen = env.renderScreen(<ProfessionalProfileScreen />)
+    fireEvent.press(await screen.findByLabelText('Sertifika 1 · PDF kaldır'))
+    expect(await screen.findByText('Sertifika kaldırılsın mı?')).toBeTruthy()
+    fireEvent.press(screen.getByTestId('certificate-remove-confirm'))
+    expect(await screen.findByText('Sertifika kaldırıldı')).toBeTruthy()
+    expect(env.mock.history.delete[0]?.url).toBe(
+      `/experts/profile/certificates?certificate=${encodeURIComponent('id/certificates/b.pdf')}`
+    )
+  })
+
   it('opens on the documents tab from the old /profile/documents link', async () => {
     mockParams = { tab: 'belgeler' }
     env.mock.onGet(`/experts/${EXPERT_PROFILE.id}`).reply(200, EXPERT_PROFILE)

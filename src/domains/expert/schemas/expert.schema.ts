@@ -30,6 +30,8 @@ export const ExpertSchema = z.object({
   reviewCount: z.number().int().min(0),
   isVerified: z.boolean(),
   status: z.enum(['pending', 'approved', 'rejected']),
+  /** Admin red gerekçesi — yalnız uzmanın KENDİ profilinde ve reddedildiyse gelir. */
+  rejectionReason: z.string().nullable().optional(),
   initials: z.string().optional(),
   acceptsOffers: z.boolean(),
   education: z.string().nullable().optional(),

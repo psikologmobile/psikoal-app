@@ -5,6 +5,8 @@ export {
   useExpertReviewsQuery,
   useUploadExpertDocumentMutation,
   useCreateReviewMutation,
+  useRemoveExpertCertificateMutation,
+  CERTIFICATE_NOT_FOUND,
   DOCUMENT_CONTENT_TYPES,
   DOCUMENT_MAX_BYTES,
 } from './api'
@@ -37,6 +39,8 @@ export type {
 } from './hooks/useExpertOnboarding'
 export { useExpertApprovalGate, isExpertProfileMissing } from './hooks/useExpertApprovalGate'
 export { useExpertDocumentUpload } from './hooks/useExpertDocumentUpload'
+export { useCertificateRemoval } from './hooks/useCertificateRemoval'
+export type { CertificateRemovalTarget } from './hooks/useCertificateRemoval'
 export { expertKeys } from './expert.constants'
 export { EXPERT_NOT_FOUND, isExpertNotVisibleError } from './utils/expertVisibility'
 export { useExpertProfileAccess } from './hooks/useExpertProfileAccess'
