@@ -1,5 +1,6 @@
 import transactionsResponse from '../schemas/__fixtures__/wallet-transactions.response.json'
 import { WalletTransactionPageSchema } from '../schemas/wallet.schema'
+import { INSUFFICIENT_BALANCE_MESSAGE } from '../wallet.constants'
 
 import {
   freeRightsCaption,
@@ -71,5 +72,11 @@ describe('walletUtils', () => {
     expect(
       toTransactionView({ ...transactions[1]!, freeRightsDelta: -1, freeRightsLabel: '−1 hak' })
     ).toMatchObject({ direction: 'out', amount: '−1 hak' })
+  })
+})
+
+describe('mağaza kuralı (App Store 3.1.1 / Play)', () => {
+  it('yetersiz bakiye metni bağlantı, adres ya da fiyat içermez', () => {
+    expect(INSUFFICIENT_BALANCE_MESSAGE).not.toMatch(/https?:|www\.|\.com|₺|\d/)
   })
 })
