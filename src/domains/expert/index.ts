@@ -20,6 +20,8 @@ export {
 export type { ProfessionalProfileForm } from './schemas/expert.schema'
 export { ReviewSchema, CreateReviewSchema } from './schemas/review.schema'
 export { ReviewCard } from './components/ReviewCard'
+export { ProfileRejectedNotice } from './components/ProfileRejectedNotice'
+export type { ProfileRejectedNoticeProps } from './components/ProfileRejectedNotice'
 export type { ReviewCardProps } from './components/ReviewCard'
 export { useMatchReview, REVIEW_ALREADY_EXISTS } from './hooks/useMatchReview'
 export {

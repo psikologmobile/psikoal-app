@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useRouter } from 'expo-router'
 
+import type { Listing } from '@/domains/listing'
+
 import { AppRefreshControl } from '@/core/components/atoms/AppRefreshControl'
 import { Button } from '@/core/components/atoms/Button'
 import { CountBadge } from '@/core/components/atoms/CountBadge'
@@ -17,13 +19,21 @@ import { Skeleton } from '@/core/components/atoms/Skeleton'
 import { Text } from '@/core/components/atoms/Text'
 import { EmptyState } from '@/core/components/molecules/EmptyState'
 import { ErrorBanner } from '@/core/components/molecules/ErrorBanner'
-import { useRefresh } from '@/core/hooks'
+import { StatTile } from '@/core/components/molecules/StatTile'
+import { WebPageHeader } from '@/core/components/molecules/WebPageHeader'
+import { Screen, WebColumns, WebGrid } from '@/core/components/templates'
+import { useBreakpoint, useRefresh } from '@/core/hooks'
 import { Bell, CountRoll, EnterUp, PressableScale, Radar, Spin } from '@/core/motion'
 import { useThemeColors } from '@/core/theme'
 import { useAuthStore } from '@/domains/auth'
-import { useExpertApprovalGate, useExpertProfileQuery } from '@/domains/expert'
+import {
+  ProfileRejectedNotice,
+  useExpertApprovalGate,
+  useExpertProfileQuery,
+} from '@/domains/expert'
 import {
   ExpertListingCard,
+  OpportunityFilterFields,
   OpportunityFilterSheet,
   expertListingAction,
   useOpportunityFeed,
@@ -68,8 +78,9 @@ export function ExpertHomeScreen() {
   const colors = useThemeColors()
   const user = useAuthStore((s) => s.user)
   const unreadCount = useUnreadNotificationCount()
+  const { isWebLayout, isWide } = useBreakpoint()
 
-  const { canAct, isPendingApproval, isRejected } = useExpertApprovalGate()
+  const { canAct, isPendingApproval, isRejected, rejectionReason } = useExpertApprovalGate()
   const expertQuery = useExpertProfileQuery(user?.id ?? '')
   const walletQuery = useWalletQuery()
   const offersQuery = useExpertOffersQuery()
@@ -96,6 +107,66 @@ export function ExpertHomeScreen() {
   const isFiltered = feed.activeFilterCount > 0
   const pendingCount = offersQuery.data?.meta.pendingCount ?? 0
   const activeMatchCount = matchesQuery.data?.meta.activeCount ?? 0
+
+  const statusNotices = (
+    <>
+      {isPendingApproval ? (
+        <EnterUp index={2}>
+          <View className="flex-row items-center gap-3 rounded-xl bg-accent-soft px-4 py-3.5">
+            <Spin duration={1000}>
+              <View className="h-[26px] w-[26px] rounded-full border-[3px] border-accent-line border-t-primary" />
+            </Spin>
+            <Text className="flex-1 text-body-sm text-accent-soft-fg">
+              <Text className="font-body-bold text-body-sm text-accent-soft-fg">
+                Profilin incelemede.
+              </Text>{' '}
+              İlanları görebilirsin; onaylanınca teklif gönderebileceksin.
+            </Text>
+          </View>
+        </EnterUp>
+      ) : null}
+
+      {isRejected ? (
+        <EnterUp index={2}>
+          <ProfileRejectedNotice
+            reason={rejectionReason}
+            onUpdate={() => router.push('/profile/professional?tab=belgeler')}
+          />
+        </EnterUp>
+      ) : null}
+
+      {canAct && isBalanceEmpty ? (
+        <EnterUp index={2}>
+          <TopupNotice
+            tone="danger"
+            message={ZERO_BALANCE_MESSAGE}
+            webMessage="Teklif göndermek için bakiyen yetersiz."
+            testID="opportunities-zero-balance"
+          />
+        </EnterUp>
+      ) : null}
+    </>
+  )
+
+  const chipRow = (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-2">
+      {feed.chips.map((chip) => (
+        <FilterChip
+          key={chip.key}
+          label={chip.label}
+          selected={chip.selected}
+          onPress={chip.onPress}
+        />
+      ))}
+      <FilterChip
+        label="Süzgeç"
+        selected={isFiltered && !feed.chips.some((c) => c.selected)}
+        count={isFiltered ? feed.activeFilterCount : undefined}
+        onPress={() => setFilterVisible(true)}
+        testID="opportunities-filter"
+      />
+    </ScrollView>
+  )
 
   const header = (
     <View className="gap-3.5 pb-3.5">
@@ -163,78 +234,9 @@ export function ExpertHomeScreen() {
         </View>
       </EnterUp>
 
-      {isPendingApproval ? (
-        <EnterUp index={2}>
-          <View className="flex-row items-center gap-3 rounded-xl bg-accent-soft px-4 py-3.5">
-            <Spin duration={1000}>
-              <View className="h-[26px] w-[26px] rounded-full border-[3px] border-accent-line border-t-primary" />
-            </Spin>
-            <Text className="flex-1 text-body-sm text-accent-soft-fg">
-              <Text className="font-body-bold text-body-sm text-accent-soft-fg">
-                Profilin incelemede.
-              </Text>{' '}
-              İlanları görebilirsin; onaylanınca teklif gönderebileceksin.
-            </Text>
-          </View>
-        </EnterUp>
-      ) : null}
+      {statusNotices}
 
-      {isRejected ? (
-        <EnterUp index={2}>
-          <View
-            accessibilityRole="alert"
-            className="gap-2 rounded-xl border border-danger bg-danger-soft px-4 py-3.5"
-          >
-            <Text className="text-body-sm text-danger-soft-fg">
-              <Text className="font-body-bold text-body-sm text-danger-soft-fg">
-                Profilin onaylanmadı.
-              </Text>{' '}
-              Belgelerini güncelleyip tekrar gönderebilirsin.
-            </Text>
-            <Button
-              label="Belgelerimi güncelle"
-              size="sm"
-              className="self-start"
-              onPress={() => router.push('/profile/professional?tab=belgeler')}
-            />
-          </View>
-        </EnterUp>
-      ) : null}
-
-      {canAct && isBalanceEmpty ? (
-        <EnterUp index={2}>
-          <TopupNotice
-            tone="danger"
-            message={ZERO_BALANCE_MESSAGE}
-            webMessage="Teklif göndermek için bakiyen yetersiz."
-            testID="opportunities-zero-balance"
-          />
-        </EnterUp>
-      ) : null}
-
-      <EnterUp index={2}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerClassName="gap-2"
-        >
-          {feed.chips.map((chip) => (
-            <FilterChip
-              key={chip.key}
-              label={chip.label}
-              selected={chip.selected}
-              onPress={chip.onPress}
-            />
-          ))}
-          <FilterChip
-            label="Süzgeç"
-            selected={isFiltered && !feed.chips.some((c) => c.selected)}
-            count={isFiltered ? feed.activeFilterCount : undefined}
-            onPress={() => setFilterVisible(true)}
-            testID="opportunities-filter"
-          />
-        </ScrollView>
-      </EnterUp>
+      <EnterUp index={2}>{chipRow}</EnterUp>
 
       <View className="flex-row items-center justify-between">
         <Text className="text-body-sm text-fg-muted">
@@ -278,6 +280,101 @@ export function ExpertHomeScreen() {
     />
   )
 
+  const renderCard = (item: Listing, index: number) => (
+    <ExpertListingCard
+      listing={item}
+      index={index + 3}
+      action={expertListingAction(item, { canAct, isBalanceEmpty })}
+      onOpen={() => router.push(`/listing/${item.id}`)}
+      onOffer={() => router.push(`/offer/new?listingId=${item.id}`)}
+      onViewOffer={() =>
+        router.push(item.viewerOfferId ? `/offer/${item.viewerOfferId}` : `/listing/${item.id}`)
+      }
+    />
+  )
+
+  const filterSheet = (
+    <OpportunityFilterSheet
+      visible={filterVisible}
+      value={feed.filters}
+      onApply={(filters) => {
+        feed.applyFilters(filters)
+        setFilterVisible(false)
+      }}
+      onClose={() => setFilterVisible(false)}
+    />
+  )
+
+  if (isWebLayout) {
+    const hasCards = !listingsQuery.isLoading && !listingsQuery.isError && listings.length > 0
+    return (
+      <Screen
+        testID="screen-opportunities"
+        refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        contentClassName="gap-[22px]"
+      >
+        <WebPageHeader
+          greeting={user?.firstName ? `Merhaba, ${user.firstName}` : 'Merhaba'}
+          title="Fırsatlar"
+          right={
+            <Button
+              label={`Sırala: ${feed.sortLabel}`}
+              variant="outline"
+              icon="ArrowDownUp"
+              onPress={feed.cycleSort}
+              testID="opportunities-sort"
+            />
+          }
+        />
+        <EnterUp index={1}>
+          <WebGrid columns={isWide ? 4 : 2} gapClassName="gap-3">
+            <StatTile label="Bakiye" value={wallet?.balanceLabel ?? '—'} animate={false} />
+            <StatTile
+              label="Ücretsiz hak"
+              value={String(wallet?.freeOfferRights ?? 0)}
+              tone="accent"
+              animate={false}
+            />
+            <StatTile label="Bekleyen teklif" value={String(pendingCount)} animate={false} />
+            <StatTile label="Aktif eşleşme" value={String(activeMatchCount)} animate={false} />
+          </WebGrid>
+        </EnterUp>
+        {statusNotices}
+        <WebColumns
+          asidePosition="left"
+          asideWidth={260}
+          hideAsideWhenStacked
+          testID="opportunities-columns"
+          aside={
+            <EnterUp index={2}>
+              <View
+                accessibilityLabel="Süzgeçler"
+                className="gap-4 rounded-2xl border border-border p-4.5"
+              >
+                <OpportunityFilterFields
+                  panel
+                  value={feed.filters}
+                  onChange={(update) => feed.applyFilters(update(feed.filters))}
+                />
+              </View>
+            </EnterUp>
+          }
+        >
+          {isWide ? null : chipRow}
+          <Text className="text-body-sm text-fg-muted">
+            {listingsQuery.isLoading ? 'İlanlar yükleniyor' : `${total} açık ilan`}
+          </Text>
+          {hasCards ? (
+            <WebGrid columns={2}>{listings.map((item, index) => renderCard(item, index))}</WebGrid>
+          ) : (
+            listEmpty
+          )}
+        </WebColumns>
+        {filterSheet}
+      </Screen>
+    )
+  }
+
   return (
     <View className="flex-1 bg-bg" testID="screen-opportunities">
       <FlatList
@@ -291,31 +388,10 @@ export function ExpertHomeScreen() {
         ListHeaderComponent={header}
         ListEmptyComponent={listEmpty}
         ItemSeparatorComponent={() => <View className="h-3" />}
-        renderItem={({ item, index }) => (
-          <ExpertListingCard
-            listing={item}
-            index={index + 3}
-            action={expertListingAction(item, { canAct, isBalanceEmpty })}
-            onOpen={() => router.push(`/listing/${item.id}`)}
-            onOffer={() => router.push(`/offer/new?listingId=${item.id}`)}
-            onViewOffer={() =>
-              router.push(
-                item.viewerOfferId ? `/offer/${item.viewerOfferId}` : `/listing/${item.id}`
-              )
-            }
-          />
-        )}
+        renderItem={({ item, index }) => renderCard(item, index)}
       />
 
-      <OpportunityFilterSheet
-        visible={filterVisible}
-        value={feed.filters}
-        onApply={(filters) => {
-          feed.applyFilters(filters)
-          setFilterVisible(false)
-        }}
-        onClose={() => setFilterVisible(false)}
-      />
+      {filterSheet}
     </View>
   )
 }

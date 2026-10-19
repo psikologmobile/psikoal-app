@@ -10,6 +10,7 @@ import listingFixtures from '@/domains/listing/schemas/__fixtures__/listings.res
 import { OfferSchema } from '@/domains/offer'
 import offerFixtures from '@/domains/offer/schemas/__fixtures__/listing-offers.response.json'
 import { EXPERT_PROFILE, QUOTE, WALLET, setupExpertScreen } from '@/test-utils/expertScreen'
+import { COMPACT_LAYOUT, mockLayout, WIDE_LAYOUT } from '@/test-utils/screen'
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn() }
 let mockParams: Record<string, string> = {}
@@ -33,6 +34,7 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(async () => undefined),
   deleteItemAsync: jest.fn(async () => undefined),
 }))
+jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }))
 
 const OFFERED = listingFixtures.expertView
@@ -69,7 +71,10 @@ beforeEach(() => {
   mockParams = {}
   env = setupExpertScreen()
 })
-afterEach(() => env.cleanup())
+afterEach(() => {
+  env.cleanup()
+  mockLayout.current = COMPACT_LAYOUT
+})
 
 describe('Fırsatlar', () => {
   it('lists opportunities with fee footer and offer action', async () => {
@@ -127,6 +132,29 @@ describe('Fırsatlar', () => {
     ).toBeTruthy()
     expect(screen.queryByText('Bakiye yükle')).toBeNull()
     expect(await screen.findByText('Kilitli')).toBeTruthy()
+  })
+
+  it('rejected profile shows the admin reason', async () => {
+    serveCommon({ ...EXPERT_PROFILE, status: 'rejected', rejectionReason: 'Diploma okunmuyor.' })
+    env.mock.onGet('/listings').reply(200, { data: [], meta: { page: 1, total: 0, perPage: 20 } })
+    const screen = env.renderScreen(<ExpertHomeScreen />)
+    expect(await screen.findByText(/Diploma okunmuyor./)).toBeTruthy()
+    fireEvent.press(screen.getByText('Belgelerimi güncelle'))
+    expect(mockRouter.push).toHaveBeenCalledWith('/profile/professional?tab=belgeler')
+  })
+
+  it('web: header, stat tiles, card grid and sort button', async () => {
+    mockLayout.current = WIDE_LAYOUT
+    serveCommon()
+    env.mock
+      .onGet('/listings')
+      .reply(200, { data: [OPEN], meta: { page: 1, total: 1, perPage: 20 } })
+    const screen = env.renderScreen(<ExpertHomeScreen />)
+    expect(await screen.findByText('1 açık ilan')).toBeTruthy()
+    expect(screen.getByText('Bekleyen teklif')).toBeTruthy()
+    expect(screen.getByText('Aktif eşleşme')).toBeTruthy()
+    fireEvent.press(screen.getByTestId('opportunities-sort'))
+    expect(screen.getByText('Sırala: Yüksek bütçe')).toBeTruthy()
   })
 
   it('shows the error state with retry', async () => {

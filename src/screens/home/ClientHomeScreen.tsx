@@ -43,7 +43,6 @@ import {
 import { useUnreadNotificationCount } from '@/domains/notification'
 import { sortOffers, useListingOffersQuery } from '@/domains/offer'
 
-
 function HomeSkeleton() {
   return (
     <View accessibilityLabel="Yükleniyor" className="gap-3.5">

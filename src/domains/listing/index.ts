@@ -59,7 +59,11 @@ export { ExpertListingCard } from './components/expert/ExpertListingCard'
 export type { ExpertListingCardProps } from './components/expert/ExpertListingCard'
 export { FeeFooter } from './components/expert/FeeFooter'
 export { InvitedBadge } from './components/expert/InvitedBadge'
-export { OpportunityFilterSheet, withBudget } from './components/expert/OpportunityFilterSheet'
+export {
+  OpportunityFilterFields,
+  OpportunityFilterSheet,
+  withBudget,
+} from './components/expert/OpportunityFilterSheet'
 export type { OpportunityFilters } from './components/expert/OpportunityFilterSheet'
 
 export { useOpportunityFeed, countActiveFilters, toQueryFilters } from './hooks/useOpportunityFeed'
