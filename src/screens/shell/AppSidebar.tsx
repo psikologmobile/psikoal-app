@@ -7,7 +7,7 @@ import { Sidebar, SidebarBalanceCard, SidebarUserCard } from '@/core/components/
 import { getFullName, getInitials } from '@/core/utils/personName'
 import { useAuthStore } from '@/domains/auth'
 import { useUnreadNotificationCount } from '@/domains/notification'
-import { useWalletQuery } from '@/domains/wallet'
+import { TOPUP_WEB_PATH, useWalletQuery } from '@/domains/wallet'
 
 /**
  * Web uygulaması kenar çubuğu — sekme düzeni ve yığın sayfaları (AppWebShell) aynı
@@ -46,7 +46,7 @@ export function AppSidebar() {
             balanceLabel={wallet?.balanceLabel ?? '—'}
             // Bakiye yükleme YALNIZ web uygulamasında (/bakiye — PayTR); kenar çubuğu
             // yalnız web'de çizildiği için mobil mağaza kuralı ihlal edilmez.
-            onAction={() => go('/bakiye')}
+            onAction={() => go(TOPUP_WEB_PATH)}
           />
         ) : (
           <SidebarUserCard

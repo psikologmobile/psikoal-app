@@ -12,6 +12,7 @@ import listingFixtures from '@/domains/listing/schemas/__fixtures__/listings.res
 import paymentFixtures from '@/domains/wallet/schemas/__fixtures__/wallet-payments.response.json'
 import transactionFixtures from '@/domains/wallet/schemas/__fixtures__/wallet-transactions.response.json'
 import { EXPERT_PROFILE, WALLET, setupExpertScreen } from '@/test-utils/expertScreen'
+import { COMPACT_LAYOUT, mockLayout, WIDE_LAYOUT } from '@/test-utils/screen'
 
 const mockRouter = { push: jest.fn(), replace: jest.fn(), back: jest.fn() }
 let mockParams: Record<string, string> = {}
@@ -35,6 +36,7 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(async () => undefined),
   deleteItemAsync: jest.fn(async () => undefined),
 }))
+jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(() => Promise.resolve(true)) }))
 jest.mock('expo-web-browser', () => ({ openBrowserAsync: jest.fn(async () => undefined) }))
 
@@ -46,7 +48,10 @@ beforeEach(() => {
   mockParams = {}
   env = setupExpertScreen()
 })
-afterEach(() => env.cleanup())
+afterEach(() => {
+  env.cleanup()
+  mockLayout.current = COMPACT_LAYOUT
+})
 
 describe('Bakiyem', () => {
   it('shows balance, free rights, plain-text topup notice and transactions', async () => {
@@ -72,6 +77,18 @@ describe('Bakiyem', () => {
 
     fireEvent.press(screen.getByText('Faturalarım'))
     expect(mockRouter.push).toHaveBeenCalledWith('/wallet/invoices')
+  })
+
+  it('web: topup action and transactions table', async () => {
+    mockLayout.current = WIDE_LAYOUT
+    env.mock.onGet('/wallet/me').reply(200, { data: WALLET })
+    env.mock.onGet('/wallet/transactions').reply(200, transactionFixtures)
+    const screen = env.renderScreen(<WalletScreen />)
+    expect(await screen.findByText('−₺625')).toBeTruthy()
+    expect(screen.getByText('Hareketler')).toBeTruthy()
+    expect(screen.getByText('Sonra')).toBeTruthy()
+    fireEvent.press(screen.getByText('Bakiye yükle'))
+    expect(mockRouter.push).toHaveBeenCalledWith('/bakiye')
   })
 
   it('empty state', async () => {
