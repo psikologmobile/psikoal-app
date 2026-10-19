@@ -2,6 +2,8 @@ import { View } from 'react-native'
 
 import { useLocalSearchParams, useRouter } from 'expo-router'
 
+import { ExpertListingDetailWeb } from './ExpertListingDetailWeb'
+
 import type { Listing } from '@/domains/listing'
 
 import { AppRefreshControl } from '@/core/components/atoms/AppRefreshControl'
@@ -13,12 +15,12 @@ import { ErrorBanner } from '@/core/components/molecules/ErrorBanner'
 import { ScreenHeader } from '@/core/components/molecules/ScreenHeader'
 import { ContactCard } from '@/core/components/organisms/ContactCard'
 import { Screen } from '@/core/components/templates'
-import { useRefresh } from '@/core/hooks'
+import { useBreakpoint, useRefresh } from '@/core/hooks'
 import { EnterUp, Float, Glow, Pop, PressableScale } from '@/core/motion'
 import { useThemeColors } from '@/core/theme'
 import { formatDate } from '@/core/utils/formatDate'
 import { RESULT_LEVEL_CONFIG } from '@/domains/assessment'
-import { useExpertApprovalGate } from '@/domains/expert'
+import { ProfileRejectedNotice, useExpertApprovalGate } from '@/domains/expert'
 import {
   InvitedBadge,
   SESSION_MODE_LABELS,
@@ -27,6 +29,7 @@ import {
   useListingDetailQuery,
 } from '@/domains/listing'
 import { useOfferQuoteQuery } from '@/domains/offer'
+import { TOPUP_WEB_PATH } from '@/domains/wallet'
 import { isApiErrorCode } from '@/lib/api'
 
 function InfoCell({ label, value }: { label: string; value: string }) {
@@ -80,7 +83,8 @@ export function ExpertListingDetailScreen({ listingId }: ExpertListingDetailScre
 
   const listingQuery = useListingDetailQuery(id)
   const listing = listingQuery.data
-  const { isPendingApproval, isRejected, canAct } = useExpertApprovalGate()
+  const { isPendingApproval, isRejected, canAct, rejectionReason } = useExpertApprovalGate()
+  const { isWebLayout, width } = useBreakpoint()
 
   const wantsQuote = Boolean(
     listing && !listing.viewerHasOffered && listing.status === 'OPEN' && canAct
@@ -142,6 +146,43 @@ export function ExpertListingDetailScreen({ listingId }: ExpertListingDetailScre
     ? RESULT_LEVEL_CONFIG[listing.assessmentResult.level].label
     : null
   const balanceLabel = quoteQuery.data?.balanceLabel
+
+  const goUpdateDocuments = () => router.push('/profile/professional?tab=belgeler')
+
+  if (isWebLayout) {
+    const quote = quoteQuery.data
+    return (
+      <Screen
+        testID="screen-expert-listing"
+        refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+        contentClassName="gap-[22px]"
+      >
+        <ExpertListingDetailWeb
+          listing={listing}
+          view={view}
+          clientName={contact?.fullName ?? listing.clientDisplayName ?? 'Danışan'}
+          memberSince={memberSince(listing)}
+          levelLabel={level}
+          balanceLine={
+            quote
+              ? `Bakiyen ${quote.balanceLabel}${quote.freeOfferRights > 0 ? ` · ${quote.freeOfferRights} ücretsiz hak` : ''}`
+              : null
+          }
+          insufficient={quote?.sufficient === false}
+          isRejected={isRejected}
+          rejectionReason={rejectionReason}
+          wideInfo={width > 860}
+          onBack={() => router.back()}
+          onSendOffer={() => router.push(`/offer/new?listingId=${listing.id}`)}
+          // REASON: /bakiye web yükleme sayfası; typed routes onu tanımıyor.
+          onTopup={() => router.push(TOPUP_WEB_PATH as never)}
+          onViewOffer={() => router.push(`/offer/${listing.viewerOfferId}`)}
+          onClaim={() => router.push(`/claim/${listing.id}`)}
+          onUpdateDocuments={goUpdateDocuments}
+        />
+      </Screen>
+    )
+  }
 
   const feeBar = view.showFeeBar ? (
     <EnterUp delay={400}>
@@ -255,6 +296,12 @@ export function ExpertListingDetailScreen({ listingId }: ExpertListingDetailScre
             : 'Bu ilana henüz teklif verilmedi'}
         </Text>
       </EnterUp>
+
+      {isRejected ? (
+        <EnterUp index={4}>
+          <ProfileRejectedNotice reason={rejectionReason} onUpdate={goUpdateDocuments} />
+        </EnterUp>
+      ) : null}
 
       {!view.offered && !view.closedText ? (
         <EnterUp index={4}>

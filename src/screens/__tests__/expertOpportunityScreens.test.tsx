@@ -212,6 +212,29 @@ describe('İlan detayı (uzman)', () => {
     expect(mockRouter.push).toHaveBeenCalledWith(`/offer/new?listingId=${LISTING_ID}`)
   })
 
+  it('web: fee card with topup action and back link', async () => {
+    mockLayout.current = WIDE_LAYOUT
+    mockParams = { id: LISTING_ID }
+    serveCommon()
+    env.mock.onGet(`/listings/${LISTING_ID}`).reply(200, OPEN)
+    env.mock.onGet('/offers/quote').reply(200, { data: { ...QUOTE, sufficient: false } })
+    const screen = env.renderScreen(<ExpertListingDetailScreen />)
+    expect(await screen.findByText('Bakiyen yetersiz')).toBeTruthy()
+    expect(screen.getByText('Teklif ücreti')).toBeTruthy()
+    fireEvent.press(screen.getByText('Bakiye yükle'))
+    expect(mockRouter.push).toHaveBeenCalledWith('/bakiye')
+    fireEvent.press(screen.getByLabelText('Geri: Fırsatlar'))
+    expect(mockRouter.back).toHaveBeenCalled()
+  })
+
+  it('rejected profile: reason in listing detail', async () => {
+    mockParams = { id: LISTING_ID }
+    serveCommon({ ...EXPERT_PROFILE, status: 'rejected', rejectionReason: 'Belge eksik.' })
+    env.mock.onGet(`/listings/${LISTING_ID}`).reply(200, OPEN)
+    const screen = env.renderScreen(<ExpertListingDetailScreen />)
+    expect(await screen.findByText(/Belge eksik./)).toBeTruthy()
+  })
+
   it('insufficient balance and matched-with-other states', async () => {
     mockParams = { id: LISTING_ID }
     serveCommon()
