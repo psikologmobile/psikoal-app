@@ -24,13 +24,17 @@ export const mockRouter = {
   push: jest.fn(),
   replace: jest.fn(),
   back: jest.fn(),
+  navigate: jest.fn(),
 }
+
+export const mockPathname: { current: string } = { current: '/' }
 
 export const mockSearchParams: { current: Record<string, string> } = { current: {} }
 
 export const expoRouterMock = {
   useRouter: () => mockRouter,
   useLocalSearchParams: () => mockSearchParams.current,
+  usePathname: () => mockPathname.current,
   useRootNavigationState: () => ({ key: 'test' }),
 }
 

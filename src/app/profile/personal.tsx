@@ -1,3 +1,10 @@
 import { PersonalInfoScreen } from '@/screens/settings'
+import { AppWebShell } from '@/screens/shell'
 
-export default PersonalInfoScreen
+export default function PersonalInfoRoute() {
+  return (
+    <AppWebShell>
+      <PersonalInfoScreen />
+    </AppWebShell>
+  )
+}

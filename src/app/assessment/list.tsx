@@ -1,5 +1,10 @@
 import { AssessmentListScreen } from '@/screens/assessment'
+import { AppWebShell } from '@/screens/shell'
 
 export default function AssessmentListRoute() {
-  return <AssessmentListScreen />
+  return (
+    <AppWebShell>
+      <AssessmentListScreen />
+    </AppWebShell>
+  )
 }
