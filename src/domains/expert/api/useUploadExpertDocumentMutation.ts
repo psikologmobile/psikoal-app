@@ -6,6 +6,7 @@ import { expertKeys } from '../expert.constants'
 import type { PickedDocument } from '../utils/pickDocument'
 
 import { post } from '@/lib/api'
+import { appendUploadFile, multipartConfig } from '@/lib/uploadFile'
 
 /** Backend'in izin verdiği içerik tipleri — UploadService.DocumentContentTypes. */
 export const DOCUMENT_CONTENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png'] as const
@@ -36,22 +37,14 @@ export function useUploadExpertDocumentMutation(target: UploadTarget) {
       // FormData ŞART, JSON değil: uçlar IFormFile bekliyor. Alan adı `file`
       // olmak zorunda — controller parametresi bu adla bağlanıyor, farklı bir
       // ad 422 VALIDATION_FAILED verir ve "dosya boş" gibi görünür.
-      //
-      // React Native'de FormData'ya { uri, name, type } biçiminde bir nesne
-      // eklenir; tarayıcıdaki Blob/File yoktur. Content-Type başlığı ELLE
-      // verilmez: boundary'yi platformun üretmesi gerekir, elle yazılan başlık
-      // boundary'yi düşürür ve sunucu gövdeyi hiç ayrıştıramaz.
+      // Dosya ekleme ve başlık platforma göre değişir (bkz. lib/uploadFile).
       const form = new FormData()
-      form.append('file', {
-        uri: document.uri,
-        name: document.name,
-        type: document.mimeType,
-      } as unknown as Blob)
+      await appendUploadFile(form, 'file', document)
 
       const raw = await post(
         target === 'cv' ? '/experts/profile/cv' : '/experts/profile/certificates',
         form,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        multipartConfig()
       )
 
       const schema = target === 'cv' ? CvResponseSchema : CertificatesResponseSchema

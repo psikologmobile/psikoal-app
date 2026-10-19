@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore'
 import type { PickedImage } from '../utils/pickAvatarImage'
 
 import { post } from '@/lib/api'
+import { appendUploadFile, multipartConfig } from '@/lib/uploadFile'
 
 /**
  * Profil fotoğrafını `POST /auth/me/avatar`'a yükler (MeController.UploadAvatar).
@@ -19,16 +20,9 @@ export function useUploadAvatarMutation() {
   return useMutation({
     mutationFn: async (image: PickedImage) => {
       const form = new FormData()
-      // REASON: React Native FormData { uri, name, type } nesnesi kabul eder; DOM Blob tipi yoktur
-      form.append('file', {
-        uri: image.uri,
-        name: image.name,
-        type: image.mimeType,
-      } as unknown as Blob)
+      await appendUploadFile(form, 'file', image)
 
-      const raw = await post('/auth/me/avatar', form, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      const raw = await post('/auth/me/avatar', form, multipartConfig())
       return AvatarUploadResponseSchema.parse(raw)
     },
     onSuccess: ({ avatarUrl }) => {
