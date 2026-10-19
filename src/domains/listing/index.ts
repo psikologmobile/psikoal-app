@@ -18,6 +18,9 @@ export {
   LISTING_EXPIRE_DAYS,
   LISTING_ERROR_CODES,
   SESSION_TYPE_LABELS,
+  SESSION_MODE_LABELS,
+  OPPORTUNITY_SORTS,
+  OPPORTUNITY_BUDGETS,
 } from './listing.constants'
 
 export {
@@ -60,8 +63,21 @@ export type { ListingDetailProps } from './components/ListingDetail'
 
 export { CreateListingForm } from './components/CreateListingForm'
 
-export { ListingFilterModal, PRICE_FILTER_OPTIONS } from './components/ListingFilterModal'
-export type { ListingFilterModalProps, ListingFilterResult } from './components/ListingFilterModal'
+export { ExpertListingCard } from './components/expert/ExpertListingCard'
+export type { ExpertListingCardProps } from './components/expert/ExpertListingCard'
+export { FeeFooter } from './components/expert/FeeFooter'
+export { InvitedBadge } from './components/expert/InvitedBadge'
+export { OpportunityFilterSheet, withBudget } from './components/expert/OpportunityFilterSheet'
+export type { OpportunityFilters } from './components/expert/OpportunityFilterSheet'
 
-export { ListingSortModal, LISTING_SORT_OPTIONS } from './components/ListingSortModal'
-export type { ListingSortModalProps, ListingSortValue } from './components/ListingSortModal'
+export { useOpportunityFeed, countActiveFilters, toQueryFilters } from './hooks/useOpportunityFeed'
+export type { OpportunityChip } from './hooks/useOpportunityFeed'
+
+export {
+  expertListingAction,
+  expertListingTags,
+  offerCountText,
+  clientInitial,
+  resolveExpertListingDetail,
+} from './utils/expertListing'
+export type { ExpertListingAction, ExpertListingDetailView } from './utils/expertListing'

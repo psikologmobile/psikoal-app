@@ -1,3 +1,5 @@
+import { Platform } from 'react-native'
+
 import { WALLET_ERROR_CODES } from '../wallet.constants'
 
 import type { WalletPageMeta, WalletTransaction } from '../types/wallet.types'
@@ -67,4 +69,18 @@ export function toTransactionView(transaction: WalletTransaction): WalletTransac
     amount: hasAmount ? transaction.amountLabel : transaction.freeRightsLabel,
     after: transaction.balanceAfterLabel,
   }
+}
+
+/** Web uygulamasında mı? Bakiye yükleme bağlantısı YALNIZ burada gösterilir. */
+export function isTopupLinkAvailable(): boolean {
+  return Platform.OS === 'web'
+}
+
+/**
+ * "Haklar" süzgeci: sunucu tek `type` alır, hak hareketleri üç türe dağılır
+ * (OFFER_FREE_RIGHT, WELCOME_RIGHT, REFERRAL_RIGHT, ADMIN_GIFT'in hak kısmı).
+ * Bu yüzden hepsi çekilir ve hak değişimi olan satırlar gösterilir.
+ */
+export function isRightsTransaction(transaction: WalletTransaction): boolean {
+  return transaction.freeRightsDelta !== 0
 }
