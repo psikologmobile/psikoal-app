@@ -309,6 +309,28 @@ describe('Teklif gönder', () => {
     expect(screen.getByText('Ayşe Yılmaz')).toBeTruthy()
   })
 
+  it('web: form card + fee aside; sends with the same flow', async () => {
+    mockLayout.current = WIDE_LAYOUT
+    env.mock.onGet('/offers/quote').reply(200, { data: QUOTE })
+    env.mock.onPost('/offers').reply(200, MY_OFFER)
+    env.mock.onGet('/wallet/me').reply(200, { data: WALLET })
+    const screen = env.renderScreen(<SendOfferScreen />)
+    expect(await screen.findByText(/bakiyenden düşer/)).toBeTruthy()
+    expect(screen.getByLabelText('Geri: İlan')).toBeTruthy()
+    fireEvent.changeText(screen.getByTestId('offer-price'), '2400')
+    fireEvent.press(screen.getByText('Teklif gönder (₺625)'))
+    expect(await screen.findByText('Teklif gönderildi')).toBeTruthy()
+  })
+
+  it('rejected profile: reason inside the fee panel', async () => {
+    env.mock
+      .onGet(`/experts/${EXPERT_PROFILE.id}`)
+      .reply(200, { ...EXPERT_PROFILE, status: 'rejected', rejectionReason: 'Lisans eksik.' })
+    env.mock.onGet('/offers/quote').reply(200, { data: QUOTE })
+    const screen = env.renderScreen(<SendOfferScreen />)
+    expect(await screen.findByText(/Lisans eksik./)).toBeTruthy()
+  })
+
   it('free right and insufficient balance variants', async () => {
     env.mock
       .onGet('/offers/quote')
