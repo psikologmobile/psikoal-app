@@ -16,11 +16,9 @@ import { BackButton } from '@/core/components/molecules/BackButton'
 import { InputField } from '@/core/components/molecules/InputField'
 import { ScreenTitle } from '@/core/components/molecules/ScreenTitle'
 import { BottomActionBar } from '@/core/components/organisms/BottomActionBar'
-import { isInsufficientCreditsError, useOfferCreditGate } from '@/domains/credit'
 import { useExpertApprovalGate } from '@/domains/expert'
 import { usePushRegistration } from '@/domains/notification'
-import { useSendOfferMutation, SendOfferSchema } from '@/domains/offer'
-import { getErrorMessage } from '@/lib/api'
+import { useOfferFeeGate, useSendOfferMutation, SendOfferSchema } from '@/domains/offer'
 
 export default function NewOfferScreen() {
   const router = useRouter()
@@ -50,20 +48,26 @@ export default function NewOfferScreen() {
   const insets = useSafeAreaInsets()
   const bottomBarHeight = 56 + insets.bottom
 
+  // Revize 2 §4: ücret sunucudan (/offers/quote); gönderimde onaylanan ücret geri yollanır.
+  const feeGate = useOfferFeeGate({ listingId, submitError: error })
+
   const onSubmit = (data: SendOfferRequest) => {
-    sendOffer(data, {
-      onSuccess: () => {
-        // Uzman için "ilk teklif anı": teklifinin kabulünden haberdar olsun diye
-        // bildirim izni burada istenir (CLAUDE.md kural 7). İzin zaten varsa sessizdir.
-        void registerPush({ prompt: true })
-        router.back()
-      },
-    })
+    if (feeGate.expectedFeeKurus === undefined) return
+    sendOffer(
+      { ...data, expectedFeeKurus: feeGate.expectedFeeKurus },
+      {
+        onSuccess: () => {
+          // Uzman için "ilk teklif anı": teklifinin kabulünden haberdar olsun diye
+          // bildirim izni burada istenir (CLAUDE.md kural 7). İzin zaten varsa sessizdir.
+          void registerPush({ prompt: true })
+          router.back()
+        },
+      }
+    )
   }
 
-  const creditGate = useOfferCreditGate({ submitError: error })
-  // Kredi yetersizliği kredi kutusunda gösterilir; aynı mesaj iki kez çıkmasın.
-  const apiError = error && !isInsufficientCreditsError(error) ? getErrorMessage(error) : undefined
+  // Yetersiz bakiye ücret kutusunda gösterilir; aynı mesaj iki kez çıkmasın.
+  const apiError = feeGate.feeChangedMessage ?? feeGate.errorMessage
 
   if (!canSendOffer) {
     return (
@@ -215,22 +219,26 @@ export default function NewOfferScreen() {
           />
 
           <View
-            testID="offer-credit-info"
+            testID="offer-fee-info"
             className="gap-1 rounded-xl bg-sky-600 px-4 py-3 dark:bg-sky-900"
           >
             <View className="flex-row items-center justify-between gap-3">
               <Text variant="label" className="font-semibold text-white">
-                {creditGate.costLabel ?? 'Teklif maliyeti yükleniyor...'}
+                {feeGate.quote
+                  ? feeGate.quote.willUseFreeRight
+                    ? 'Ücretsiz hak kullanılacak'
+                    : `Teklif ücreti ${feeGate.quote.feeLabel}`
+                  : 'Teklif ücreti yükleniyor...'}
               </Text>
-              {creditGate.balanceLabel && (
+              {feeGate.quote && (
                 <Text variant="caption" className="text-sky-100">
-                  Bakiye: {creditGate.balanceLabel}
+                  Bakiye: {feeGate.quote.balanceLabel}
                 </Text>
               )}
             </View>
-            {creditGate.insufficientMessage && (
-              <Text variant="caption" className="text-white" testID="offer-credit-insufficient">
-                {creditGate.insufficientMessage}
+            {feeGate.insufficientMessage && (
+              <Text variant="caption" className="text-white" testID="offer-balance-insufficient">
+                {feeGate.insufficientMessage}
               </Text>
             )}
           </View>
@@ -251,7 +259,7 @@ export default function NewOfferScreen() {
               loadingLabel: 'Gönderiliyor...',
               onPress: handleSubmit(onSubmit),
               isLoading: isPending,
-              isDisabled: creditGate.isBlocked,
+              isDisabled: !feeGate.canSubmit,
               variant: 'inverse',
               testID: 'offer-submit',
             },

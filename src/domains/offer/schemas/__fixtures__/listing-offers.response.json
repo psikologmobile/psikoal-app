@@ -31,7 +31,14 @@
         "initials": "MD",
         "avatarUrl": "https://images.psikoal.test/avatars/mehmet-demir.jpg",
         "rating": 0
-      }
+      },
+      "feePaidKurus": null,
+      "feePaidLabel": null,
+      "usedFreeRight": false,
+      "closedReason": "OTHER_EXPERT",
+      "statusLabel": "Başka uzmanla eşleşti",
+      "claimed": false,
+      "clientContact": null
     },
     {
       "id": "01a025d8-f9ac-7103-8658-2314d6e6a081",
@@ -64,7 +71,14 @@
         "initials": "EK",
         "avatarUrl": "https://images.psikoal.test/avatars/elif-kaya.jpg",
         "rating": 5
-      }
+      },
+      "feePaidKurus": null,
+      "feePaidLabel": null,
+      "usedFreeRight": false,
+      "closedReason": null,
+      "statusLabel": "Seçildi",
+      "claimed": false,
+      "clientContact": null
     }
   ],
   "meta": {

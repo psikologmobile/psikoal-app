@@ -18,14 +18,8 @@ import { BottomActionBar } from '@/core/components/organisms/BottomActionBar'
 import { useRefresh } from '@/core/hooks'
 import { AssessmentResultSummary } from '@/domains/assessment'
 import { useAuthStore } from '@/domains/auth'
-import { SESSION_TYPE_LABELS } from '@/domains/listing'
-import {
-  useOfferDetailQuery,
-  useAcceptOfferMutation,
-  useRejectOfferMutation,
-  useWithdrawOfferMutation,
-  OFFER_STATUS_CONFIG,
-} from '@/domains/offer'
+import { SESSION_TYPE_LABELS, useMarkMatchedMutation } from '@/domains/listing'
+import { useOfferDetailQuery, useWithdrawOfferMutation, OFFER_STATUS_CONFIG } from '@/domains/offer'
 
 export default function OfferDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -36,11 +30,11 @@ export default function OfferDetailScreen() {
   const offerQuery = useOfferDetailQuery(id ?? '')
   const { data: offer, isLoading, isError } = offerQuery
   const { isRefreshing, onRefresh } = useRefresh(offerQuery)
-  const { mutate: acceptOffer, isPending: isAccepting } = useAcceptOfferMutation()
-  const { mutate: rejectOffer, isPending: isRejecting } = useRejectOfferMutation()
+  // Revize 2 §3.4: kabul/ret yok; danışan ilanını bu uzmanla eşleşti işaretler.
+  const { mutate: markMatched, isPending: isMatching } = useMarkMatchedMutation()
   const { mutate: withdrawOffer, isPending: isWithdrawing } = useWithdrawOfferMutation()
 
-  const isActing = isAccepting || isRejecting || isWithdrawing
+  const isActing = isMatching || isWithdrawing
   const insets = useSafeAreaInsets()
   const bottomBarHeight = 56 + insets.bottom
 
@@ -48,30 +42,23 @@ export default function OfferDetailScreen() {
 
   const statusCfg = offer ? OFFER_STATUS_CONFIG[offer.status] : null
 
-  const handleAccept = () => {
-    if (!id) return
+  const handleMarkMatched = () => {
+    if (!id || !offer) return
     Alert.alert(
-      'Teklifi Kabul Et',
-      'İletişim bilgileriniz uzman ile paylaşılacaktır. Devam etmek istiyor musunuz?',
+      'Bu uzmanla eşleştim',
+      'İlanınız bu uzmanla eşleşti olarak işaretlenecek ve diğer teklifler kapanacak. Devam etmek istiyor musunuz?',
       [
         { text: 'Vazgeç', style: 'cancel' },
         {
-          text: 'Kabul Et',
+          text: 'Eşleştim',
           onPress: () =>
-            acceptOffer(id, {
-              onSuccess: (accepted) =>
-                router.replace(
-                  (accepted.matchId ? `/match/${accepted.matchId}` : '/(tabs)/offers') as never
-                ),
-            }),
+            markMatched(
+              { listingId: offer.listingId, offerId: id },
+              { onSuccess: ({ matchId }) => router.replace(`/match/${matchId}` as never) }
+            ),
         },
       ]
     )
-  }
-
-  const handleReject = () => {
-    if (!id) return
-    rejectOffer(id)
   }
 
   const handleWithdraw = () => {
@@ -172,7 +159,7 @@ export default function OfferDetailScreen() {
                   <View className="shrink-0 flex-row items-center gap-1.5">
                     <Icon name={statusCfg.icon} size={13} color={statusCfg.iconColor} />
                     <Text variant="caption" style={{ color: statusCfg.iconColor }}>
-                      {statusCfg.label}
+                      {offer.statusLabel}
                     </Text>
                   </View>
                 )}
@@ -261,18 +248,10 @@ export default function OfferDetailScreen() {
                 isClient
                   ? [
                       {
-                        label: 'Teklifi Kabul Et',
-                        loadingLabel: 'Kabul Ediliyor...',
-                        onPress: handleAccept,
-                        isLoading: isAccepting,
-                        isDisabled: isActing,
-                      },
-                      {
-                        label: 'Reddet',
-                        loadingLabel: 'Reddediliyor...',
-                        onPress: handleReject,
-                        variant: 'ghost',
-                        isLoading: isRejecting,
+                        label: 'Bu uzmanla eşleştim',
+                        loadingLabel: 'İşaretleniyor...',
+                        onPress: handleMarkMatched,
+                        isLoading: isMatching,
                         isDisabled: isActing,
                       },
                     ]
