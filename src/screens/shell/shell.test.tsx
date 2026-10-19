@@ -21,6 +21,7 @@ jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
 }))
 jest.mock('@/domains/notification', () => ({ useUnreadNotificationCount: () => 3 }))
 jest.mock('@/domains/wallet', () => ({
+  TOPUP_WEB_PATH: '/bakiye',
   useWalletQuery: () => ({ data: { balanceLabel: '₺1.250' } }),
 }))
 
