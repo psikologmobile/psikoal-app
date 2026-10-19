@@ -33,6 +33,8 @@ const STEP_FIELDS: Record<number, FieldName[]> = {
   6: [],
 }
 
+const ALL_FIELDS: FieldName[] = Object.values(STEP_FIELDS).flat()
+
 export type CreateListingValues = {
   title: string
   description: string
@@ -178,6 +180,37 @@ export function useCreateListingWizard({
     submit()
   }
 
+  /** Adımın alanları şu an geçerli mi (web adım listesindeki tik). Önizleme hiç "bitmiş" sayılmaz. */
+  const stepDone = (index: number): boolean => {
+    if (index >= CREATE_LISTING_STEPS - 1) return false
+    if (index === 5 && needsPhone && !values.phone.trim()) return false
+    const fields = STEP_FIELDS[index] ?? []
+    const result = schema.safeParse(payload())
+    return result.success || !result.error.issues.some((i) => fields.some((f) => f === i.path[0]))
+  }
+
+  /**
+   * Web tek sayfa formu: bütün alanları birlikte doğrular, hataları ilgili bölümlere
+   * yazar; eksik yoksa yayınlar. Sunucu hataları mobil akıştaki gibi işlenir.
+   */
+  const publishAll = (): boolean => {
+    const result = schema.safeParse(payload())
+    const next: CreateListingErrors = {}
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const field = ALL_FIELDS.find((name) => name === issue.path[0])
+        if (field && !next[field]) next[field] = issue.message
+      }
+    }
+    if (needsPhone && !values.phone.trim()) next.phone = 'Telefon numaranı yaz'
+    if (!values.contactConsent)
+      next.contactConsent = 'Yayınlamak için iletişim iznini işaretlemelisin.'
+    setErrors(next)
+    if (Object.keys(next).length > 0) return false
+    submit()
+    return true
+  }
+
   const back = () => {
     setErrors({})
     setStep((s) => Math.max(0, s - 1))
@@ -196,6 +229,8 @@ export function useCreateListingWizard({
     blockedLabel,
     next,
     back,
+    stepDone,
+    publishAll,
     isFirst: step === 0,
     isLast: step === CREATE_LISTING_STEPS - 1,
     isSubmitting: mutation.isPending,
