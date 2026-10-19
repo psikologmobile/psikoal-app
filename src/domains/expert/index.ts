@@ -26,5 +26,8 @@ export {
 } from './components/onboarding'
 export { useExpertApprovalGate, isExpertProfileMissing } from './hooks/useExpertApprovalGate'
 export { expertKeys } from './expert.constants'
+export { EXPERT_NOT_FOUND, isExpertNotVisibleError } from './utils/expertVisibility'
+export { useExpertProfileAccess } from './hooks/useExpertProfileAccess'
+export type { ExpertProfileAccessState } from './hooks/useExpertProfileAccess'
 export type { Expert, ExpertOnboarding } from './schemas/expert.schema'
 export type { Review, CreateReviewRequest } from './schemas/review.schema'

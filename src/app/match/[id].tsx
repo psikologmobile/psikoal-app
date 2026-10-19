@@ -1,4 +1,4 @@
-import { Alert, Pressable, ScrollView, View } from 'react-native'
+import { Pressable, ScrollView, View } from 'react-native'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -16,14 +16,13 @@ import { Text } from '@/core/components/atoms/Text'
 import { BackButton } from '@/core/components/molecules/BackButton'
 import { EmptyState } from '@/core/components/molecules/EmptyState'
 import { ScreenTitle } from '@/core/components/molecules/ScreenTitle'
-import { BottomActionBar } from '@/core/components/organisms/BottomActionBar'
 import { useRefresh } from '@/core/hooks'
 import { formatDate } from '@/core/utils/formatDate'
 import { AssessmentResultSummary } from '@/domains/assessment'
 import { useAuthStore } from '@/domains/auth'
 import { ReviewForm, useMatchReview } from '@/domains/expert'
 import { SESSION_TYPE_LABELS } from '@/domains/listing'
-import { useMatchDetailQuery, useReleaseMatchMutation, MATCH_STATUS_CONFIG } from '@/domains/match'
+import { useMatchDetailQuery, MATCH_STATUS_CONFIG } from '@/domains/match'
 import { OFFER_STATUS_CONFIG } from '@/domains/offer'
 import { openEmail, openPhone } from '@/lib/externalLinks'
 
@@ -70,34 +69,13 @@ export default function MatchDetailScreen() {
   const { isRefreshing, onRefresh } = useRefresh(matchQuery)
   const insets = useSafeAreaInsets()
 
-  const { mutate: releaseMatch, isPending: isReleasing } = useReleaseMatchMutation()
-
-  const viewerReleasedAt = role === 'client' ? match?.clientReleasedAt : match?.expertReleasedAt
-  const isWaitingForOtherParty = match?.status === 'ACTIVE' && Boolean(viewerReleasedAt)
-
-  const handleRelease = () => {
-    if (!match) return
-    Alert.alert(
-      'Eşleşmeyi Sonlandır',
-      'Eşleşme sonlandırma iki tarafın onayını gerektirir. Sonlandırma talebiniz karşı tarafa iletilecek. Devam etmek istiyor musunuz?',
-      [
-        { text: 'Vazgeç', style: 'cancel' },
-        {
-          text: 'Sonlandır',
-          style: 'destructive',
-          onPress: () => releaseMatch({ matchId: match.id }),
-        },
-      ]
-    )
-  }
-
   const statusCfg = match ? MATCH_STATUS_CONFIG[match.status] : null
   const clientInitials = match?.client.initials ?? ''
   const expertInitials = match?.expert?.initials ?? ''
   const matchDate = match ? formatDate(match.createdAt, 'long') : ''
 
-  // Danışan uzmanı, uzman danışanı görür. İletişim alanları API'nin döndürdüğü
-  // kadardır — danışanın paylaşım tercihleri sunucuda uygulanır.
+  // Danışan uzmanı, uzman danışanı görür. Revize 2 §5: eşleşmede iki taraf da karşı
+  // tarafın telefon ve e-postasını görür (paylaşım tercihleri artık belirleyici değil).
   const counterpart = match
     ? isClient
       ? {
@@ -160,7 +138,7 @@ export default function MatchDetailScreen() {
         <ScrollView
           contentContainerStyle={{
             paddingTop: insets.top + 8,
-            paddingBottom: match?.status === 'ACTIVE' ? 56 + insets.bottom + 16 : 48,
+            paddingBottom: 48 + insets.bottom,
           }}
           showsVerticalScrollIndicator={false}
           refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
@@ -430,7 +408,8 @@ export default function MatchDetailScreen() {
             </>
           )}
 
-          {isClient && (match.status === 'COMPLETED' || match.status === 'RELEASED') && (
+          {/* Revize 2 §5: değerlendirme eşleşir eşleşmez açık (ACTIVE dahil). */}
+          {isClient && (
             <>
               <Divider spacing="none" className="mx-4" />
               <MatchReviewSection
@@ -441,35 +420,6 @@ export default function MatchDetailScreen() {
             </>
           )}
         </ScrollView>
-      )}
-
-      {!isLoading && !isError && match?.status === 'ACTIVE' && isWaitingForOtherParty && (
-        <BottomActionBar>
-          <View className="h-14 flex-row items-center justify-center gap-2 rounded-full bg-amber-100 px-4 dark:bg-amber-900">
-            <Icon name="Clock" size={16} color="#D97706" />
-            <Text
-              variant="label"
-              className="font-semibold text-amber-700 dark:text-amber-200"
-              numberOfLines={1}
-            >
-              Karşı tarafın onayı bekleniyor
-            </Text>
-          </View>
-        </BottomActionBar>
-      )}
-
-      {!isLoading && !isError && match?.status === 'ACTIVE' && !isWaitingForOtherParty && (
-        <BottomActionBar
-          actions={[
-            {
-              label: 'Eşleşmeyi Sonlandır',
-              loadingLabel: 'Sonlandırılıyor...',
-              onPress: handleRelease,
-              variant: 'danger',
-              isLoading: isReleasing,
-            },
-          ]}
-        />
       )}
     </View>
   )
