@@ -11,9 +11,10 @@ import { StatusPill } from '@/core/components/atoms/StatusPill'
 import { Text } from '@/core/components/atoms/Text'
 import { EmptyState } from '@/core/components/molecules/EmptyState'
 import { ScreenHeader } from '@/core/components/molecules/ScreenHeader'
+import { WebPageHeader } from '@/core/components/molecules/WebPageHeader'
 import { ContactCard } from '@/core/components/organisms/ContactCard'
-import { Screen } from '@/core/components/templates/Screen'
-import { useRefresh } from '@/core/hooks'
+import { Screen, WebColumns } from '@/core/components/templates'
+import { useBreakpoint, useRefresh } from '@/core/hooks'
 import { EnterUp, Pop } from '@/core/motion'
 import { formatDate } from '@/core/utils/formatDate'
 import { RESULT_LEVEL_CONFIG } from '@/domains/assessment'
@@ -121,6 +122,7 @@ export function MatchDetailScreen() {
   const query = useMatchDetailQuery(id ?? '')
   const { data: match, isLoading, isError, refetch } = query
   const { isRefreshing, onRefresh } = useRefresh(query)
+  const { isWebLayout } = useBreakpoint()
 
   const status = match ? MATCH_STATUS_LABELS[match.status] : null
   const other = match ? toMatchCounterpart(match, isClient ? 'client' : 'expert') : null
@@ -130,6 +132,106 @@ export function MatchDetailScreen() {
       : ['Danışan', memberSinceLabel(match.client.createdAt)].filter(Boolean).join(' · ')
     : null
 
+  const statusPill = status ? (
+    <StatusPill label={status} variant={match?.status === 'ACTIVE' ? 'soft' : 'neutral'} />
+  ) : null
+
+  const contactCard =
+    match && other ? (
+      <ContactCard
+        phone={other.phone ?? undefined}
+        email={other.email ?? undefined}
+        header={
+          <View className="flex-row items-center gap-3.5">
+            <Pop>
+              <View className="h-15 w-15 items-center justify-center rounded-full bg-primary">
+                <Text className="font-display text-xl text-primary-fg">{other.initials}</Text>
+              </View>
+            </Pop>
+            <View className="flex-1 gap-0.5">
+              <Text className="font-body-bold text-[19px] leading-6 text-accent-soft-fg">
+                {other.name}
+              </Text>
+              {otherSub ? <Text className="text-label text-accent-soft-fg">{otherSub}</Text> : null}
+            </View>
+          </View>
+        }
+        footer={
+          !other.phone && !other.email ? (
+            <Text className="text-body-sm text-accent-soft-fg">
+              İletişim bilgisi henüz eklenmemiş.
+            </Text>
+          ) : null
+        }
+      />
+    ) : null
+
+  const errorState = isError ? (
+    <EmptyState
+      icon="SearchX"
+      title="Eşleşme bulunamadı"
+      description="Eşleşme kaldırılmış ya da erişimin yok."
+      ctaLabel="Tekrar dene"
+      onCta={() => void refetch()}
+      secondaryLabel="Geri dön"
+      onSecondary={() => router.back()}
+    />
+  ) : null
+
+  if (isWebLayout) {
+    return (
+      <Screen
+        testID="screen-match-detail"
+        contentClassName="gap-6"
+        refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
+      >
+        <WebPageHeader
+          size="md"
+          backLabel="Eşleşmelerim"
+          onBack={() => router.navigate('/(tabs)/matches')}
+          title="Eşleşme"
+          right={statusPill}
+        />
+        {isLoading ? <DetailSkeleton /> : null}
+        {errorState}
+        {match && other ? (
+          <WebColumns
+            asidePosition="left"
+            asideWidth={400}
+            testID="match-columns"
+            aside={
+              <EnterUp delay={60} className="gap-2.5">
+                {contactCard}
+                {isClient ? (
+                  <Button
+                    label="Uzmanı incele"
+                    variant="outline"
+                    onPress={() => router.push(`/expert/${match.expertId}` as never)}
+                    fullWidth
+                  />
+                ) : null}
+              </EnterUp>
+            }
+          >
+            <EnterUp delay={120}>
+              <SummaryCard match={match} />
+            </EnterUp>
+            {isClient ? (
+              <EnterUp delay={180}>
+                <ReviewCard
+                  expertId={match.expertId}
+                  expertName={other.name}
+                  matchId={match.id}
+                  sessionType={match.offer?.sessionType}
+                />
+              </EnterUp>
+            ) : null}
+          </WebColumns>
+        ) : null}
+      </Screen>
+    )
+  }
+
   return (
     <Screen
       testID="screen-match-detail"
@@ -137,65 +239,16 @@ export function MatchDetailScreen() {
       refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
     >
       <EnterUp>
-        <ScreenHeader
-          title="Eşleşme"
-          right={
-            status ? (
-              <StatusPill
-                label={status}
-                variant={match?.status === 'ACTIVE' ? 'soft' : 'neutral'}
-              />
-            ) : null
-          }
-        />
+        <ScreenHeader title="Eşleşme" right={statusPill} />
       </EnterUp>
 
       {isLoading ? <DetailSkeleton /> : null}
 
-      {isError ? (
-        <EmptyState
-          icon="SearchX"
-          title="Eşleşme bulunamadı"
-          description="Eşleşme kaldırılmış ya da erişimin yok."
-          ctaLabel="Tekrar dene"
-          onCta={() => void refetch()}
-          secondaryLabel="Geri dön"
-          onSecondary={() => router.back()}
-        />
-      ) : null}
+      {errorState}
 
       {match && other ? (
         <>
-          <EnterUp delay={60}>
-            <ContactCard
-              phone={other.phone ?? undefined}
-              email={other.email ?? undefined}
-              header={
-                <View className="flex-row items-center gap-3.5">
-                  <Pop>
-                    <View className="h-15 w-15 items-center justify-center rounded-full bg-primary">
-                      <Text className="font-display text-xl text-primary-fg">{other.initials}</Text>
-                    </View>
-                  </Pop>
-                  <View className="flex-1 gap-0.5">
-                    <Text className="font-body-bold text-[19px] leading-6 text-accent-soft-fg">
-                      {other.name}
-                    </Text>
-                    {otherSub ? (
-                      <Text className="text-label text-accent-soft-fg">{otherSub}</Text>
-                    ) : null}
-                  </View>
-                </View>
-              }
-              footer={
-                !other.phone && !other.email ? (
-                  <Text className="text-body-sm text-accent-soft-fg">
-                    İletişim bilgisi henüz eklenmemiş.
-                  </Text>
-                ) : null
-              }
-            />
-          </EnterUp>
+          <EnterUp delay={60}>{contactCard}</EnterUp>
 
           <EnterUp delay={120}>
             <SummaryCard match={match} />

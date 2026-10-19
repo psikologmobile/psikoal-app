@@ -7,13 +7,21 @@ import { MatchesScreen } from './MatchesScreen'
 import { useAuthStore } from '@/domains/auth'
 import { useCelebratedMatchesStore, useMatchDetailQuery, useMatchesQuery } from '@/domains/match'
 import { TEST_CLIENT, TEST_EXPERT } from '@/test-utils/query'
-import { mockRouter, mockSearchParams, renderScreen } from '@/test-utils/screen'
+import {
+  COMPACT_LAYOUT,
+  mockLayout,
+  mockRouter,
+  mockSearchParams,
+  renderScreen,
+  WIDE_LAYOUT,
+} from '@/test-utils/screen'
 
 jest.mock(
   '@react-native-async-storage/async-storage',
   () => require('@/test-utils/screen').asyncStorageMock
 )
 jest.mock('expo-secure-store', () => require('@/test-utils/screen').secureStoreMock)
+jest.mock('@/core/hooks/useBreakpoint', () => require('@/test-utils/screen').breakpointMock)
 
 jest.mock('expo-router', () => ({
   ...require('@/test-utils/screen').expoRouterMock,
@@ -168,6 +176,17 @@ describe('Eşleşme detayı', () => {
     expect(screen.getByText('Danışan · Mart 2026’dan beri üye')).toBeTruthy()
     expect(screen.getByText('0500 000 00 00')).toBeTruthy()
     expect(screen.queryByText(/değerlendir$/)).toBeNull()
+  })
+
+  it('web: iletişim sol sütunda, özet ve değerlendirme sağda; geri bağlantısı', () => {
+    mockLayout.current = WIDE_LAYOUT
+    renderScreen(<MatchDetailScreen />)
+    expect(screen.getByTestId('match-columns')).toBeTruthy()
+    expect(screen.getByText('elif@ornek.com')).toBeTruthy()
+    expect(screen.getByText("Uzm. Psk. Elif Kaya'yı değerlendir")).toBeTruthy()
+    fireEvent.press(screen.getByLabelText('Geri: Eşleşmelerim'))
+    expect(mockRouter.navigate).toHaveBeenCalledWith('/(tabs)/matches')
+    mockLayout.current = COMPACT_LAYOUT
   })
 
   it('bulunamadı', () => {
