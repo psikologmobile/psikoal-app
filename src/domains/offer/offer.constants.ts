@@ -25,6 +25,10 @@ export const OFFER_ERROR_CODES = {
   insufficientBalance: 'INSUFFICIENT_BALANCE',
   /** 409/422: ilan artık teklife açık değil. */
   listingNotOpen: 'OFFER_LISTING_NOT_OPEN',
+  /** 409: uzman bu ilana zaten teklif verdi. */
+  alreadyExists: 'OFFER_ALREADY_EXISTS',
+  /** 403: uzman profili onaylı değil. */
+  expertNotApproved: 'OFFER_EXPERT_NOT_APPROVED',
 } as const
 
 /**
@@ -41,3 +45,19 @@ export const OFFER_STATUS_CONFIG: Record<
   REJECTED: { label: 'Kapandı', icon: 'XCircle', iconColor: '#DC2626' },
   WITHDRAWN: { label: 'Geri çekildi', icon: 'MinusCircle', iconColor: '#737373' },
 }
+
+/**
+ * Tekliflerim süzgeçleri — backend `statusLabel` grupları (Revize 2 §4). Süzme
+ * etiketle yapılır: REJECTED üç ayrı kapanış nedenine bölünür.
+ */
+export const EXPERT_OFFER_FILTERS = [
+  'Tümü',
+  'Gönderildi',
+  'Seçildi',
+  'Başka uzmanla eşleşti',
+  'İlan kapandı',
+  'Süresi doldu',
+  'Geri çekildi',
+] as const
+
+export type ExpertOfferFilter = (typeof EXPERT_OFFER_FILTERS)[number]

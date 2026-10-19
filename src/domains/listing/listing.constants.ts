@@ -1,4 +1,4 @@
-import type { ListingStatus } from './types/listing.types'
+import type { ListingSort, ListingStatus, SessionType } from './types/listing.types'
 import type { IconName } from '@/core/components/atoms/Icon'
 
 export const listingKeys = {
@@ -48,3 +48,31 @@ export const SESSION_TYPE_LABELS: Record<string, string> = {
   yüz_yüze: 'Yüz Yüze',
   yüz_yüze_online: 'Yüz Yüze / Online',
 } as const
+
+/** v2 kısa görüşme şekli etiketleri (kart etiketi, ilan detayı, teklif formu). */
+export const SESSION_MODE_LABELS: Record<SessionType, string> = {
+  online: 'Online',
+  yüz_yüze: 'Yüz yüze',
+  yüz_yüze_online: 'İkisi de',
+}
+
+/** Fırsatlar sıralaması — sırayla döner (tasarım: tek düğme). */
+export const OPPORTUNITY_SORTS: ReadonlyArray<{ value: ListingSort; label: string }> = [
+  { value: 'newest', label: 'En yeni' },
+  { value: 'budget_desc', label: 'Yüksek bütçe' },
+  { value: 'budget_asc', label: 'Düşük bütçe' },
+  { value: 'offer_asc', label: 'Az teklif' },
+  { value: 'fee_asc', label: 'Düşük teklif ücreti' },
+]
+
+/** Fırsatlar bütçe süzgeci (seans başı, TL). Tek seçim. */
+export const OPPORTUNITY_BUDGETS: ReadonlyArray<{
+  key: string
+  label: string
+  budgetMin: number
+  budgetMax?: number
+}> = [
+  { key: 'b1', label: '₺1.500’e kadar', budgetMin: 0, budgetMax: 1500 },
+  { key: 'b2', label: '₺1.500–₺3.000', budgetMin: 1500, budgetMax: 3000 },
+  { key: 'b3', label: '₺3.000+', budgetMin: 3000 },
+]

@@ -20,8 +20,15 @@ import { AssessmentResultSummary } from '@/domains/assessment'
 import { useAuthStore } from '@/domains/auth'
 import { SESSION_TYPE_LABELS, useMarkMatchedMutation } from '@/domains/listing'
 import { useOfferDetailQuery, useWithdrawOfferMutation, OFFER_STATUS_CONFIG } from '@/domains/offer'
+import { ExpertOfferDetailScreen } from '@/screens/offer/ExpertOfferDetailScreen'
 
-export default function OfferDetailScreen() {
+/** Rol anahtarı: uzman görünümü ayrı ekranda (screens/offer). */
+export default function OfferDetailRoute() {
+  const role = useAuthStore((s) => s.role)
+  return role === 'expert' ? <ExpertOfferDetailScreen /> : <OfferDetailScreen />
+}
+
+function OfferDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const role = useAuthStore((s) => s.role)

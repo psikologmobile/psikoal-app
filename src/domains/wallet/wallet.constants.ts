@@ -41,3 +41,19 @@ export const WALLET_ERROR_CODES = {
  */
 export const INSUFFICIENT_BALANCE_MESSAGE =
   'Teklif göndermek için bakiyeniz yetersiz. Bakiye yüklemek için web sitemizi ziyaret edin.'
+
+/**
+ * Web uygulamasındaki bakiye yükleme sayfası (PayTR). YALNIZ `Platform.OS === 'web'`
+ * iken bağlantı verilir; mobil uygulamada düz metin gösterilir (mağaza kuralı).
+ */
+export const TOPUP_WEB_PATH = '/bakiye'
+
+/** Bakiyem süzgeçleri. `type` sunucu süzgecidir; "Haklar" hak hareketi olan satırlardır. */
+export const WALLET_TRANSACTION_FILTERS = [
+  { key: 'all', label: 'Tümü' },
+  { key: 'topup', label: 'Yüklemeler', type: 'TOPUP' },
+  { key: 'fee', label: 'Teklif ücretleri', type: 'OFFER_FEE' },
+  { key: 'rights', label: 'Haklar' },
+] as const satisfies ReadonlyArray<{ key: string; label: string; type?: WalletTransactionType }>
+
+export type WalletTransactionFilterKey = (typeof WALLET_TRANSACTION_FILTERS)[number]['key']

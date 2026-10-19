@@ -21,8 +21,15 @@ import { useExpertApprovalGate } from '@/domains/expert'
 import { useListingDetailQuery, useCloseListingMutation, ListingDetail } from '@/domains/listing'
 import { usePushTokenRegistration } from '@/domains/notification'
 import { useListingOffersQuery, useOfferDetailQuery, OFFER_STATUS_CONFIG } from '@/domains/offer'
+import { ExpertListingDetailScreen } from '@/screens/listing/ExpertListingDetailScreen'
 
-export default function ListingDetailScreen() {
+/** Rol anahtarı: uzman görünümü ayrı ekranda (screens/listing). */
+export default function ListingDetailRoute() {
+  const role = useAuthStore((s) => s.role)
+  return role === 'expert' ? <ExpertListingDetailScreen /> : <ListingDetailScreen />
+}
+
+function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const role = useAuthStore((s) => s.role)

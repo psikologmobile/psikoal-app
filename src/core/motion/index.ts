@@ -41,6 +41,8 @@ export {
   Orbit,
   Spin,
   Wobble,
+  Coin,
+  Radar,
   Glow,
   useLoopProgress,
   useOnceProgress,
@@ -48,6 +50,8 @@ export {
 } from './loops'
 export type { PulseDotProps, RingProps } from './loops'
 export { CountRoll } from './CountRoll'
+export { Flash } from './Flash'
+export type { FlashProps } from './Flash'
 export type { CountRollProps } from './CountRoll'
 export { Fill, useAnimatedProgress } from './Fill'
 export type { FillProps } from './Fill'

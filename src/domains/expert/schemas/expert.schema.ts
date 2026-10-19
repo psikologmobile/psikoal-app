@@ -40,3 +40,27 @@ export const ExpertSchema = z.object({
 
 export type ExpertOnboarding = z.infer<typeof ExpertOnboardingSchema>
 export type Expert = z.infer<typeof ExpertSchema>
+
+/**
+ * "Mesleki bilgiler ve belgeler" formu (PATCH /experts/profile). Kişisel site boş
+ * bırakılabilir; doluysa http(s) adresi olmalı.
+ */
+export const ProfessionalProfileFormSchema = z.object({
+  title: z.string().trim().min(2, 'Ünvan en az 2 karakter olmalı'),
+  specializations: z.array(z.string()).min(1, 'En az bir uzmanlık alanı seç'),
+  experienceYears: z.number().int().min(0).max(50),
+  education: z.string().trim().max(200, 'En fazla 200 karakter'),
+  bio: z
+    .string()
+    .trim()
+    .min(50, 'Biyografi en az 50 karakter olmalı')
+    .max(1000, 'Biyografi en fazla 1000 karakter olabilir'),
+  personalWebsite: z
+    .string()
+    .trim()
+    .refine((value) => value === '' || /^https?:\/\/[^\s.]+\.[^\s]{2,}$/i.test(value), {
+      message: 'Geçerli bir adres yaz (https://ornek.com)',
+    }),
+})
+
+export type ProfessionalProfileForm = z.infer<typeof ProfessionalProfileFormSchema>

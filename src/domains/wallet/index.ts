@@ -17,7 +17,10 @@ export {
   WALLET_PAYMENTS_PER_PAGE,
   WALLET_ERROR_CODES,
   INSUFFICIENT_BALANCE_MESSAGE,
+  TOPUP_WEB_PATH,
+  WALLET_TRANSACTION_FILTERS,
 } from './wallet.constants'
+export type { WalletTransactionFilterKey } from './wallet.constants'
 
 export {
   WalletSchema,
@@ -44,11 +47,13 @@ export {
   isInvoiceUnavailableError,
   freeRightsCaption,
   toTransactionView,
+  isTopupLinkAvailable,
+  isRightsTransaction,
 } from './utils/walletUtils'
 export type { WalletTransactionView } from './utils/walletUtils'
 
-export { WalletBalanceCard } from './components/WalletBalanceCard'
-export type { WalletBalanceCardProps } from './components/WalletBalanceCard'
+export { TopupNotice } from './components/TopupNotice'
+export type { TopupNoticeProps } from './components/TopupNotice'
 
 export type {
   Wallet,

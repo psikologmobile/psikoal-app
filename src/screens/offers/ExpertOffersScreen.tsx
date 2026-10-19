@@ -1,188 +1,156 @@
 import { useState } from 'react'
 
-import { FlatList, Pressable, ScrollView, View } from 'react-native'
+import { FlatList, ScrollView, View } from 'react-native'
 
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useRouter } from 'expo-router'
 
-import type { OfferStatus } from '@/domains/offer'
+import type { ExpertOfferFilter } from '@/domains/offer'
 
 import { AppRefreshControl } from '@/core/components/atoms/AppRefreshControl'
-import { Avatar } from '@/core/components/atoms/Avatar'
-import { Chip } from '@/core/components/atoms/Chip'
-import { Icon } from '@/core/components/atoms/Icon'
+import { FilterChip } from '@/core/components/atoms/FilterChip'
 import { Skeleton } from '@/core/components/atoms/Skeleton'
 import { Text } from '@/core/components/atoms/Text'
 import { EmptyState } from '@/core/components/molecules/EmptyState'
-import { HeaderActions } from '@/core/components/molecules/HeaderActions'
+import { ErrorBanner } from '@/core/components/molecules/ErrorBanner'
 import { useRefresh } from '@/core/hooks'
-import { formatDate } from '@/core/utils/formatDate'
-import { useUnreadNotificationCount } from '@/domains/notification'
-import { useExpertOffersQuery, OFFER_STATUS_CONFIG } from '@/domains/offer'
+import { CountRoll, EnterUp } from '@/core/motion'
+import {
+  EXPERT_OFFER_FILTERS,
+  ExpertOfferCard,
+  matchesOfferFilter,
+  useExpertOffersQuery,
+} from '@/domains/offer'
 
-const EXPERT_FILTERS: Array<{ label: string; value: OfferStatus }> = [
-  { label: 'Beklemede', value: 'PENDING' },
-  { label: 'Kabul', value: 'ACCEPTED' },
-  { label: 'Reddedildi', value: 'REJECTED' },
-  { label: 'Geri Çekildi', value: 'WITHDRAWN' },
-]
+function Stat({
+  value,
+  label,
+  accent = false,
+}: {
+  value: string
+  label: string
+  accent?: boolean
+}) {
+  return (
+    <View
+      accessible
+      accessibilityLabel={`${label}: ${value}`}
+      className={`flex-1 gap-0.5 rounded-lg p-3 ${accent ? 'bg-accent-soft' : 'bg-surface'}`}
+    >
+      <CountRoll
+        value={value}
+        delay={200}
+        offset={12}
+        className={`font-display text-2xl ${accent ? 'text-accent-soft-fg' : 'text-fg'}`}
+      />
+      <Text className={`text-badge ${accent ? 'text-accent-soft-fg' : 'text-fg-muted'}`}>
+        {label}
+      </Text>
+    </View>
+  )
+}
 
+/**
+ * Uzman "Tekliflerim" sekmesi (tasarım: b4_Tekliflerim). Süzgeç backend
+ * `statusLabel` gruplarıyla; durumlar dolu · boş · yükleniyor · hata.
+ */
 export function ExpertOffersScreen() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
-  const [filter, setFilter] = useState<OfferStatus | 'ALL'>('ALL')
-  const offersQuery = useExpertOffersQuery(filter === 'ALL' ? undefined : filter)
-  const { isLoading, isError, refetch } = offersQuery
+  const [filter, setFilter] = useState<ExpertOfferFilter>('Tümü')
+  // Tek istek: bütün teklifler gelir, statusLabel'a göre ekranda süzülür
+  // (REJECTED üç farklı kapanış nedenine bölünüyor, sunucu süzgeci bunu ayırmıyor).
+  const offersQuery = useExpertOffersQuery()
   const { isRefreshing, onRefresh } = useRefresh(offersQuery)
 
-  const offers = offersQuery.data?.data ?? []
-  const offerCount = offersQuery.data?.meta.total ?? 0
-  const unreadCount = useUnreadNotificationCount()
+  const all = offersQuery.data?.data ?? []
+  const offers = all.filter((offer) => matchesOfferFilter(offer, filter))
+  const pendingCount = offersQuery.data?.meta.pendingCount ?? 0
+  const selectedCount = all.filter((offer) => offer.status === 'ACCEPTED').length
+  const isFiltered = filter !== 'Tümü'
+
+  const header = (
+    <View className="gap-3.5 pb-3.5">
+      <EnterUp>
+        <Text accessibilityRole="header" variant="h2">
+          Tekliflerim
+        </Text>
+      </EnterUp>
+      <EnterUp index={1} className="flex-row gap-2">
+        <Stat value={String(pendingCount)} label="Bekleyen" />
+        <Stat value={String(selectedCount)} label="Seçildi" accent />
+        <Stat value={String(offersQuery.data?.meta.total ?? 0)} label="Toplam teklif" />
+      </EnterUp>
+      <EnterUp index={2}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerClassName="gap-2"
+        >
+          {EXPERT_OFFER_FILTERS.map((label) => (
+            <FilterChip
+              key={label}
+              label={label}
+              selected={filter === label}
+              onPress={() => setFilter(label)}
+            />
+          ))}
+        </ScrollView>
+      </EnterUp>
+    </View>
+  )
+
+  const empty = offersQuery.isLoading ? (
+    <View className="gap-2.5" testID="offers-loading">
+      {[0, 150, 300].map((delay) => (
+        <Skeleton key={delay} variant="rect" height={130} borderRadius="2xl" delay={delay} />
+      ))}
+    </View>
+  ) : offersQuery.isError ? (
+    <ErrorBanner
+      title="Teklifler yüklenemedi"
+      onRetry={() => void offersQuery.refetch()}
+      retryLabel="Tekrar dene"
+    />
+  ) : (
+    <EmptyState
+      icon="Send"
+      title={isFiltered ? 'Bu durumda teklifin yok' : 'Henüz teklif vermedin'}
+      description={
+        isFiltered ? 'Başka bir süzgeç seçebilirsin.' : 'Fırsatlar’dan bir ilana teklif ver.'
+      }
+      ctaLabel={isFiltered ? undefined : 'Fırsatlara git'}
+      onCta={isFiltered ? undefined : () => router.push('/')}
+    />
+  )
 
   return (
-    <View className="flex-1 bg-surface-base dark:bg-dark-bg">
-      <HeaderActions
-        actions={[
-          {
-            icon: 'Bell',
-            accessibilityLabel: 'Bildirimler',
-            badgeCount: unreadCount,
-            onPress: () => router.push('/notifications'),
-          },
-        ]}
-      />
-
+    <View className="flex-1 bg-bg" testID="screen-expert-offers">
       <FlatList
-        data={!isLoading && !isError ? offers : []}
+        data={offersQuery.isLoading || offersQuery.isError ? [] : offers}
         keyExtractor={(item) => item.id}
-        contentContainerClassName="pb-6"
+        // REASON: üst boşluk cihazın güvenli alanından hesaplanır
+        contentContainerStyle={{ paddingTop: insets.top + 12 }}
+        contentContainerClassName="px-5 pb-8"
         showsVerticalScrollIndicator={false}
         refreshControl={<AppRefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />}
-        ItemSeparatorComponent={() => (
-          <View className="mx-4 h-px bg-neutral-200 dark:bg-neutral-800" />
+        ListHeaderComponent={header}
+        ListEmptyComponent={empty}
+        ItemSeparatorComponent={() => <View className="h-2.5" />}
+        renderItem={({ item, index }) => (
+          <ExpertOfferCard
+            offer={item}
+            index={Math.min(6, index + 3)}
+            onPress={() =>
+              router.push(
+                item.status === 'ACCEPTED' && item.matchId
+                  ? `/match/${item.matchId}`
+                  : `/offer/${item.id}`
+              )
+            }
+          />
         )}
-        ListHeaderComponent={
-          <View className="px-4 pb-3" style={{ paddingTop: insets.top + 8 }}>
-            <View className="mb-3 flex-row items-center justify-between pr-13">
-              <Text variant="heading">Tekliflerim</Text>
-              <Text variant="caption" color="secondary">
-                {offerCount} teklif
-              </Text>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerClassName="gap-2"
-            >
-              {EXPERT_FILTERS.map((item) => (
-                <Chip
-                  key={item.value}
-                  label={item.label}
-                  variant="filter"
-                  size="md"
-                  isSelected={filter === item.value}
-                  onPress={() => setFilter(item.value)}
-                  onRemove={filter === item.value ? () => setFilter('ALL') : undefined}
-                />
-              ))}
-            </ScrollView>
-          </View>
-        }
-        ListEmptyComponent={
-          isLoading ? (
-            <View>
-              {[1, 2, 3].map((i) => (
-                <View key={i}>
-                  <View className="gap-3 px-4 py-4">
-                    <Skeleton variant="line" width="65%" height={14} />
-                    <Skeleton variant="line" width="40%" height={12} />
-                  </View>
-                  {i < 3 && <View className="mx-4 h-px bg-neutral-200 dark:bg-neutral-800" />}
-                </View>
-              ))}
-            </View>
-          ) : isError ? (
-            <EmptyState icon="WifiOff" title="Yüklenemedi" ctaLabel="Tekrar Dene" onCta={refetch} />
-          ) : (
-            <EmptyState
-              icon="SendHorizonal"
-              title="Teklif bulunamadı"
-              description={
-                filter !== 'ALL'
-                  ? 'Bu filtreye uygun teklif yok.'
-                  : 'Fırsatlar sekmesinden bir ilana teklif gönderin.'
-              }
-              ctaLabel="İlan Feed'ine Git"
-              onCta={() => router.push('/')}
-            />
-          )
-        }
-        renderItem={({ item }) => {
-          const cfg = OFFER_STATUS_CONFIG[item.status]
-          return (
-            <Pressable
-              onPress={() =>
-                router.push(
-                  item.status === 'ACCEPTED' && item.matchId
-                    ? `/match/${item.matchId}`
-                    : `/offer/${item.id}`
-                )
-              }
-              className="gap-3 px-4 py-4 active:opacity-90"
-            >
-              <View className="flex-row items-start justify-between gap-2">
-                <Text
-                  variant="label"
-                  className="flex-1 font-semibold leading-snug text-neutral-900 dark:text-[#F5F5F7]"
-                >
-                  {item.listing?.title ?? 'İlan'}
-                </Text>
-                <View className="shrink-0 flex-row items-center gap-1">
-                  <Icon name={cfg.icon} size={13} color={cfg.iconColor} />
-                  <Text variant="caption" className="font-medium" style={{ color: cfg.iconColor }}>
-                    {cfg.label}
-                  </Text>
-                </View>
-              </View>
-
-              {item.description ? (
-                <Text variant="caption" color="secondary" numberOfLines={2} className="-mt-1">
-                  {item.description}
-                </Text>
-              ) : null}
-
-              <View className="flex-row flex-wrap gap-1.5">
-                <Chip label={`₺${item.price.toLocaleString('tr-TR')}`} variant="price" isSelected />
-                <Chip
-                  label={item.sessionType === 'online' ? 'Online' : 'Yüz yüze'}
-                  variant="session"
-                  isSelected
-                />
-              </View>
-
-              <View className="flex-row items-center justify-between pt-1">
-                {item.listing?.client ? (
-                  <View className="flex-row items-center gap-2">
-                    <Avatar
-                      size="xs"
-                      initials={item.listing.client.initials ?? ''}
-                      src={item.listing.client.avatarUrl ?? undefined}
-                    />
-                    <Text variant="caption" color="secondary">
-                      {item.listing.clientDisplayName ?? ''}
-                    </Text>
-                  </View>
-                ) : (
-                  <View />
-                )}
-                <Text variant="caption" color="tertiary">
-                  {formatDate(item.createdAt, 'dayMonth')}
-                </Text>
-              </View>
-            </Pressable>
-          )
-        }}
       />
     </View>
   )
