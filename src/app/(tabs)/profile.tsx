@@ -13,7 +13,7 @@ import { MenuRow } from '@/core/components/molecules/MenuRow'
 import { useThemeColors } from '@/core/theme'
 import { getFullName, getInitials } from '@/core/utils/personName'
 import { useAuthStore, useLogoutMutation } from '@/domains/auth'
-import { useCreditBalanceQuery } from '@/domains/credit'
+import { useWalletQuery } from '@/domains/wallet'
 import { APP_VERSION } from '@/lib/appVersion'
 import { openNotificationSettings, openSupportEmail, requestStoreReview } from '@/lib/externalLinks'
 import { useThemeStore } from '@/store/themeStore'
@@ -46,7 +46,7 @@ export default function SettingsScreen() {
   const isExpert = user?.role === 'expert'
   const { preference, setPreference } = useThemeStore()
   // Yalnız uzmanda istek atar (danışan 403 EXPERT_ROLE_REQUIRED alırdı).
-  const { data: creditBalance } = useCreditBalanceQuery()
+  const { data: wallet } = useWalletQuery()
 
   const handleThemePress = () => {
     Alert.alert('Görünüm', 'Tema tercihini seç', [
@@ -135,10 +135,10 @@ export default function SettingsScreen() {
           onPress: () => router.push('/profile/documents' as never),
         },
         {
-          icon: 'Coins',
-          label: 'Kredilerim',
-          value: creditBalance?.balanceLabel,
-          onPress: () => router.push('/credits' as never),
+          icon: 'Wallet',
+          label: 'Bakiyem',
+          value: wallet?.balanceLabel,
+          onPress: () => router.push('/wallet' as never),
         },
         {
           icon: 'Star',

@@ -21,9 +21,9 @@ import {
 import { size, useThemeColors } from '@/core/theme'
 import { getFullName, getInitials } from '@/core/utils/personName'
 import { useAuthStore } from '@/domains/auth'
-import { useCreditBalanceQuery } from '@/domains/credit'
 import { useExpertApprovalGate } from '@/domains/expert'
 import { useUnreadNotificationCount } from '@/domains/notification'
+import { useWalletQuery } from '@/domains/wallet'
 
 /** Role göre 4 sekme (docs/design-v2/components.md §4). */
 const TABS: Record<'expert' | 'client', Record<string, { title: string; icon: NavIconName }>> = {
@@ -48,7 +48,7 @@ function WebSidebar(props: BottomTabBarProps & { isExpert: boolean }) {
   const segments = useSegments()
   const user = useAuthStore((s) => s.user)
   const unread = useUnreadNotificationCount()
-  const { data: credit } = useCreditBalanceQuery()
+  const { data: wallet } = useWalletQuery()
   const icons = Object.fromEntries(
     Object.entries(TABS[isExpert ? 'expert' : 'client']).map(([k, v]) => [k, v.icon])
   )
@@ -65,12 +65,12 @@ function WebSidebar(props: BottomTabBarProps & { isExpert: boolean }) {
         isExpert
           ? [
               {
-                key: 'credits',
+                key: 'wallet',
                 label: 'Bakiyem',
                 icon: 'balance',
                 after: 'matches',
-                active: current === 'credits',
-                onPress: () => router.push('/credits'),
+                active: current === 'wallet',
+                onPress: () => router.push('/wallet'),
               },
             ]
           : [
@@ -88,9 +88,11 @@ function WebSidebar(props: BottomTabBarProps & { isExpert: boolean }) {
       footer={
         isExpert ? (
           <SidebarBalanceCard
-            balanceLabel={credit?.balanceLabel ?? '—'}
-            // Kredi satın alma web sitesinde; bu bağlantı yalnız web uygulamasında görünür.
-            onAction={() => router.push('/credits')}
+            balanceLabel={wallet?.balanceLabel ?? '—'}
+            // Bakiye yükleme YALNIZ web uygulamasında (/bakiye — PayTR); kenar çubuğu
+            // yalnız web'de çizildiği için mobil mağaza kuralı ihlal edilmez.
+            // REASON: /bakiye web yükleme sayfası ayrı işte eklenecek; typed routes henüz tanımıyor.
+            onAction={() => router.push('/bakiye' as never)}
           />
         ) : (
           <SidebarUserCard
