@@ -100,10 +100,7 @@ describe('ClientListingDetailScreen', () => {
       onSuccess: (r: { matchId: string }) => void
     }
     act(() => onSuccess({ matchId: 'm-1' }))
-    expect(mockRouter.replace).toHaveBeenCalledWith({
-      pathname: '/match/[id]',
-      params: { id: 'm-1', celebrate: '1' },
-    })
+    expect(mockRouter.replace).toHaveBeenCalledWith('/match/m-1/celebrate')
 
     fireEvent.press(getByText('Anlaşmadım'))
     expect(mockDismiss).toHaveBeenCalledWith({ listingId: LISTING_ID, expertId: EXPERT_ID })

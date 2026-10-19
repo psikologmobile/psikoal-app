@@ -50,8 +50,11 @@ src/
     types/              ← Evrensel tipler
     theme/              ← Design tokens, NativeWind config
   screens/              ← Rol bazlı ekran kompozisyonları (route dosyaları ince switch olarak kalır)
-    home/               ← ExpertHomeScreen + ClientHomeScreen + HomeHero
+    home/               ← ExpertHomeScreen + ClientHomeScreen
     offers/             ← ExpertOffersScreen + ClientListingsScreen
+    listing/, offer/    ← Client*/Expert*DetailScreen, CreateListingScreen, SendOfferScreen
+    auth/, match/, settings/, notifications/, splash/, wallet/, profile/, claim/,
+    expert/, assessment/, blog/, category/  ← ekran grupları
   domains/              ← İş mantığı katmanları
     [domain-adı]/
       api/              ← TanStack Query hooks (useXxxQuery, useXxxMutation)
@@ -638,7 +641,7 @@ Ekranlar YALNIZ semantik sınıfları kullanır; açık/koyu tema `global.css` C
 
 **Hareket — `src/core/motion`**
 
-Her etkileşimli yüzey `PressableScale` (basınca .96, 150 ms, haptic). Girişler `EnterUp` / `EnterRight` (60 ms sıralı), geri bildirim `Pop`, `DrawCheck`, `Shake`; döngüler `PulseDot`, `Ring`, `Bell`, `Float`, `Orbit`, `Skeleton`. Tümü **azaltılmış harekete** uyar (döngü yok, giriş son karede). Reanimated `Animated.View`'a className verilmez (css-interop Reanimated bileşenlerini tanımıyor) — motion bileşenleri `className`'i dış View'a uygular.
+Her etkileşimli yüzey `PressableScale` (basınca .96, 150 ms, haptic). Girişler `EnterUp` / `EnterRight` (60 ms sıralı), geri bildirim `Pop`, `DrawCheck`, `Shake`; döngüler `PulseDot`, `Ring`, `Bell`, `Float`, `Orbit`, `Radar`, `Coin`, `Skeleton`; vurgu `Flash`, yazı `TypeReveal`. Tümü **azaltılmış harekete** uyar (döngü yok, giriş son karede). Reanimated `Animated.View`'a className verilmez (css-interop Reanimated bileşenlerini tanımıyor) — motion bileşenleri `className`'i dış View'a uygular.
 **Müşteri kararı:** ücret düşüşü göstergesi (`bob` oku, `drain` çubuğu, "X saat sonra ₺…") hiçbir yerde yapılmaz.
 
 **Gezinme**
@@ -734,7 +737,9 @@ app/
   listing/[id].tsx      → ilan detayı (rol switch: Client/ExpertListingDetailScreen)
   offer/new.tsx         → teklif gönder (quote + ücret onayı)
   offer/[id].tsx        → teklif detayı (rol switch)
-  match/[id].tsx        → eşleşme detayı (celebrate=1 → eşleşti anı)
+  match/[id]/index.tsx  → eşleşme detayı
+  match/[id]/celebrate.tsx → eşleşti anı (matchCelebrateRoute; eşleşme başına cihazda bir kez)
+  claim/[listingId].tsx → uzman: "Danışanla anlaştım"
   wallet/index.tsx      → Bakiyem (uzman)
   wallet/invoices.tsx   → Faturalarım (uzman)
   referral.tsx          → Davet linkim (uzman)
@@ -780,15 +785,15 @@ type ApiError = {
 
 Hepsi `@/core/components/{atoms,molecules,organisms,templates}` barrel'larından açılır; görsel doğrulama `/dev-gallery` (yalnız `__DEV__`).
 
-**Atoms:** `Text` (variant: hero…overline; color: default/muted/brand/link/onPrimary/onAccent…/danger) · `Button` (primary · secondary · outline · link · danger · danger-outline; sm/md/lg/xl; disabled = kesikli çizgi; `isLoading` + `loadingLabel`; `icon`) · `IconButton` (outline/ghost/primary/surface, 44 daire, `badge`) · `Input` · `Checkbox` (çizilen tik) · `Switch` (46×26) · `FilterChip` (tek seçim) · `ChoiceChip` (çoklu, tik) · `TagChip` (meta) · `StatusPill` (live/soft/matched/neutral/danger) · `CountBadge` · `VerifiedBadge` · `StarRating` · `ProgressSegments` (bar/thin/dots) · `BudgetCells` · `ScoreRing` · `LevelBar` · `Avatar` (xs 30…hero 112, tone accent/primary/surface) · `Skeleton` · `Spinner` · `Icon` (Lucide) · `NavIcon` (tasarımın gezinme ikonları) · `BrandMark` · `Divider`. Eski: `Badge`, `Chip`, `DecorCircles` (@deprecated).
+**Atoms:** `Text` (variant: hero…overline; color: default/muted/brand/link/onPrimary/onAccent…/danger) · `Button` (primary · secondary · outline · link · danger · danger-outline; sm/md/lg/xl; disabled = kesikli çizgi; `isLoading` + `loadingLabel`; `icon`) · `IconButton` (outline/ghost/primary/surface, 44 daire, `badge`) · `Input` · `Checkbox` (çizilen tik) · `Switch` (46×26) · `FilterChip` (tek seçim) · `ChoiceChip` (çoklu, tik) · `TagChip` (meta) · `StatusPill` (live/soft/matched/neutral/danger) · `CountBadge` · `VerifiedBadge` · `StarRating` · `ProgressSegments` (bar/thin/dots) · `BudgetCells` · `ScoreRing` · `LevelBar` · `Avatar` (xs 30…hero 112, tone accent/primary/surface) · `Skeleton` · `Spinner` · `Icon` (Lucide) · `NavIcon` (tasarımın gezinme ikonları) · `BrandMark` · `Divider`.
 
-**Molecules:** `TextField` (text/email/tel/number/url/password; error/hint/optional) · `TextArea` (sayaç) · `ReadonlyField` (kesikli + kilit) · `Stepper` · `RadioCard` (large/list) · `SegmentedControl` (kayan hap) · `AvatarStack` · `InfoBanner` · `ReminderBanner` · `ErrorBanner` (alert + shake; satır içi / blok) · `EmptyState` (page/compact, yüzen illüstrasyon) · `ScreenHeader` · `SectionHeader` · `StrengthMeter` · `Accordion` / `AccordionItem` · `SettingsRow` + `SettingsGroup` · `TransactionRow` · `NotificationItem` · `StatTile` · `CheckboxRow`. Eski: `InputField`, `MenuRow`, `BackButton`, `ScreenTitle`, `StepProgress`, `ToggleRow`, `HeaderActions` (v2 karşılıkları yukarıda).
+**Molecules:** `TextField` (text/email/tel/number/url/password; error/hint/optional) · `TextArea` (sayaç) · `ReadonlyField` (kesikli + kilit) · `Stepper` · `RadioCard` (large/list) · `SegmentedControl` (kayan hap) · `AvatarStack` · `InfoBanner` · `ReminderBanner` · `ErrorBanner` (alert + shake; satır içi / blok) · `EmptyState` (page/compact, yüzen illüstrasyon) · `ScreenHeader` · `SectionHeader` · `StrengthMeter` · `Accordion` / `AccordionItem` · `SettingsRow` + `SettingsGroup` · `TransactionRow` · `NotificationItem` · `StatTile` · `CheckboxRow`.
 
-**Organisms:** `Select` (arama) · `CityPicker` (81 il — `@/core/constants`) · `ContactCard` (tel:/mailto:, kopyala→tik) · `SuccessHero` (halka + pop + tik, konfeti) · `HeroCard` (accent, dönen köşe dekoru) · `BottomSheet` · `Dialog` (web) · `ToastProvider` / `useToast` · `TabBar` · `Sidebar` + `SidebarBalanceCard` / `SidebarUserCard` / `useSidebarMode`. Eski: `BottomActionBar`, `HeroQuickActions`.
+**Organisms:** `Select` (arama) · `CityPicker` (81 il — `@/core/constants`) · `ContactCard` (tel:/mailto:, kopyala→tik) · `SuccessHero` (halka + pop + tik, konfeti) · `HeroCard` (accent, dönen köşe dekoru) · `BottomSheet` · `Dialog` (web) · `ToastProvider` / `useToast` · `TabBar` · `Sidebar` + `SidebarBalanceCard` / `SidebarUserCard` / `useSidebarMode`.
 
 **Templates:** `AppProviders` (Toast dahil) · `Screen` (bg, kenar boşlukları, web'de en çok 1200 ortalı, `footer`, `keyboard`).
 
-**Domain kartları** (`ListingCard`, `AdCard`, `OfferCard`, `MatchCard`, `TestCard`, `BlogCard`, `WalletBalanceCard`…) ilgili `domains/*/components` altında yukarıdaki parçalarla kurulur.
+**Domain kartları** (`AdCard`, `ActiveListingCard`, `ExpertListingCard`, `OfferCard`, `ExpertOfferCard`, `MatchCard`, `TestCard`, `BlogCard`, `TopupNotice`…) ilgili `domains/*/components` altında yukarıdaki parçalarla kurulur.
 
 ---
 
@@ -796,11 +801,12 @@ Hepsi `@/core/components/{atoms,molecules,organisms,templates}` barrel'larından
 
 1. **Danışan adı gizliliği:** Uzman görünümünde teklif vermeden önce danışan adı kısaltılmış gelir (backend maskeler); teklif verdikten sonra `clientContact` tam ad + telefon + e-posta taşır.
 2. **Danışan uzman araması YOKTUR:** Danışan uzmanı yalnız kendi ilanına gelen tekliften ya da kendisini davet eden uzman kartından görür. Profil 404 `EXPERT_NOT_FOUND` → "Bu profil görüntülenemiyor" (`useExpertProfileAccess`).
-3. **Eşleşti işaretleme:** `useMarkMatchedMutation` ilan/teklif/eşleşme/bildirim sorgularını tazeler; ardından `/match/[id]?celebrate=1`. Optimistic update yapılmaz.
+3. **Eşleşti işaretleme:** `useMarkMatchedMutation` ilan/teklif/eşleşme/bildirim sorgularını tazeler; ardından `router.replace(matchCelebrateRoute(matchId))` (`/match/[id]/celebrate`; `useCelebratedMatchesStore` ile eşleşme başına bir kez). Optimistic update yapılmaz.
 4. **Teklif ücreti:** `useOfferFeeGate` quote'u, beklenen ücreti ve OFFER_FEE_CHANGED / INSUFFICIENT_BALANCE durumlarını yönetir; ekran iş mantığı yazmaz.
 5. **Bildirim izni:** İlk login'de değil, ilk teklif geldiğinde ya da bildirim listesi dolu geldiğinde sorulur.
-6. **Bildirim yönlendirme:** `resolveNotificationRoute` — MATCHED → `/match/{id}`; LISTING_MATCHED_OTHER, CLAIM_REMINDER, INVITED_CLIENT_LISTING → `/listing/{id}`; cüzdan türleri → `/wallet`; INVOICE_READY → `/wallet/invoices`.
+6. **Bildirim yönlendirme:** `resolveNotificationRoute` — MATCHED → `/match/{id}/celebrate` (OFFER_ACCEPTED → `/match/{id}`); LISTING_MATCHED_OTHER, CLAIM_REMINDER, INVITED_CLIENT_LISTING → `/listing/{id}`; cüzdan türleri → `/wallet`; INVOICE_READY → `/wallet/invoices`.
 7. **Tekliflerim navigasyonu:** ACCEPTED ve `matchId` varsa `/match/[matchId]`, diğerleri `/offer/[id]`.
+8. **Kayıt:** Backend kullanıcıyı onaylı oluşturup hemen oturum açar; e-posta onay adımı/ekranı YOKTUR. Kayıt başarılı olunca `onboardIntent` ile doğrudan rolün onboarding'ine (`/(auth)/onboarding/{client,expert}`) geçilir.
 
 ---
 

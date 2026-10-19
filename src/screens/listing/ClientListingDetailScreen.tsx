@@ -36,6 +36,7 @@ import {
   useListingDetailQuery,
   useMatchConfirm,
 } from '@/domains/listing'
+import { matchCelebrateRoute } from '@/domains/match'
 import { usePushTokenRegistration } from '@/domains/notification'
 import { OFFER_SORT_OPTIONS, OfferCard, sortOffers, useListingOffersQuery } from '@/domains/offer'
 import { getErrorMessage } from '@/lib/api'
@@ -117,8 +118,7 @@ export function ClientListingDetailScreen({ listingId }: ClientListingDetailScre
 
   const match = useMatchConfirm({
     listingId,
-    onMatched: (matchId) =>
-      router.replace({ pathname: '/match/[id]', params: { id: matchId, celebrate: '1' } }),
+    onMatched: (matchId) => router.replace(matchCelebrateRoute(matchId)),
   })
 
   const listing = listingQuery.data

@@ -23,6 +23,6 @@ export const MATCH_STATUS_LABELS: Record<MatchStatus, string> = {
 }
 
 /** Eşleşti kutlaması rotası; kutlama cihaz başına bir kez gösterilir. */
-export function matchCelebrateRoute(matchId: string): string {
+export function matchCelebrateRoute(matchId: string): `/match/${string}/celebrate` {
   return `/match/${matchId}/celebrate`
 }

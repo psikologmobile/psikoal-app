@@ -19,6 +19,7 @@ import { useThemeColors } from '@/core/theme'
 import { formatTry } from '@/core/utils/formatTry'
 import { RESULT_LEVEL_LABELS } from '@/domains/assessment'
 import { MatchConfirmSheet, useMatchConfirm } from '@/domains/listing'
+import { matchCelebrateRoute } from '@/domains/match'
 import { OFFER_SESSION_LABELS, useOfferDetailQuery } from '@/domains/offer'
 
 type ClientOfferDetailScreenProps = {
@@ -35,8 +36,7 @@ export function ClientOfferDetailScreen({ offerId }: ClientOfferDetailScreenProp
 
   const match = useMatchConfirm({
     listingId: offer?.listingId,
-    onMatched: (matchId) =>
-      router.replace({ pathname: '/match/[id]', params: { id: matchId, celebrate: '1' } }),
+    onMatched: (matchId) => router.replace(matchCelebrateRoute(matchId)),
   })
 
   const header = <ScreenHeader title="Teklif" onBack={() => router.back()} />

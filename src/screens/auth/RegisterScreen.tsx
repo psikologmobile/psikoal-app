@@ -39,12 +39,10 @@ const ROLES: { role: UserRole; mark: string; title: string; sub: string }[] = [
   { role: 'expert', mark: 'U', title: 'Uzman', sub: 'Psikoloğum, danışan arıyorum' },
 ]
 
-export const VERIFY_EMAIL_ROUTE = '/(auth)/verify-email'
-
 /**
  * Kayıt (b0/b4 · Kayıt): 1) rol 2) bilgiler + şifre gücü + davet kodu + iki
- * zorunlu onay (hukuken onaylı metinler — DEĞİŞTİRME). Başarıda "E-postanı
- * onayla" ekranına geçer.
+ * zorunlu onay (hukuken onaylı metinler — DEĞİŞTİRME). Backend kullanıcıyı onaylı
+ * oluşturup oturum açar (e-posta gönderilmez); başarıda doğrudan rolün onboarding'ine geçer.
  */
 export function RegisterScreen() {
   const router = useRouter()
@@ -83,8 +81,9 @@ export function RegisterScreen() {
     reset()
     // Kayıt başarılı olur olmaz isAuthenticated true olur ve (auth)/_layout
     // yönlendirir; hedef, ezilmesin diye ÖNCE onboardIntent'e yazılır.
-    setOnboardIntent(VERIFY_EMAIL_ROUTE)
-    register({ ...data, role }, { onSuccess: () => router.replace(VERIFY_EMAIL_ROUTE as never) })
+    const target = role === 'expert' ? '/(auth)/onboarding/expert' : '/(auth)/onboarding/client'
+    setOnboardIntent(target)
+    register({ ...data, role }, { onSuccess: () => router.replace(target) })
   }
 
   const apiError = error ? registerErrorMessage(error) : null

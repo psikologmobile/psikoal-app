@@ -10,19 +10,19 @@ core/
     atoms/        Text, Button, IconButton, Input, Checkbox, Switch, FilterChip, ChoiceChip,
                   TagChip, StatusPill, CountBadge, VerifiedBadge, StarRating, ProgressSegments,
                   BudgetCells, ScoreRing, LevelBar, Avatar, Skeleton, Spinner, Icon, NavIcon,
-                  BrandMark, Divider, AppRefreshControl  (+ eski: Badge, Chip, DecorCircles)
+                  BrandMark, Divider, AppRefreshControl
     molecules/    TextField, TextArea, ReadonlyField, Stepper, RadioCard, SegmentedControl,
                   AvatarStack, InfoBanner, ReminderBanner, ErrorBanner, EmptyState, ScreenHeader,
                   SectionHeader, StrengthMeter, Accordion, SettingsRow/SettingsGroup,
-                  TransactionRow, NotificationItem, StatTile, CheckboxRow  (+ eski v1 parçalar)
+                  TransactionRow, NotificationItem, StatTile, CheckboxRow
     organisms/    Select, CityPicker, ContactCard, SuccessHero, HeroCard, BottomSheet, Dialog,
-                  Toast (ToastProvider/useToast), TabBar, Sidebar  (+ eski: BottomActionBar, HeroQuickActions)
+                  Toast (ToastProvider/useToast), TabBar, Sidebar
     templates/    AppProviders, Screen
   constants/      TURKEY_PROVINCES (81 il), normalizeTr
   motion/         PressableScale, EnterUp/Right, Pop, DrawCheck, Shake, PulseDot, Ring, Bell,
                   Float, Breathe, Orbit, Spin, Wobble, CountRoll, Fill, Confetti, HeartBurst,
-                  CopyTick, usePresence, useReduceMotion, haptic
-  hooks/          useRefresh
+                  CopyTick, TypeReveal, Flash, Coin, Radar, usePresence, useReduceMotion, haptic
+  hooks/          useRefresh, useCopyToClipboard
   theme/          tokens.ts (renk/font/tip/köşe/boşluk/ölçü/hareket — TEK kaynak),
                   palette.ts (useThemeColors), useApplyThemePreference
   utils/          cn (tailwind-merge özel ölçeklerle), formatDate, personName

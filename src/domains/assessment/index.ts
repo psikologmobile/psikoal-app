@@ -40,5 +40,3 @@ export {
   assessmentMark,
   questionTypeLabel,
 } from './utils/assessmentView'
-export { AssessmentResultSummary } from './components/AssessmentResultSummary'
-export type { AssessmentResultSummaryProps } from './components/AssessmentResultSummary'

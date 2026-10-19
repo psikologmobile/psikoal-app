@@ -55,12 +55,6 @@ export type {
   ListingSort,
 } from './types/listing.types'
 
-export { ListingCard } from './components/ListingCard'
-export type { ListingCardProps } from './components/ListingCard'
-
-export { ListingDetail } from './components/ListingDetail'
-export type { ListingDetailProps } from './components/ListingDetail'
-
 export { ExpertListingCard } from './components/expert/ExpertListingCard'
 export type { ExpertListingCardProps } from './components/expert/ExpertListingCard'
 export { FeeFooter } from './components/expert/FeeFooter'

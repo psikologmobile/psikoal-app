@@ -67,10 +67,7 @@ describe('ClientOfferDetailScreen', () => {
       onSuccess: (r: { matchId: string }) => void
     }
     act(() => onSuccess({ matchId: 'm-9' }))
-    expect(mockRouter.replace).toHaveBeenCalledWith({
-      pathname: '/match/[id]',
-      params: { id: 'm-9', celebrate: '1' },
-    })
+    expect(mockRouter.replace).toHaveBeenCalledWith('/match/m-9/celebrate')
   })
 
   it('kapanmış teklifte anlaşma düğmesi yok; yükleniyor ve hata', () => {

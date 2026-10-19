@@ -6,11 +6,11 @@ import { ForgotPasswordScreen } from './ForgotPasswordScreen'
 import { LoginScreen } from './LoginScreen'
 import { RegisterScreen } from './RegisterScreen'
 import { ResetPasswordScreen } from './ResetPasswordScreen'
-import { VerifyEmailScreen } from './VerifyEmailScreen'
 import { WelcomeScreen } from './WelcomeScreen'
 
 import { useAuthStore, useLoginMutation, useReferralStore } from '@/domains/auth'
 import { ApiError } from '@/lib/api'
+import { useOnboardingStore } from '@/store/onboardingStore'
 import { TEST_CLIENT, TEST_EXPERT } from '@/test-utils/query'
 import { mockRouter, renderScreen } from '@/test-utils/screen'
 
@@ -124,16 +124,25 @@ describe('Kayıt', () => {
     fireEvent.press(screen.getByTestId('register-health-consent'))
     expect(screen.getByText('Kayıt ol')).toBeTruthy()
   })
-})
 
-describe('E-postanı onayla', () => {
-  it("e-postayı gösterir ve role göre onboarding'e geçer", () => {
+  it("başarılı kayıt doğrudan rolün onboarding'ine geçer (e-posta onayı yok)", async () => {
     act(() => {
-      useAuthStore.setState({ user: TEST_EXPERT, role: 'expert', isAuthenticated: true })
+      useReferralStore.setState({ pendingCode: null })
     })
-    renderScreen(<VerifyEmailScreen />)
-    expect(screen.getByText(TEST_EXPERT.email)).toBeTruthy()
-    fireEvent.press(screen.getByText('Onayladım, devam et'))
+    renderScreen(<RegisterScreen />)
+    fireEvent.press(screen.getByTestId('register-role-expert'))
+    fireEvent.press(screen.getByText('Devam'))
+    fireEvent.changeText(screen.getByTestId('register-first-name'), 'Ayşe')
+    fireEvent.changeText(screen.getByTestId('register-last-name'), 'Demir')
+    fireEvent.changeText(screen.getByTestId('register-email'), 'ayse@psikoal.test')
+    fireEvent.changeText(screen.getByTestId('register-password'), 'Guclu.Sifre2026')
+    fireEvent.press(screen.getByTestId('register-terms'))
+    fireEvent.press(screen.getByTestId('register-health-consent'))
+    fireEvent.press(screen.getByTestId('register-submit'))
+    await waitFor(() => expect(mockIdle.mutate).toHaveBeenCalled())
+    expect(useOnboardingStore.getState().onboardIntent).toBe('/(auth)/onboarding/expert')
+    const options = mockIdle.mutate.mock.calls[0]?.[1] as { onSuccess: () => void }
+    act(() => options.onSuccess())
     expect(mockRouter.replace).toHaveBeenCalledWith('/(auth)/onboarding/expert')
   })
 })
