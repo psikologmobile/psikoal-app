@@ -14,8 +14,8 @@ export type NotificationItemProps = {
   /** Göreli zaman metni backend'den gelir ("2 sa önce"). */
   time: string
   icon: IconName
-  /** Yüksek öncelik: ikon kutusu primary dolgu. */
-  priority?: 'high' | 'normal'
+  /** high: ikon kutusu primary dolgu · normal: surface + link rengi ikon · low: surface + soluk ikon. */
+  priority?: 'high' | 'normal' | 'low'
   unread?: boolean
   onPress?: () => void
   testID?: string
@@ -57,7 +57,7 @@ export function NotificationItem({
           name={icon}
           size={20}
           strokeWidth={2}
-          color={high ? colors.onPrimary : colors.primaryText}
+          color={high ? colors.onPrimary : priority === 'low' ? colors.textMuted : colors.link}
         />
       </View>
       <View className="min-w-0 flex-1 gap-[3px]">
