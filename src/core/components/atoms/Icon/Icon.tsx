@@ -31,3 +31,8 @@ export function Icon({ name, size = 20, color, strokeWidth = 2 }: IconProps) {
 
   return <LucideIcon size={size} stroke={color ?? colors.text} strokeWidth={strokeWidth} />
 }
+
+/** Sunucudan düz metin gelen ikon adının (kategori ikonu) Lucide'de karşılığı var mı? */
+export function isIconName(name: string): name is IconName {
+  return Object.prototype.hasOwnProperty.call(LucideIcons, name)
+}
