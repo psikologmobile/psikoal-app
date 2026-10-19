@@ -41,3 +41,10 @@ export const OFFER_STATUS_CONFIG: Record<
   REJECTED: { label: 'Kapandı', icon: 'XCircle', iconColor: '#DC2626' },
   WITHDRAWN: { label: 'Geri çekildi', icon: 'MinusCircle', iconColor: '#737373' },
 }
+
+/** Teklif kartındaki görüşme şekli adları (tasarım dili). */
+export const OFFER_SESSION_LABELS = {
+  online: 'Online',
+  yüz_yüze: 'Yüz yüze',
+  yüz_yüze_online: 'İkisi de',
+} as const
