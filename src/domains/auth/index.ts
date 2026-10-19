@@ -1,4 +1,6 @@
 export { useAuthStore } from './store/authStore'
+export { useReferralStore } from './store/referralStore'
+export { normalizeReferralCode, REFERRAL_CODE_MAX_LENGTH } from './utils/referralCode'
 export {
   useLoginMutation,
   useRegisterMutation,
@@ -11,6 +13,7 @@ export {
   useUploadAvatarMutation,
   useMeQuery,
   useResetPasswordMutation,
+  useReferrerQuery,
   RESET_TOKEN_INVALID,
 } from './api'
 export { parseRecoveryLink } from './utils/parseRecoveryLink'
@@ -35,6 +38,8 @@ export {
   ForgotPasswordSchema,
   ResetPasswordFormSchema,
   ResetPasswordRequestSchema,
+  ReferrerSchema,
+  ReferrerResponseSchema,
 } from './schemas/auth.schema'
 export type {
   UserRole,
@@ -48,6 +53,7 @@ export type {
   ForgotPasswordRequest,
   ResetPasswordForm,
   ResetPasswordRequest,
+  Referrer,
 } from './types/auth.types'
 export { RoleCard } from './components/RoleCard'
 export type { RoleCardProps } from './components/RoleCard'

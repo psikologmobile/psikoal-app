@@ -21,7 +21,26 @@ export const RegisterRequestSchema = z.object({
   healthDataConsent: z
     .boolean()
     .refine((value) => value, 'Sağlık verilerinizin işlenmesine açık rıza zorunludur'),
+  // Revize 2 §7: davet eden uzmanın kodu (isteğe bağlı). Geçersiz kod sunucuda
+  // sessizce yok sayılır; boş bırakılan alan hiç gönderilmez.
+  referralCode: z
+    .string()
+    .trim()
+    .max(32, 'Davet kodu en fazla 32 karakter olabilir')
+    .transform((value) => (value === '' ? undefined : value.toUpperCase()))
+    .optional(),
 })
+
+/** GET /me/referrer → data: danışanı davet eden uzman ya da null (Revize 2 §6). */
+export const ReferrerSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string(),
+  title: z.string(),
+  avatarUrl: z.string().url().nullable(),
+  initials: z.string().nullable(),
+})
+
+export const ReferrerResponseSchema = z.object({ data: ReferrerSchema.nullable() })
 
 export const AuthTokensSchema = z.object({
   accessToken: z.string(),
@@ -40,6 +59,9 @@ export const AuthUserSchema = z.object({
   createdAt: z.string().datetime(),
   phone: z.string().nullable().optional(),
   city: z.string().nullable().optional(),
+  // Revize 2: share* tercihleri artık iletişim görünürlüğünü BELİRLEMİYOR —
+  // danışan ilan açarken açık rıza verir, teklif veren uzman iletişimi görür;
+  // eşleşmede iki taraf da karşı tarafın telefon/e-postasını görür.
   shareEmail: z.boolean().optional(),
   sharePhone: z.boolean().optional(),
   shareLocation: z.boolean().optional(),
