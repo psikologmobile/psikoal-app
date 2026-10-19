@@ -7,7 +7,7 @@ import type { IconName } from '@/core/components/atoms/Icon'
 import { Icon } from '@/core/components/atoms/Icon'
 import { Text } from '@/core/components/atoms/Text'
 import { PressableScale } from '@/core/motion'
-import { useThemeColors } from '@/core/theme'
+import { hoverNudge, hoverSurface, useThemeColors } from '@/core/theme'
 import { cn } from '@/core/utils/cn'
 
 export type SettingsRowProps = {
@@ -41,7 +41,11 @@ export function SettingsRow({
   const colors = useThemeColors()
   const body = (
     <View
-      className={cn('h-14 flex-row items-center gap-3 px-3.5', !isLast && 'border-b border-border')}
+      className={cn(
+        'h-14 flex-row items-center gap-3 px-3.5',
+        !isLast && 'border-b border-border',
+        onPress && hoverSurface
+      )}
     >
       {icon ? (
         <View className="h-[34px] w-[34px] items-center justify-center rounded-inner bg-surface">
@@ -62,7 +66,9 @@ export function SettingsRow({
       {hint ? <Text className="text-label text-fg-muted">{hint}</Text> : null}
       {right ??
         (onPress ? (
-          <Icon name="ChevronRight" size={18} color={colors.textMuted} strokeWidth={2.4} />
+          <View className={hoverNudge}>
+            <Icon name="ChevronRight" size={18} color={colors.textMuted} strokeWidth={2.4} />
+          </View>
         ) : null)}
     </View>
   )
@@ -72,6 +78,7 @@ export function SettingsRow({
       testID={testID}
       onPress={onPress}
       scaleTo={0.98}
+      className="group"
       accessibilityRole="button"
       accessibilityLabel={hint ? `${label}, ${hint}` : label}
     >
