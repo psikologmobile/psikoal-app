@@ -73,7 +73,7 @@ function LoaderDot({ delay }: { delay: number }) {
 /**
  * Açılış (b0/b4 Açılış) — yalnız soğuk açılışta, yazı tipleri yüklendikten
  * sonra kök düzenin üstüne çizilir: halka yaylanarak döner → marka dairesi
- * sağdan kayar → "PsikoAl" yukarı → nokta yükleyici. Oturum hazır ve en kısa
+ * sağdan kayar → "Psikosirius" yukarı → nokta yükleyici. Oturum hazır ve en kısa
  * süre dolunca söner. Azaltılmış harekette animasyonsuz, kısa gösterilir.
  */
 export function AnimatedSplash({ ready, onDone }: AnimatedSplashProps) {
@@ -149,7 +149,7 @@ export function AnimatedSplash({ ready, onDone }: AnimatedSplashProps) {
     >
       <View
         accessible
-        accessibilityLabel="PsikoAl açılıyor"
+        accessibilityLabel="Psikosirius açılıyor"
         className="flex-1 items-center justify-center overflow-hidden bg-accent"
       >
         <View className="absolute" pointerEvents="none">
@@ -190,7 +190,9 @@ export function AnimatedSplash({ ready, onDone }: AnimatedSplashProps) {
         </View>
 
         <Animated.View style={wordStyle}>
-          <Text className="mt-9 font-display text-6xl tracking-tight text-accent-fg">PsikoAl</Text>
+          <Text className="mt-9 font-display text-6xl tracking-tight text-accent-fg">
+            Psikosirius
+          </Text>
         </Animated.View>
         <Animated.View style={taglineStyle}>
           <Text className="mt-2 text-lg text-accent-muted">Doğru uzmanla buluş.</Text>

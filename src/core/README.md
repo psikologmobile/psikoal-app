@@ -1,6 +1,6 @@
 # core/
 
-Projeler arası taşınabilir atomic design katmanı. Domain bilgisi içermez; yalnızca görünüm, tema, hareket ve saf yardımcılar barındırır. Tasarım kaynağı: `docs/design-v2/` (v2 "PsikoAl · Flat").
+Projeler arası taşınabilir atomic design katmanı. Domain bilgisi içermez; yalnızca görünüm, tema, hareket ve saf yardımcılar barındırır. Tasarım kaynağı: `docs/design-v2/` (v2 "Psikosirius · Flat").
 
 ## Yapı
 

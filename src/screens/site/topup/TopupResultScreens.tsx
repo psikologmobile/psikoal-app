@@ -42,7 +42,7 @@ function ResultPage({
   return (
     <SitePage
       testID="screen-site-topup-result"
-      head={{ title, description: 'PsikoAl bakiye yükleme sonucu.', path, noIndex: true }}
+      head={{ title, description: 'Psikosirius bakiye yükleme sonucu.', path, noIndex: true }}
       header={<SiteHeader />}
       footer={<SiteFooter />}
     >

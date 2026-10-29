@@ -62,7 +62,7 @@ export function usePushRegistration(): (options: RegisterOptions) => Promise<voi
 }
 
 /**
- * PsikoAl kuralı (CLAUDE.md): bildirim izni ilk girişte değil, ilk teklif
+ * Psikosirius kuralı (CLAUDE.md): bildirim izni ilk girişte değil, ilk teklif
  * anında istenir. `enabled` bu anı çağıran ekran belirler; hook o an bir kez
  * izin ister ve token'ı kaydeder.
  */

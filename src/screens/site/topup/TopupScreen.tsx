@@ -30,7 +30,7 @@ import { useTopupForm } from '@/domains/wallet'
 const HEAD = {
   title: 'Bakiye yükle',
   description:
-    'PsikoAl uzman bakiyesi yükleme: tutarı seç, sözleşmeleri onayla, PayTR ile güvenle öde.',
+    'Psikosirius uzman bakiyesi yükleme: tutarı seç, sözleşmeleri onayla, PayTR ile güvenle öde.',
   path: SITE_ROUTES.topup,
   noIndex: true,
 }
@@ -247,7 +247,7 @@ function PayTRStep({ form }: { form: UseTopupFormReturn }) {
           )}
         </View>
         <Text className="text-label text-fg-muted">
-          Kart bilgilerin PayTR'nin güvenli sayfasında girilir; PsikoAl kart bilgisi saklamaz.
+          Kart bilgilerin PayTR'nin güvenli sayfasında girilir; Psikosirius kart bilgisi saklamaz.
         </Text>
       </View>
     </SiteSection>
@@ -356,7 +356,7 @@ export function TopupScreen() {
       <TopupStateCard
         tone="info"
         title="Bakiye yükleme uzmanlar içindir"
-        text="Danışanlar için PsikoAl tamamen ücretsizdir; ilan açmak ve teklif almak için bakiye gerekmez."
+        text="Danışanlar için Psikosirius tamamen ücretsizdir; ilan açmak ve teklif almak için bakiye gerekmez."
         primary={{ label: 'Uygulamaya git', href: SITE_ROUTES.home }}
       />
     )

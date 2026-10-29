@@ -3,7 +3,7 @@
  * (static render) çalışır; burada tarayıcı API'si ya da RN importu YOKTUR.
  */
 
-export const SITE_NAME = 'PsikoAl'
+export const SITE_NAME = 'Psikosirius'
 
 /** Oturum bayrağı: kayıtlı oturum varsa <html data-session="in">. */
 export const SESSION_ATTRIBUTE = 'data-session'

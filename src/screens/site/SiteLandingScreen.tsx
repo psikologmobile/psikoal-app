@@ -166,7 +166,7 @@ export function SiteLandingScreen() {
       testID="screen-site-landing"
       className={SITE_LANDING_CLASS}
       head={{
-        title: 'PsikoAl · İhtiyacını anlat, uzmanlar sana gelsin',
+        title: 'Psikosirius · İhtiyacını anlat, uzmanlar sana gelsin',
         description:
           'Bir ilan aç; lisansı doğrulanmış psikologlar tekliflerini göndersin. Karşılaştır, sana en uygun uzmanı sen seç. Danışan için tamamen ücretsiz.',
         path: SITE_ROUTES.home,

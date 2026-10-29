@@ -47,13 +47,13 @@ export const LEGAL_DOCUMENTS: readonly LegalDocument[] = [
     path: SITE_ROUTES.privacy,
     title: 'Gizlilik Politikası',
     description:
-      'PsikoAl gizlilik politikası (taslak): hangi verileri, ne amaçla ve ne kadar süre işlediğimiz.',
+      'Psikosirius gizlilik politikası (taslak): hangi verileri, ne amaçla ve ne kadar süre işlediğimiz.',
     sections: [
       {
         id: 'b1',
         title: 'Taraflar ve tanımlar',
         paragraphs: [
-          `Bu politika, PsikoAl platformunu işleten ${COMPANY} ("PsikoAl") ile platformu kullanan danışan ve uzmanlar arasındaki kişisel veri uygulamalarını açıklar.`,
+          `Bu politika, Psikosirius platformunu işleten ${COMPANY} ("Psikosirius") ile platformu kullanan danışan ve uzmanlar arasındaki kişisel veri uygulamalarını açıklar.`,
           '"Danışan" destek arayan kullanıcıyı, "Uzman" platformda onaylı profili bulunan psikolog ya da psikoterapisti ifade eder.',
         ],
       },
@@ -89,7 +89,7 @@ export const LEGAL_DOCUMENTS: readonly LegalDocument[] = [
     path: SITE_ROUTES.terms,
     title: 'Kullanım Koşulları',
     description:
-      'PsikoAl kullanım koşulları (taslak): platformun kuralları, tarafların hak ve yükümlülükleri.',
+      'Psikosirius kullanım koşulları (taslak): platformun kuralları, tarafların hak ve yükümlülükleri.',
     sections: [
       {
         id: 'b1',
@@ -102,7 +102,7 @@ export const LEGAL_DOCUMENTS: readonly LegalDocument[] = [
         id: 'b2',
         title: 'Hizmetin niteliği',
         paragraphs: [
-          'PsikoAl, danışanların ilan açtığı ve onaylı uzmanların bu ilanlara teklif gönderdiği bir buluşma platformudur. PsikoAl sağlık hizmeti sunmaz, seans ücretine aracılık etmez; görüşmenin içeriği ve ücreti danışan ile uzman arasındadır.',
+          'Psikosirius, danışanların ilan açtığı ve onaylı uzmanların bu ilanlara teklif gönderdiği bir buluşma platformudur. Psikosirius sağlık hizmeti sunmaz, seans ücretine aracılık etmez; görüşmenin içeriği ve ücreti danışan ile uzman arasındadır.',
           'Platform acil durumlar için uygun değildir. Acil bir durumda 112 Acil Çağrı Merkezi’ni arayın.',
         ],
       },
@@ -129,7 +129,7 @@ export const LEGAL_DOCUMENTS: readonly LegalDocument[] = [
     path: SITE_ROUTES.kvkk,
     title: 'KVKK Aydınlatma Metni',
     description:
-      '6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında PsikoAl aydınlatma metni (taslak).',
+      '6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında Psikosirius aydınlatma metni (taslak).',
     sections: [
       {
         id: 'b1',
@@ -166,7 +166,8 @@ export const LEGAL_DOCUMENTS: readonly LegalDocument[] = [
     slug: 'distanceSales',
     path: SITE_ROUTES.distanceSales,
     title: 'Mesafeli Satış Sözleşmesi',
-    description: 'PsikoAl uzman bakiye yükleme hizmeti için mesafeli satış sözleşmesi (taslak).',
+    description:
+      'Psikosirius uzman bakiye yükleme hizmeti için mesafeli satış sözleşmesi (taslak).',
     sections: [
       {
         id: 'b1',
@@ -211,7 +212,7 @@ export const LEGAL_DOCUMENTS: readonly LegalDocument[] = [
     slug: 'preInformation',
     path: SITE_ROUTES.preInformation,
     title: 'Ön Bilgilendirme Formu',
-    description: 'PsikoAl uzman bakiye yükleme hizmeti için ön bilgilendirme formu (taslak).',
+    description: 'Psikosirius uzman bakiye yükleme hizmeti için ön bilgilendirme formu (taslak).',
     sections: [
       {
         id: 'b1',
@@ -229,7 +230,7 @@ export const LEGAL_DOCUMENTS: readonly LegalDocument[] = [
         id: 'b3',
         title: 'Toplam bedel ve ödeme şekli',
         paragraphs: [
-          'Ödenecek tutar KDV dahildir ve ödeme adımından önce özet olarak gösterilir. Ödeme yalnız kartla, PayTR güvenli ödeme sayfası üzerinden alınır; kart bilgileri PsikoAl tarafından saklanmaz.',
+          'Ödenecek tutar KDV dahildir ve ödeme adımından önce özet olarak gösterilir. Ödeme yalnız kartla, PayTR güvenli ödeme sayfası üzerinden alınır; kart bilgileri Psikosirius tarafından saklanmaz.',
         ],
       },
       {

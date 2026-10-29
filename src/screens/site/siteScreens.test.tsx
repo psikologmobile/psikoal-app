@@ -162,7 +162,7 @@ describe('NotFoundScreen', () => {
 describe('InviteScreen', () => {
   it('invites a logged-out visitor to register', () => {
     const screen = renderScreen(<InviteScreen captured />)
-    expect(screen.getByText('Bir uzman seni PsikoAl’a davet etti')).toBeTruthy()
+    expect(screen.getByText('Bir uzman seni Psikosirius’a davet etti')).toBeTruthy()
     expect(screen.getByText('Hesap oluştur')).toBeTruthy()
   })
 

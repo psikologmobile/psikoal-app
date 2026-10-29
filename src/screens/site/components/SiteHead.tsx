@@ -1,5 +1,5 @@
 export type SiteHeadProps = {
-  /** Sayfa başlığı; " · PsikoAl" eki otomatik eklenir (ana sayfa hariç). */
+  /** Sayfa başlığı; " · Psikosirius" eki otomatik eklenir (ana sayfa hariç). */
   title: string
   description: string
   /** Kök göreli yol (ör. "/uzmanlar-icin"); kanonik adres ve og:url için. */

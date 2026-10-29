@@ -1,4 +1,4 @@
-# Render Blueprint — PsikoAl web sitesi + web uygulaması (tek Expo Router web derlemesi)
+# Render Blueprint — Psikosirius web sitesi + web uygulaması (tek Expo Router web derlemesi)
 # Kurulum adımları: docs/DEPLOY-WEB.md
 #
 # Derleme statik HTML üretir (app.json → web.output: "static"): her rota kendi
@@ -18,7 +18,7 @@ services:
     pullRequestPreviewsEnabled: false
     envVars:
       - key: NODE_VERSION
-        value: "22.23.2"
+        value: '22.23.2'
       - key: EXPO_PUBLIC_API_URL
         value: https://psikoal-api.onrender.com
       - key: EXPO_PUBLIC_APP_ENV
