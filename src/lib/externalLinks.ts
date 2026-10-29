@@ -28,7 +28,7 @@ export async function openLegalDocument(document: LegalDocument): Promise<void> 
 }
 
 export async function openSupportEmail(): Promise<void> {
-  const subject = encodeURIComponent('PsikoAl Destek')
+  const subject = encodeURIComponent('Psikosirius Destek')
   const url = `mailto:${env.EXPO_PUBLIC_SUPPORT_EMAIL}?subject=${subject}`
   try {
     await Linking.openURL(url)

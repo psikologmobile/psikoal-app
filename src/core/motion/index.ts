@@ -1,5 +1,5 @@
 /**
- * PsikoAl hareket kütüphanesi — docs/design-v2/animations.md karşılıkları.
+ * Psikosirius hareket kütüphanesi — docs/design-v2/animations.md karşılıkları.
  * Hepsi azaltılmış harekete (useReduceMotion) uyar: döngüler durur, girişler
  * son karede başlar.
  *

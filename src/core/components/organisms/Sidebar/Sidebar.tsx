@@ -148,7 +148,7 @@ export function Sidebar({ items, primaryAction, footer, onBrandPress }: SidebarP
             <Pressable
               onPress={onBrandPress}
               accessibilityRole="link"
-              accessibilityLabel="PsikoAl ana sayfa"
+              accessibilityLabel="Psikosirius ana sayfa"
               className="self-start rounded-sm"
             >
               {brand}

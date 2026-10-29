@@ -36,7 +36,7 @@ export function SupportScreen() {
       head={{
         title: 'Destek',
         description:
-          'PsikoAl danışan ve uzman sık sorulan soruları. Cevabı bulamazsan destek ekibimize e-posta ile ulaş.',
+          'Psikosirius danışan ve uzman sık sorulan soruları. Cevabı bulamazsan destek ekibimize e-posta ile ulaş.',
         path: SITE_ROUTES.support,
       }}
       header={
@@ -80,7 +80,7 @@ export function SupportScreen() {
             </Text>
           </View>
           <SiteButton
-            href={`mailto:${email}?subject=${encodeURIComponent('PsikoAl Destek')}`}
+            href={`mailto:${email}?subject=${encodeURIComponent('Psikosirius Destek')}`}
             label={email}
             accessibilityLabel={`Destek e-postası: ${email}`}
           />

@@ -2,7 +2,7 @@
 @tailwind utilities;
 
 /* =========================================================================
-   PsikoAl · v2 "Flat" semantik renk değişkenleri
+   Psikosirius · v2 "Flat" semantik renk değişkenleri
    Kaynak: docs/design-v2/tokens.css · src/core/theme/tokens.ts ile BİREBİR aynı
    (src/core/theme/tokens.test.ts bu eşitliği denetler).
 
@@ -16,55 +16,55 @@
    ========================================================================= */
 
 :root {
-  --color-bg: 250 250 250;              /* zinc-50  · sayfa zemini */
-  --color-surface: 244 244 245;         /* zinc-100 · kart, input zemini */
-  --color-border: 228 228 231;          /* zinc-200 · ayraç, kart çizgisi */
-  --color-border-strong: 212 212 216;   /* zinc-300 · outline düğme, input */
-  --color-text: 24 24 27;               /* zinc-900 · ana yazı */
-  --color-text-muted: 82 82 91;         /* zinc-600 · ikincil yazı */
+  --color-bg: 250 250 250; /* zinc-50  · sayfa zemini */
+  --color-surface: 244 244 245; /* zinc-100 · kart, input zemini */
+  --color-border: 228 228 231; /* zinc-200 · ayraç, kart çizgisi */
+  --color-border-strong: 212 212 216; /* zinc-300 · outline düğme, input */
+  --color-text: 24 24 27; /* zinc-900 · ana yazı */
+  --color-text-muted: 82 82 91; /* zinc-600 · ikincil yazı */
 
-  --color-primary: 14 165 233;          /* sky-500 · ana düğme (iki temada aynı) */
-  --color-on-primary: 8 47 73;          /* sky-950 */
-  --color-primary-text: 3 105 161;      /* sky-700 */
-  --color-accent: 186 230 253;          /* sky-200 · vurgu yüzeyi */
-  --color-on-accent: 8 47 73;           /* sky-950 */
-  --color-on-accent-muted: 7 89 133;    /* sky-800 */
-  --color-accent-line: 125 211 252;     /* sky-300 */
-  --color-accent-soft: 224 242 254;     /* sky-100 · çip, bilgi kutusu */
-  --color-on-accent-soft: 7 89 133;     /* sky-800 */
-  --color-link: 3 105 161;              /* sky-700 */
+  --color-primary: 14 165 233; /* sky-500 · ana düğme (iki temada aynı) */
+  --color-on-primary: 8 47 73; /* sky-950 */
+  --color-primary-text: 3 105 161; /* sky-700 */
+  --color-accent: 186 230 253; /* sky-200 · vurgu yüzeyi */
+  --color-on-accent: 8 47 73; /* sky-950 */
+  --color-on-accent-muted: 7 89 133; /* sky-800 */
+  --color-accent-line: 125 211 252; /* sky-300 */
+  --color-accent-soft: 224 242 254; /* sky-100 · çip, bilgi kutusu */
+  --color-on-accent-soft: 7 89 133; /* sky-800 */
+  --color-link: 3 105 161; /* sky-700 */
 
-  --color-danger: 220 38 38;            /* red-600 */
-  --color-danger-soft: 254 242 242;     /* red-50 */
-  --color-on-danger-soft: 185 28 28;    /* red-700 */
-  --color-danger-fill: 220 38 38;       /* red-600 (iki temada aynı) */
+  --color-danger: 220 38 38; /* red-600 */
+  --color-danger-soft: 254 242 242; /* red-50 */
+  --color-on-danger-soft: 185 28 28; /* red-700 */
+  --color-danger-fill: 220 38 38; /* red-600 (iki temada aynı) */
   --color-on-danger: 255 255 255;
 
-  --color-focus: 14 165 233;            /* sky-500 */
+  --color-focus: 14 165 233; /* sky-500 */
 }
 
 .dark:root {
-  --color-bg: 9 9 11;                   /* zinc-950 */
-  --color-surface: 24 24 27;            /* zinc-900 */
-  --color-border: 39 39 42;             /* zinc-800 */
-  --color-border-strong: 63 63 70;      /* zinc-700 */
-  --color-text: 250 250 250;            /* zinc-50 */
-  --color-text-muted: 161 161 170;      /* zinc-400 */
+  --color-bg: 9 9 11; /* zinc-950 */
+  --color-surface: 24 24 27; /* zinc-900 */
+  --color-border: 39 39 42; /* zinc-800 */
+  --color-border-strong: 63 63 70; /* zinc-700 */
+  --color-text: 250 250 250; /* zinc-50 */
+  --color-text-muted: 161 161 170; /* zinc-400 */
 
-  --color-primary: 14 165 233;          /* sky-500 · sabit */
+  --color-primary: 14 165 233; /* sky-500 · sabit */
   --color-on-primary: 8 47 73;
-  --color-primary-text: 56 189 248;     /* sky-400 */
-  --color-accent: 8 47 73;              /* sky-950 */
-  --color-on-accent: 224 242 254;       /* sky-100 */
+  --color-primary-text: 56 189 248; /* sky-400 */
+  --color-accent: 8 47 73; /* sky-950 */
+  --color-on-accent: 224 242 254; /* sky-100 */
   --color-on-accent-muted: 125 211 252; /* sky-300 */
-  --color-accent-line: 12 74 110;       /* sky-900 */
-  --color-accent-soft: 12 74 110;       /* sky-900 */
-  --color-on-accent-soft: 224 242 254;  /* sky-100 */
-  --color-link: 125 211 252;            /* sky-300 */
+  --color-accent-line: 12 74 110; /* sky-900 */
+  --color-accent-soft: 12 74 110; /* sky-900 */
+  --color-on-accent-soft: 224 242 254; /* sky-100 */
+  --color-link: 125 211 252; /* sky-300 */
 
-  --color-danger: 248 113 113;          /* red-400 */
-  --color-danger-soft: 69 10 10;        /* red-950 */
-  --color-on-danger-soft: 252 165 165;  /* red-300 */
+  --color-danger: 248 113 113; /* red-400 */
+  --color-danger-soft: 69 10 10; /* red-950 */
+  --color-on-danger-soft: 252 165 165; /* red-300 */
   --color-danger-fill: 220 38 38;
   --color-on-danger: 255 255 255;
 

@@ -69,7 +69,7 @@ export function ReferralScreen() {
   const share = () => {
     if (!wallet) return
     void Share.share({
-      message: `PsikoAl'a benim davet linkimle katıl: ${wallet.referralLink}`,
+      message: `Psikosirius'a benim davet linkimle katıl: ${wallet.referralLink}`,
       url: wallet.referralLink,
     }).catch(() => undefined)
   }

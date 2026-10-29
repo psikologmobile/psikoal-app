@@ -5,7 +5,7 @@ import { cn } from '@/core/utils/cn'
 
 // Uygulamanın TEK marka işareti. Gerçek logo geldiğinde yalnız bu dosya
 // değişir; giriş, karşılama, web kenar çubuğu bu bileşeni kullanır.
-export const BRAND_NAME = 'PsikoAl'
+export const BRAND_NAME = 'Psikosirius'
 
 export type BrandMarkSize = 'sm' | 'md'
 
@@ -27,7 +27,7 @@ const textStyles: Record<BrandMarkSize, string> = {
 }
 
 /**
- * v2 logo: text renginde 4 px halka + üzerine binen primary disk + "PsikoAl"
+ * v2 logo: text renginde 4 px halka + üzerine binen primary disk + "Psikosirius"
  * (Bricolage 800). Web sidebar: 38×28 simge + 22 px yazı.
  */
 export function BrandMark({
