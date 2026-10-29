@@ -1,5 +1,5 @@
 /**
- * PsikoAl · v2 "Flat" tasarım tokenları — React Native tarafının TEK kaynağı.
+ * Psikosirius · v2 "Flat" tasarım tokenları — React Native tarafının TEK kaynağı.
  *
  * Kaynak: docs/design-v2/theme.ts + tokens.css (Claude Design teslimi). Değerler
  * birebir kopyadır; global.css'teki CSS değişkenleri ve tailwind.config.js bu

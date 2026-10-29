@@ -11,7 +11,7 @@ describe('AnimatedSplash', () => {
   it('marka ve yükleyiciyi çizer; hazır + en kısa süre dolunca biter', () => {
     const onDone = jest.fn()
     renderScreen(<AnimatedSplash ready onDone={onDone} />)
-    expect(screen.getByText('PsikoAl')).toBeTruthy()
+    expect(screen.getByText('Psikosirius')).toBeTruthy()
     expect(screen.getByText('Doğru uzmanla buluş.')).toBeTruthy()
     expect(onDone).not.toHaveBeenCalled()
     act(() => jest.advanceTimersByTime(SPLASH_MIN_MS))

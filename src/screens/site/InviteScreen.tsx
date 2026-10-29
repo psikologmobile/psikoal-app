@@ -19,7 +19,7 @@ export type InviteScreenProps = {
 const POINTS = [
   'Seni davet eden uzmanın profilini görebilirsin.',
   'Açtığın ilanlar o uzmana "Davet" rozetiyle düşer; dilersen başka uzmanlardan da teklif alırsın.',
-  'Danışan olarak PsikoAl tamamen ücretsizdir.',
+  'Danışan olarak Psikosirius tamamen ücretsizdir.',
 ] as const
 
 /**
@@ -35,7 +35,7 @@ export function InviteScreen({ captured }: InviteScreenProps) {
       testID="screen-site-invite"
       head={{
         title: 'Davet',
-        description: 'Bir uzman seni PsikoAl’a davet etti. Ücretsiz hesap oluştur, ilanını aç.',
+        description: 'Bir uzman seni Psikosirius’a davet etti. Ücretsiz hesap oluştur, ilanını aç.',
         path: '/davet',
         noIndex: true,
       }}
@@ -52,11 +52,11 @@ export function InviteScreen({ captured }: InviteScreenProps) {
             aria-level={1}
             className="site-a font-display text-[36px] leading-[40px] tracking-[-1px] text-fg sm:text-5xl sm:leading-[52px]"
           >
-            Bir uzman seni PsikoAl’a davet etti
+            Bir uzman seni Psikosirius’a davet etti
           </Text>
           <Text className="site-a site-d1 font-body-regular text-body-lg leading-7 text-fg-muted">
-            PsikoAl’da ihtiyacını anlatan bir ilan açarsın, lisanslı uzmanlar sana teklif gönderir.
-            Davet bağlantısıyla kayıt olursan:
+            Psikosirius’ta ihtiyacını anlatan bir ilan açarsın, lisanslı uzmanlar sana teklif
+            gönderir. Davet bağlantısıyla kayıt olursan:
           </Text>
           <View className="site-a site-d2 gap-3 rounded-3xl border border-border p-6">
             {POINTS.map((point) => (

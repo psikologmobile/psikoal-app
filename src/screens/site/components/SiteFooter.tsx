@@ -40,13 +40,13 @@ export function SiteFooter({ variant = 'compact' }: SiteFooterProps) {
       >
         {variant === 'full' ? (
           <View className="max-w-[320px] gap-2">
-            <Text className="font-display text-[22px] leading-7 text-fg">PsikoAl</Text>
+            <Text className="font-display text-[22px] leading-7 text-fg">Psikosirius</Text>
             <Text className="text-body-sm text-fg-muted">
               Danışanlarla lisanslı uzmanları buluşturan platform.
             </Text>
           </View>
         ) : (
-          <Text className="font-body-bold text-body-sm text-fg">PsikoAl</Text>
+          <Text className="font-body-bold text-body-sm text-fg">Psikosirius</Text>
         )}
         <View
           role="navigation"

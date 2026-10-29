@@ -251,7 +251,7 @@ export function SiteBlogPostScreen({ slug }: { slug: string }) {
         testID="screen-site-blog-post"
         head={{
           title: 'Yazı',
-          description: 'PsikoAl uzmanlarından ruh sağlığı yazısı.',
+          description: 'Psikosirius uzmanlarından ruh sağlığı yazısı.',
           path: blogPostHref(slug),
         }}
         header={header}

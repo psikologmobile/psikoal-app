@@ -574,7 +574,7 @@ export function Gallery() {
           items={[
             {
               id: '1',
-              title: 'PsikoAl ücretli mi?',
+              title: 'Psikosirius ücretli mi?',
               content: 'Danışanlar için ücretsiz; uzmanlar teklif gönderirken kredi kullanır.',
             },
             {

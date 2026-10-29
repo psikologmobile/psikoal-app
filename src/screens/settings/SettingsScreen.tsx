@@ -46,7 +46,7 @@ const THEME_OPTIONS: { value: ThemePreference; label: string; icon: IconName }[]
 ]
 
 const INVITE_MESSAGE =
-  "PsikoAl'ı senin için önerdim! Ücretsiz psikolojik test çöz, sana uygun bir psikologla eşleş."
+  "Psikosirius'u senin için önerdim! Ücretsiz psikolojik test çöz, sana uygun bir psikologla eşleş."
 
 function accountRows(isExpert: boolean, userId: string | null): Row[] {
   if (!isExpert) {
@@ -315,7 +315,7 @@ export function SettingsScreen() {
       ) : (
         <>
           {appGroup}
-          <Text className="text-xs text-fg-muted">PsikoAl Web {APP_VERSION}</Text>
+          <Text className="text-xs text-fg-muted">Psikosirius Web {APP_VERSION}</Text>
         </>
       )
     return (
@@ -414,7 +414,7 @@ export function SettingsScreen() {
         />
       </EnterUp>
       <Text align="center" className="text-xs text-fg-muted">
-        PsikoAl {APP_VERSION}
+        Psikosirius {APP_VERSION}
       </Text>
 
       {logoutSheet}

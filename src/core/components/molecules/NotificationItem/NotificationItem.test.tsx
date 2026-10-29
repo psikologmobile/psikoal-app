@@ -25,8 +25,8 @@ describe('NotificationItem', () => {
 
   it.each(['normal', 'low'] as const)('%s öncelik çizilir', (priority) => {
     const { getByText } = render(
-      <NotificationItem title="PsikoAl" time="12 Eki" icon="Info" priority={priority} />
+      <NotificationItem title="Psikosirius" time="12 Eki" icon="Info" priority={priority} />
     )
-    expect(getByText('PsikoAl')).toBeTruthy()
+    expect(getByText('Psikosirius')).toBeTruthy()
   })
 })

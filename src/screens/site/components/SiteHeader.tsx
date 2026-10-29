@@ -85,7 +85,7 @@ export function SiteHeader({
       <View className="h-20 flex-row items-center justify-between gap-4">
         <SiteLink
           href={SITE_ROUTES.home}
-          accessibilityLabel="PsikoAl ana sayfa"
+          accessibilityLabel="Psikosirius ana sayfa"
           className="flex-row items-center gap-2.5"
         >
           <BrandMark asHeader={false} />

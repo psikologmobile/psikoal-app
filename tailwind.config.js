@@ -1,5 +1,5 @@
 /**
- * PsikoAl · v2 "Flat" Tailwind / NativeWind yapılandırması
+ * Psikosirius · v2 "Flat" Tailwind / NativeWind yapılandırması
  * Kaynak: docs/design-v2/tailwind.preset.js + theme.ts (src/core/theme/tokens.ts ile aynı).
  *
  * Renkler global.css'teki CSS değişkenlerinden okunur → açık/koyu tema tek yerden
@@ -106,8 +106,16 @@ module.exports = {
           text: v('primary-text'),
         },
         semantic: {
-          success: { light: v('accent-soft'), DEFAULT: v('primary-text'), dark: v('on-accent-soft') },
-          warning: { light: v('accent-soft'), DEFAULT: v('primary-text'), dark: v('on-accent-soft') },
+          success: {
+            light: v('accent-soft'),
+            DEFAULT: v('primary-text'),
+            dark: v('on-accent-soft'),
+          },
+          warning: {
+            light: v('accent-soft'),
+            DEFAULT: v('primary-text'),
+            dark: v('on-accent-soft'),
+          },
           error: { light: v('danger-soft'), DEFAULT: v('danger'), dark: v('on-danger-soft') },
           info: { light: v('accent-soft'), DEFAULT: v('primary-text'), dark: v('on-accent-soft') },
         },
@@ -242,7 +250,15 @@ module.exports = {
         phone: '32px',
         full: '9999px',
       },
-      borderWidth: { DEFAULT: '1.5px', hair: '1.5px', 0: '0px', 2: '2px', 3: '3px', 4: '4px', 6: '6px' },
+      borderWidth: {
+        DEFAULT: '1.5px',
+        hair: '1.5px',
+        0: '0px',
+        2: '2px',
+        3: '3px',
+        4: '4px',
+        6: '6px',
+      },
 
       // ─── MOTION (web CSS geçişleri; RN için src/core/motion) ─────────────
       transitionTimingFunction: {

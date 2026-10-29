@@ -8,20 +8,20 @@ import { Text } from '@/core/components/atoms/Text'
 import { useLoopProgress, useOnceProgress } from '@/core/motion'
 import { cn } from '@/core/utils/cn'
 
-/** Küçük marka: accent halka + primary daire + "PsikoAl" (b0 · Giriş üst satır). */
+/** Küçük marka: accent halka + primary daire + "Psikosirius" (b0 · Giriş üst satır). */
 export function AuthBrand({ className }: { className?: string }) {
   return (
     <View
       accessible
       accessibilityRole="header"
-      accessibilityLabel="PsikoAl"
+      accessibilityLabel="Psikosirius"
       className={cn('flex-row items-center gap-3', className)}
     >
       <View className="h-8 w-11">
         <View className="absolute left-0 top-0 h-8 w-8 rounded-full border-4 border-accent" />
         <View className="absolute left-3.5 top-0 h-8 w-[30px] rounded-full bg-primary" />
       </View>
-      <Text className="font-display text-2xl text-fg">PsikoAl</Text>
+      <Text className="font-display text-2xl text-fg">Psikosirius</Text>
     </View>
   )
 }

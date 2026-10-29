@@ -1,6 +1,6 @@
 # Güvenlik Politikası
 
-PsikoAl bir sağlık/psikoloji platformudur ve **özel nitelikli kişisel veri** (KVKK m.6)
+Psikosirius bir sağlık/psikoloji platformudur ve **özel nitelikli kişisel veri** (KVKK m.6)
 işler. Güvenlik açığı bildirimlerini ciddiye alıyoruz.
 
 ## Açık bildirimi

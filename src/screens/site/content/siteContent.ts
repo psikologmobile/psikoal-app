@@ -3,7 +3,7 @@ import type { SiteFaqItem } from '../components/SiteFaq'
 /** Tanıtım "Merak ettiklerin" (b2_Site_Tanıtım). */
 export const LANDING_FAQ: readonly SiteFaqItem[] = [
   {
-    q: 'PsikoAl danışanlar için ücretli mi?',
+    q: 'Psikosirius danışanlar için ücretli mi?',
     a: 'Hayır. İlan açmak, teklif almak ve testleri çözmek danışanlar için tamamen ücretsiz.',
   },
   {
@@ -16,7 +16,7 @@ export const LANDING_FAQ: readonly SiteFaqItem[] = [
   },
   {
     q: 'Görüşme ücretini kime ödüyorum?',
-    a: 'Seans ücretini anlaştığın uzmana doğrudan ödersin; PsikoAl seans ücretine aracılık etmez.',
+    a: 'Seans ücretini anlaştığın uzmana doğrudan ödersin; Psikosirius seans ücretine aracılık etmez.',
   },
 ]
 
